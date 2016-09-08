@@ -31,6 +31,8 @@ import ParseMP from '../monitoring_params/monitoringParamComponents.js';
 import PlacementGroupsInfo from './placementGroupsInfo.jsx';
 import JobListCard from '../launchpad_card/jobListCard.jsx';
 import NSVirtualLinks from '../virtual_links/nsVirtualLinks.jsx';
+import LaunchpadFleetStore from '../launchpadFleetStore.js';
+
 export default class RecordCard extends React.Component {
   constructor(props) {
     super(props)
@@ -40,7 +42,13 @@ export default class RecordCard extends React.Component {
       // console.log('Selected tab is', index, 'last index is', last);
   }
 
+  openConsole = (url, event) => {
+    event.preventDefault();
+    LaunchpadFleetStore.getVDUConsoleLink(url);
+  }
+
   render(){
+    let self = this;
     let html;
     let content;
     let card;
@@ -61,6 +69,8 @@ export default class RecordCard extends React.Component {
 
     let tabList = [];
     let tabPanels = [];
+
+    let notice = null;
 
     switch(this.props.type) {
       case 'vnfr' :
@@ -103,22 +113,24 @@ export default class RecordCard extends React.Component {
 
         if (cardData['vdur']) {
           cardData['vdur'].map((vdur, index) => {
-            let consoleLink = vdur['console-url'] ? 'Open VM Console' : 'None';
+            let consoleLink = vdur['console-url'] ? 'Obtain Token And Open VM Console' : 'None';
             consoleUrlsList.push(
               <li key={index}>
                 <h3>
                   {vdur['name'] + '-' + vdur.id.substr(0,4)}
                 </h3>
-                <a href={vdur['console-url']} target='_blank'>
-                  {consoleLink}
-                </a>
+                <span className='consoleLink' onClick={self.openConsole.bind(self, vdur["console-url"])}>
+                  {consoleLink} *
+                </span>
               </li>
             )
+            notice = <li className='notice'>* If a separate browser window does not open, please check if the popup was blocked and allow it.</li>
           });
           consoleUrlsComponent = (
             <div className="consoleUrlsComponent">
               <ul className="consoleUrlsList">
                 {consoleUrlsList}
+                {notice}
               </ul>
             </div>
           );

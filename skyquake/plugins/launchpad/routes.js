@@ -160,6 +160,13 @@ app.get('/api/nsr', cors(), function(req, res) {
             utils.sendErrorResponse(error, res);
         })
     });
+    app.get('/api/vnfr/:vnfr_id/vdur/:vdur_id/console-url', function(req, res) {
+        launchpadAPI['vdur']['consoleUrl'].get(req).then(function(data) {
+            utils.sendSuccessResponse(data, res);
+        }, function(error) {
+            utils.sendErrorResponse(error, res);
+        });
+    })
     app.get('/api/catalog', cors(), function(req, res) {
         launchpadAPI['catalog'].get(req).then(function(data) {
             utils.sendSuccessResponse(data, res);

@@ -19,6 +19,8 @@
 
 import React from 'react';
 import Loader from 'widgets/loading-indicator/loadingIndicator.jsx';
+import LaunchpadFleetStore from '../launchpadFleetStore.js';
+
 
 export default class managementInterfaces extends React.Component {
   constructor(props) {
@@ -27,11 +29,18 @@ export default class managementInterfaces extends React.Component {
   componentWillReceiveProps(nextProps) {
 
   }
+
+  openConsole = (url, event) => {
+    event.preventDefault();
+    LaunchpadFleetStore.getVDUConsoleLink(url);
+  }
   render() {
+    let self = this;
     let dashboard_html;
     let console_html;
     let isDisplayed = this.props.display;
     let status;
+    let notice;
     let applicationDashboards = this.props.interfaces.sort(function(a,b) {
       try {
             if ((a["short-name"] + '-' + a.id.substr(0,4)) > (b["short-name"] + '-' + b.id.substr(0,4))) {
@@ -72,17 +81,19 @@ export default class managementInterfaces extends React.Component {
 
     if(consoleLinks && consoleLinks.length > 0){
       status = consoleLinks.map(function(i, index) {
-        let consoleLink = i["console-url"] ? 'Open VM Console' : 'None';
+        let consoleLink = i["console-url"] ? 'Obtain Token And Open VM Console' : 'None';
           return (
-            <li key={index}><h3>{i["name"] + '-' + i.id.substr(0,4)}</h3><a href={i["console-url"]} target="_blank">{consoleLink}</a></li>
+            <li key={index}><h3>{i["name"] + '-' + i.id.substr(0,4)}</h3><span className='consoleLink' onClick={self.openConsole.bind(self, i["console-url"])}>{consoleLink} *</span></li>
           )
         });
+      notice = <li className='notice'>* If a separate browser window does not open, please check if the popup was blocked and allow it.</li>
     } else {
       status = <li>No VDU Console Links have been specified.</li>
     }
     console_html = (
         <ul>
           {status}
+          {notice}
         </ul>
     );
 

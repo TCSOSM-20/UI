@@ -809,7 +809,9 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
         nsr['console-urls'] = nsr['console-urls'] ? nsr['console-urls'] : [];
 
         vnfr && vnfr['vdur'] && vnfr['vdur'].map(function(vdur) {
-            vdur['console-url'] && nsr['console-urls'].push({
+            // This console-url is what front-end will hit to generate a real console-url
+            vdur['console-url'] = 'api/vnfr/' + vnfr.id + '/vdur/' + vdur.id + '/console-url';
+            nsr['console-urls'].push({
                 id: vdur.id,
                 name: vdur.name,
                 'console-url': vdur['console-url']
@@ -1275,7 +1277,11 @@ VNFR.get = function(req) {
                     vnfr['nfvi-metrics'] = buildNfviGraphs(vnfr.vdur);
                     vnfr['epa-params'] = epa_aggregator(vnfr.vdur);
                     vnfr['service-primitives-present'] = (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) ? true : false;
-                })
+                    vnfr['vdur'] && vnfr['vdur'].map(function(vdur, vdurIndex) {
+                        // This console-url is what front-end will hit to generate a real console-url
+                        vdur['console-url'] = 'api/vnfr/' + vnfr.id + '/vdur/' + vdur.id + '/console-url';
+                    });
+                });
                 return resolve(returnData);
             };
         });
@@ -1620,6 +1626,36 @@ VDUR.get = function(req) {
                 var data = JSON.parse(response.body);
                 var returnData = data["vdur:vdur"];
                 return resolve(returnData);
+            };
+        });
+    })
+}
+
+VDUR.consoleUrl = {};
+VDUR.consoleUrl.get = function(req) {
+    var api_server = req.query["api_server"];
+    var vnfrID = req.params.vnfr_id;
+    var vdurID = req.params.vdur_id;
+    var uri = utils.confdPort(api_server);
+    uri += APIVersion + '/api/operational/vnfr-console/vnfr/' + vnfrID + '/vdur/' + vdurID + '/console-url' + '?deep';
+    var headers = _.extend({}, constants.HTTP_HEADERS.accept.data, {
+        'Authorization': req.get('Authorization')
+    });
+    return new Promise(function(resolve, reject) {
+        request({
+            url: uri,
+            method: 'GET',
+            headers: headers,
+            forever: constants.FOREVER_ON,
+            rejectUnauthorized: false,
+        }, function(error, response, body) {
+            if (utils.validateResponse('VDUR.consoleUrl.get', error, response, body, resolve, reject)) {
+                var data = JSON.parse(response.body);
+                var returnData = data;
+                return resolve({
+                    data: returnData,
+                    statusCode: response.statusCode
+                });
             };
         });
     })
@@ -2015,6 +2051,7 @@ module.exports.catalog = Catalog;
 module.exports.nsr = NSR;
 module.exports.vnfr = VNFR;
 module.exports.vlr = VLR;
+module.exports.vdur = VDUR;
 module.exports.rift = RIFT;
 module.exports.computeTopology = ComputeTopology;
 module.exports.networkTopology = NetworkTopology;

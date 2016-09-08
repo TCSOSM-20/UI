@@ -39,4 +39,6 @@ module.exports = Alt.generateActions(
                                        'closeNsrCard',
                                        'instantiateNetworkService',
                                        'setNsListPanelVisible',
+                                       'getVDUConsoleLinkSuccess',
+                                       'getVDUConsoleLinkError'
                                        );

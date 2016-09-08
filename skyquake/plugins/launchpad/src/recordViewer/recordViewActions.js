@@ -33,5 +33,5 @@ export default Alt.generateActions(
                                    'getConfigSocketJobError',
                                    'createVirtualLinkLoading', 'createVirtualLinkSuccess', 'createVirtualLinkError',
                                    'editVirtualLinkLoading', 'editVirtualLinkSuccess', 'editVirtualLinkError',
-                                   'deleteVirtualLinkLoading', 'deleteVirtualLinkSuccess', 'deleteVirtualLinkError',
+                                   'deleteVirtualLinkLoading', 'deleteVirtualLinkSuccess', 'deleteVirtualLinkError'
                                    );

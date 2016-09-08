@@ -195,6 +195,18 @@
         justify-content: center;
         align-content: center;
         color:black;
+
+        .notice {
+          padding-top: 0.5rem;
+          font-size: 0.75rem;
+          color: $gray-darker;
+        }
+
+        span {
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
         a {
           cursor: pointer;
           margin-left: 0.5rem;

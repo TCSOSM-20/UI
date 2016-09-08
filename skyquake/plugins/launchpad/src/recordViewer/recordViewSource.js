@@ -272,5 +272,4 @@ export default {
             error: RecordViewActions.editVirtualLinkError
         }
     }
-
 }

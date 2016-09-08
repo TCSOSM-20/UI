@@ -275,9 +275,19 @@
       .consoleUrlsList {
         display: flex;
         flex: 1 1 auto;
+        flex-direction: column;
         li {
           display: flex;
           flex: 1 1 auto;
+          &.notice {
+            padding-top: 0.5rem;
+            font-size: 0.75rem;
+            color: $gray-darker;
+          }
+          .consoleLink {
+            cursor: pointer;
+            text-decoration: underline;
+          }
           h3 {
             align-self: flex-start;
             flex: 1 1 auto;

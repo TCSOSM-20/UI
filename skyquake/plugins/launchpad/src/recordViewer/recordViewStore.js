@@ -328,7 +328,6 @@ class RecordViewStore {
     triggerEditVirtualLink(params) {
         this.editVirtualLink(params);
     }
-
 }
 
 

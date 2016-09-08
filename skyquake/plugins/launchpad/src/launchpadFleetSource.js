@@ -61,6 +61,26 @@ module.exports = function(Alt) {
       success: FleetActions.getNsrInstancesSuccess,
       error: FleetActions.getNsrInstancesError
     },
+    getVDUConsoleLink: {
+      remote: function(state, url) {
+        return new Promise(function(resolve, reject) {
+          $.ajax({
+            url: url + '?api_server=' + API_SERVER,
+            type: 'GET',
+            beforeSend: Utils.addAuthorizationStub,
+            success: function(data) {
+              resolve(data);
+            },
+            error: function(error) {
+              console.log('There was an error getting the VDU link', error);
+              return reject(error);
+            }
+          });
+        });
+      },
+      success: FleetActions.getVDUConsoleLinkSuccess,
+      error: FleetActions.getVDUConsoleLinkError
+    },
     deleteNsrInstance: {
       remote: function(d, id) {
         console.log(id)

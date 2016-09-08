@@ -76,6 +76,7 @@ function FleetStoreConstructor() {
     closeNsrCard: FleetActions.closeNsrCard,
     instantiateNetworkService: FleetActions.instantiateNetworkService,
     setNsListPanelVisible: FleetActions.setNsListPanelVisible,
+    getVDUConsoleLinkSuccess: FleetActions.getVDUConsoleLinkSuccess
 
   });
   this.bindAction(LaunchNetworkServiceActions.launchNSRSuccess, responseData => {
@@ -272,6 +273,10 @@ FleetStoreConstructor.prototype.setNsListPanelVisible = function(isVisible) {
   this.setState({
     isNsListPanelVisible: isVisible
   })
+}
+
+FleetStoreConstructor.prototype.getVDUConsoleLinkSuccess = function(data) {
+  data['console-url'] && window.open(data['console-url']);
 }
 
 FleetStore = Alt.createStore(FleetStoreConstructor);
