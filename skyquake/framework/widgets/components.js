@@ -26,7 +26,7 @@ export default {
 //  Histogram: Histogram,
   Multicomponent: require('./multicomponent/multicomponent.js'),
   Mixins: require('./mixins/ButtonEventListener.js'),
-  Gauge: require('./gauge/gauge.js'),
+  // Gauge: require('./gauge/gauge.js'),
   Bullet: require('./bullet/bullet.js')
 };
 

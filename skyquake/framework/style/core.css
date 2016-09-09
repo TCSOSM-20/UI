@@ -15,7 +15,9 @@
  *   limitations under the License.
  *
  */
-@import "./vendor/css-reset-2.0/css-reset.css";
+/*@import "./vendor/css-reset-2.0/css-reset.css";*/
+@import "../../node_modules/reset-css/reset.css";
+
 .has-drop-shadow {
     box-shadow: 2px 2px rgba(0, 0, 0, .15)
 }
