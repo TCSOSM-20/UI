@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,20 +25,21 @@ export class Panel extends Component {
     render() {
         let self = this;
         let {children, className, title, ...props} = self.props;
-        let classRoot = className ? ' ' + className : ' '
+        let classRoot = className ? ' ' + className : ' ';
+        let hasCorners = this.props['no-corners'];
         let titleTag = title ? <header className="skyquakePanel-title">{title}</header> : '';
         return (
             <section className={'skyquakePanel' + classRoot} style={props.style}>
-                <i className="corner-accent top left"></i>
-                <i className="corner-accent top right"></i>
+                { !hasCorners ? <i className="corner-accent top left"></i> : null }
+                { !hasCorners ? <i className="corner-accent top right"></i> : null }
                 {titleTag}
                 <div className="skyquakePanel-wrapper">
                     <div className={(classRoot ? 'skyquakePanel-body ' + decorateClassNames(classRoot, '-body') : 'skyquakePanel-body')}>
                             {children}
                     </div>
                 </div>
-                <i className="corner-accent bottom left"></i>
-                <i className="corner-accent bottom right"></i>
+                { !hasCorners ? <i className="corner-accent bottom left"></i> : null }
+                { !hasCorners ? <i className="corner-accent bottom right"></i> : null }
             </section>
         )
     }
@@ -50,7 +51,8 @@ Panel.defaultProps = {
 
 export class PanelWrapper extends Component {
     render() {
-        return (<div className={'skyquakePanelWrapper'}>
+        return (
+        <div className={'skyquakePanelWrapper ' + this.props.className} style={this.props.style}>
             {this.props.children}
         </div>)
     }
@@ -60,7 +62,7 @@ export default Panel;
 
 
 function decorateClassNames(className, addendum) {
-    return className.split(' ').map(function(c) {
+    return className.trim().split(' ').map(function(c) {
         return c + addendum
     }).join(' ');
 }

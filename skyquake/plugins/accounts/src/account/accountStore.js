@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,16 +126,6 @@ let AccountMeta = {
                 ref: 'floating-ip-pool',
                 optional: true
             }],
-            "openmano": [{
-                label: "Host",
-                ref: 'host'
-            }, {
-                label: "Port",
-                ref: 'port'
-            }, {
-                label: "Tenant ID",
-                ref: 'tenant-id'
-            }],
             "openvim": [{
                 label: "Host",
                 ref: 'host'
@@ -175,9 +165,6 @@ let AccountMeta = {
             "name": "Cloudsim",
             "account-type": "cloudsim_proxy"
         }, {
-            "name": "Open Mano",
-            "account-type": "openmano"
-        }, {
             "name": "AWS",
             "account-type": "aws"
         }, {
@@ -189,7 +176,6 @@ let AccountMeta = {
     },
     image: {
         "aws": require("../../images/aws.png"),
-        "openmano": altImage || require("../../images/openmano.png"),
         "openvim": require("../../images/openmano.png"),
         "openstack": require("../../images/openstack.png"),
         "cloudsim_proxy": require("../../images/riftio.png"),
@@ -199,7 +185,6 @@ let AccountMeta = {
     },
     labelByType: {
         "aws": "AWS",
-        "openmano": "OpenStack",
         "openvim": "Open VIM",
         "openstack": "OpenStack",
         "cloudsim_proxy": "Cloudsim"
@@ -216,6 +201,7 @@ export default class AccountStore {
         this.refreshingAll = false;
         this.sdnOptions = [];
         this.AccountMeta = AccountMeta;
+        this.showVIM = true;
         this.bindActions(AccountActions(this.alt));
         this.registerAsync(AccountSource);
         this.exportPublicMethods({
@@ -248,6 +234,14 @@ export default class AccountStore {
     }
     refreshCloudAccountSuccess = () => {
 
+    }
+    getResourceOrchestratorSuccess = (data) => {
+        this.alt.actions.global.hideScreenLoader.defer();
+        if(data['account-type'] == 'openmano') {
+            this.setState({
+                showVIM: false
+            })
+        }
     }
     deleteAccountSuccess = (response) => {
         this.setState({

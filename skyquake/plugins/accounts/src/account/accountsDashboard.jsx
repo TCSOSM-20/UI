@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,7 @@ class AccountsDashboard extends React.Component {
     componentWillMount() {
         this.Store.listen(this.updateState);
         this.Store.openAccountsSocket();
+        this.Store.getResourceOrchestrator();
     }
     componentWillUnmount() {
         this.Store.closeSocket();

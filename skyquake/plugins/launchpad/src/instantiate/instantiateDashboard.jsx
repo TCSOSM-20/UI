@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,8 +40,10 @@ class InstantiateDashboard extends React.Component {
         asyncOperations.push(this.Store.getCatalog());
         asyncOperations.push(this.Store.getCloudAccount(function() {
           asyncOperations.push(self.Store.getDataCenters());
+          asyncOperations.push(self.Store.getResourceOrchestrator());
           asyncOperations.push(self.Store.getSshKey());
           asyncOperations.push(self.Store.getConfigAgent());
+          asyncOperations.push(self.Store.getResourceOrchestrator());
         }));
         Promise.all(asyncOperations).then(function(resolve, reject) {
             if(self.props.params.nsd) {
@@ -75,7 +77,7 @@ class InstantiateDashboard extends React.Component {
           self.props.actions.showNotification('Spaces and special characters except underscores are not supported in the network service name at this time');
           return;
         }
-        if (this.isOpenMano() && (this.state.dataCenterID == "" || !this.state.dataCenterID)) {
+        if (this.state.isOpenMano && (this.state.dataCenterID == "" || !this.state.dataCenterID)) {
              self.props.actions.showNotification("Please enter the Data Center ID");
           return;
         }
@@ -87,7 +89,7 @@ class InstantiateDashboard extends React.Component {
         return !this.props.location.pathname.split('/')[2];
     }
     isOpenMano = () => {
-        return this.state.selectedCloudAccount['account-type'] == 'openmano';
+        return this.state.ro['account-type'] == 'openmano';
     }
     openDescriptor = (descriptor) => {
         let NSD = descriptor;

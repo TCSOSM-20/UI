@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -1906,7 +1906,7 @@ DataCenters.get = function(req) {
                 'Authorization': req.get('Authorization')
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/operational/datacenters/cloud-accounts?deep',
+            url: utils.confdPort(api_server) + APIVersion + '/api/operational/datacenters?deep',
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1915,7 +1915,7 @@ DataCenters.get = function(req) {
             if (utils.validateResponse('DataCenters.get', error, response, body, resolve, reject)) {
                 var returnData = {};
                 try {
-                    data = JSON.parse(response.body)['rw-launchpad:cloud-accounts'];
+                    data = JSON.parse(response.body)["rw-launchpad:datacenters"]["ro-accounts"];
                     data.map(function(c) {
                         returnData[c.name] = c.datacenters;
                     })

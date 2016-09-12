@@ -1,0 +1,15 @@
+{
+    "root": "public",
+    "name": "Config",
+    "dashboard": "./dashboard/dashboard.jsx",
+    "order": 1,
+    "priority":1,
+    "routes": [
+    {
+        "label": "Configuration Dashboard",
+        "route": "accounts",
+        "component": "./dashboard/dashboard.jsx",
+        "path": "accounts",
+        "type": "internal"
+    }]
+}

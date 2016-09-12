@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,11 +33,20 @@ export default class InstantiateInputParams extends Component {
       <div className="configure-nsd_section">
         <div className="inputControls">
             <TextInput label="Instance Name" type="text" pattern="^[a-zA-Z0-9_]*$" style={{textAlign:'left'}} onChange={props.updateName} value={props.name}/>
-          <label>Select VIM Account
-            <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} onChange={props.nsFn.updateSelectedCloudAccount} />
-          </label>
           {
-            isOpenMano(props.selectedCloudAccount) ? this.dataCentersHTML(props.dataCenters[selectedCloudAccount.name], props.nsFn.updateSelectedDataCenter) : null
+            !isOpenMano(props.ro) ?
+              (
+                <label>Select VIM Account
+                  <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} onChange={props.nsFn.updateSelectedCloudAccount} />
+                </label>
+              )
+            : null
+          }
+          {
+            isOpenMano(props.ro) ?
+              dataCentersHTML(props.dataCenters[props.ro.name],
+                              props.nsFn.updateSelectedDataCenter)
+              : null
           }
         </div>
       </div>
@@ -60,11 +69,21 @@ export default class InstantiateInputParams extends Component {
                 return (
                     <div className="inputControls" key={i}>
                     <h4 className="inputControls-title">VNFD: {v.name}</h4>
-                      <label>Select VIM Account
-                        <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} initial={true} onChange={props.vnfFn.updateSelectedCloudAccount.bind(v['member-vnf-index'])} defaultValue={defaultValue} />
-                      </label>
+                  {
+                    !isOpenMano(props.ro) ?
+                      (
+                        <label>Select VIM Account
+                          <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} initial={true} onChange={props.vnfFn.updateSelectedCloudAccount.bind(v['member-vnf-index'])} defaultValue={defaultValue} />
+                        </label>
+                      )
+                    : null
+                  }
                       {
-                        isOpenMano(defaultValue) ? dataCentersHTML(dataCenters[defaultValue.account.name], props.vnfFn.updateSelectedDataCenter(v['member-vnf-index'])) : null
+                        isOpenMano(props.ro) ?
+                          dataCentersHTML(
+                                          props.dataCenters[props.ro.name],
+                                          props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index']))
+                          : null
                       }
                       {
                         (props.configAgentAccounts && props.configAgentAccounts.length > 0) ?
@@ -548,22 +567,17 @@ function constructCloudAccountOptions(cloudAccounts){
   });
   return CloudAccountOptions;
 }
-function dataCentersHTML(state, onChange) {
+function dataCentersHTML(dataCenters, onChange) {
   //Build DataCenter options
   //Relook at this, why is it an object?
-  let dataCenters = state.dataCenters || [];
-  let DataCenterOptions = {};
-  if(dataCenters){
-    for (let d in dataCenters) {
-      DataCenterOptions[d] = dataCenters[d].map(function(dc, index) {
-        return {
-          label: dc.name,
-          value: dc.uuid
-        }
-      });
+  let DataCenterOptions = [];
+  DataCenterOptions = dataCenters && dataCenters.map(function(dc, index) {
+    return {
+      label: dc.name,
+      value: dc.uuid
     }
-  }
-  if (dataCenters.length > 0) {
+  });
+  if (dataCenters && dataCenters.length > 0) {
     return (
       <label>Select Data Center
         <SelectOption options={DataCenterOptions} onChange={onChange} />
@@ -576,9 +590,6 @@ function isOpenMano(account) {
     let a = account;
     if (a.constructor.name == 'String') {
       a = JSON.parse(a);
-    }
-    if(a.hasOwnProperty('account')) {
-      a = a.account;
     }
     return a['account-type'] == 'openmano';
   } else {
