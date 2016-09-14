@@ -41,7 +41,7 @@ module.exports = function(Alt) {
                 type: 'POST',
                 beforeSend: Utils.addAuthorizationStub,
                 data: {
-                  url:window.location.protocol + '//' + window.location.host + '/accounts/all?api_server=' + API_SERVER
+                    url:window.location.protocol + '//' + window.location.host + '/accounts/all?api_server=' + API_SERVER
                 },
                 success: function(data, textStatus, jqXHR) {
                   Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -222,7 +222,13 @@ module.exports = function(Alt) {
                   beforeSend: Utils.addAuthorizationStub,
                   contentType: "application/json",
                   success: function(data) {
-                    resolve(data["rw-launchpad:resource-orchestrator"]);
+                    let returnedData;
+                    if (data.hasOwnProperty("rw-launchpad:resource-orchestrator")) {
+                      returnedData = data;
+                    } else {
+                      returnedData = {};
+                    }
+                    resolve(returnedData);
                   },
                   error: function(error) {
                     console.log("There was an error updating the account: ", arguments);
@@ -239,7 +245,7 @@ module.exports = function(Alt) {
             'error': 'There was an error retrieving the resource orchestrator information.'
           }),
           success: Alt.actions.global.getResourceOrchestratorSuccess,
-                    loading: Alt.actions.global.showScreenLoader,
+          loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
         },
     }

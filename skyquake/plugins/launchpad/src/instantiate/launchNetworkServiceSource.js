@@ -200,7 +200,13 @@ export default function(Alt){
                   beforeSend: Utils.addAuthorizationStub,
                   contentType: "application/json",
                   success: function(data) {
-                    resolve(data["rw-launchpad:resource-orchestrator"]);
+                    let returnedData;
+                    if (data.hasOwnProperty("rw-launchpad:resource-orchestrator")) {
+                      returnedData = data;
+                    } else {
+                      returnedData = {};
+                    }
+                    resolve(returnedData);
                   },
                   error: function(error) {
                     console.log("There was an error updating the account: ", arguments);
