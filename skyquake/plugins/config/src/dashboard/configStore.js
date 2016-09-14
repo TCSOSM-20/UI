@@ -118,7 +118,7 @@ export default class AccountStore {
     }
     getResourceOrchestratorSuccess = (data) => {
         this.alt.actions.global.hideScreenLoader.defer();
-        if(data.hasOwnProperty('empty')) {
+        if(data && data.hasOwnProperty('empty')) {
             this.setAccountTemplate(false)
         } else {
             this.setState({

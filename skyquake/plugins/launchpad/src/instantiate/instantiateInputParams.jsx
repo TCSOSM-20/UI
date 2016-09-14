@@ -73,7 +73,7 @@ export default class InstantiateInputParams extends Component {
                     !isOpenMano(props.ro) ?
                       (
                         <label>Select VIM Account
-                          <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} initial={true} onChange={props.vnfFn.updateSelectedCloudAccount.bind(v['member-vnf-index'])} defaultValue={defaultValue} />
+                          <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} initial={true} onChange={props.vnfFn.updateSelectedCloudAccount.bind(null, v['member-vnf-index'])} defaultValue={defaultValue} />
                         </label>
                       )
                     : null

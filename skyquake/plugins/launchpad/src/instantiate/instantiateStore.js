@@ -282,7 +282,7 @@ class LaunchNetworkServiceStore {
             updateSelectedCloudAccount: (cloudAccount) => {
                 let nsd = self.nsd[0];
                 var newState = {
-                    selectedCloudAccount: cloudAccount
+                    selectedCloudAccount: JSON.parse(cloudAccount.target.value)
                 };
                 if (cloudAccount['account-type'] == 'openstack') {
                     newState.displayPlacementGroups = true;
@@ -372,7 +372,7 @@ class LaunchNetworkServiceStore {
                     if(!vnfCA.hasOwnProperty(id)) {
                         vnfCA[id] = {};
                     }
-                    vnfCA[id].account = cloudAccount;
+                    vnfCA[id].account = JSON.parse(cloudAccount.target.value);
 
                     if (cloudAccount['account-type'] == 'openmano' && this.dataCenters && self.dataCenters[cloudAccount['name']]) {
                         let datacenter = self.dataCenters[cloudAccount['name']][0];
@@ -759,7 +759,9 @@ class LaunchNetworkServiceStore {
             if(vnfdCloudAccounts[k].hasOwnProperty('datacenter')) {
                 vnf['om-datacenter'] = vnfdCloudAccounts[k].datacenter;
             }
-            payload['vnf-cloud-account-map'].push(vnf);
+            if(vnf['om-datacenter'] || vnf['cloud-account'] || vnf['config-agent-account']) {
+                payload['vnf-cloud-account-map'].push(vnf);
+            }
         }
         //Add SSH-Keys
         payload['ssh-authorized-key'] = this.state.sshKeysRef.map(function(k) {
