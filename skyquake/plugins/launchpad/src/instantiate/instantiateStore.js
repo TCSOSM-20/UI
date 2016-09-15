@@ -293,7 +293,7 @@ class LaunchNetworkServiceStore {
             },
             updateSelectedDataCenter: (dataCenter) => {
                 self.setState({
-                    dataCenterID: dataCenter.target.value
+                    dataCenterID: JSON.parse(dataCenter.target.value)
                 });
             },
             placementGroupUpdate: (i, k, value) => {
@@ -421,7 +421,7 @@ class LaunchNetworkServiceStore {
                 if (!vnfCA[id]) {
                     vnfCA[id] = {};
                 }
-                vnfCA[id].datacenter = dataCenter.target.value;
+                vnfCA[id].datacenter = JSON.parse(dataCenter.target.value);
                 self.setState({
                     vnfdCloudAccounts: vnfCA
                 });
@@ -769,6 +769,7 @@ class LaunchNetworkServiceStore {
         });
         //Add Users
         payload['user'] = this.state.usersList;
+        // console.log(payload)
         this.launchNSR({
             'nsr': [payload]
         });
