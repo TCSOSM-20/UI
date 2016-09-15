@@ -202,7 +202,7 @@ export default function(Alt){
                   success: function(data) {
                     let returnedData;
                     if (data.hasOwnProperty("rw-launchpad:resource-orchestrator")) {
-                      returnedData = data;
+                      returnedData = data['rw-launchpad:resource-orchestrator'];
                     } else {
                       returnedData = {};
                     }
