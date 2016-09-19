@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,6 +70,6 @@ var accountsAPI = require('./api/accounts.js')
             utils.sendErrorResponse(error, res);
         });
     })
-
+    utils.passThroughConstructor(app);
 
 module.exports = app;

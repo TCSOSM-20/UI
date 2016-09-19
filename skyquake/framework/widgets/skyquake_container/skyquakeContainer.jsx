@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,7 +83,7 @@ export default class skyquakeContainer extends React.Component {
     }
 
     render() {
-        const {displayNotification, notificationMessage, displayScreenLoader, ...state} = this.state;
+        const {displayNotification, notificationMessage, displayScreenLoader, notificationType, ...state} = this.state;
         var html;
 
         if (this.matchesLoginUrl()) {
@@ -104,7 +104,7 @@ export default class skyquakeContainer extends React.Component {
                         <Crouton
                             id={Date.now()}
                             message={notificationMessage}
-                            type={"error"}
+                            type={notificationType}
                             hidden={!(displayNotification && notificationMessage)}
                             onDismiss={SkyquakeContainerActions.hideNotification}
                         />

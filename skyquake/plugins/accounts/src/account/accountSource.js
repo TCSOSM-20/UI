@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ module.exports = function(Alt) {
                 type: 'POST',
                 beforeSend: Utils.addAuthorizationStub,
                 data: {
-                  url:window.location.protocol + '//' + window.location.host + '/accounts/all?api_server=' + API_SERVER
+                    url:window.location.protocol + '//' + window.location.host + '/accounts/all?api_server=' + API_SERVER
                 },
                 success: function(data, textStatus, jqXHR) {
                   Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -212,7 +212,42 @@ module.exports = function(Alt) {
           success: Alt.actions.global.deleteAccountSuccess,
           loading: Alt.actions.global.deleteAccountLoading,
           error: Alt.actions.global.showNotification
-      }
+      },
+        getResourceOrchestrator: {
+          remote: function() {
+              return new Promise(function(resolve, reject) {
+                $.ajax({
+                  url: 'passthrough/data/api/running/resource-orchestrator' + '?api_server=' + API_SERVER,
+                  type: 'GET',
+                  beforeSend: Utils.addAuthorizationStub,
+                  contentType: "application/json",
+                  success: function(data) {
+                    let returnedData;
+                    if (data.hasOwnProperty("rw-launchpad:resource-orchestrator")) {
+                      returnedData = data;
+                    } else {
+                      returnedData = {};
+                    }
+                    resolve(returnedData);
+                  },
+                  error: function(error) {
+                    console.log("There was an error updating the account: ", arguments);
+
+                  }
+                }).fail(function(xhr){
+                  //Authentication and the handling of fail states should be wrapped up into a connection class.
+                  Utils.checkAuthentication(xhr.status);
+                  return reject('error');
+                });
+              });
+          },
+          interceptResponse: interceptResponse({
+            'error': 'There was an error retrieving the resource orchestrator information.'
+          }),
+          success: Alt.actions.global.getResourceOrchestratorSuccess,
+          loading: Alt.actions.global.showScreenLoader,
+          error: Alt.actions.global.showNotification
+        },
     }
 }
 

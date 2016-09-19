@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +35,7 @@ class SkyquakeContainerStore {
         //Notification defaults
         this.notificationMessage = '';
         this.displayNotification = false;
+        this.notificationType = 'error';
         //Screen Loader default
         this.displayScreenLoader = false;
         this.bindActions(SkyquakeContainerActions);
@@ -81,9 +82,9 @@ class SkyquakeContainerStore {
         let connection = data.connection;
         let streamSource = data.streamSource;
         console.log('Success opening notification socket for stream ', streamSource);
-        
+
         let ws = window.multiplexer.channel(connection);
-        
+
         if (!connection) return;
         self.setState({
             socket: ws.ws,
@@ -162,20 +163,21 @@ class SkyquakeContainerStore {
 
     //Notifications
     showNotification = (data) => {
-        if(typeof(data) == 'string') {
-            this.setState({
+        let state = {
                 displayNotification: true,
-                notificationMessage: data
-            });
+                notificationMessage: data,
+                notificationType: 'error',
+                displayScreenLoader: false
+            }
+        if(typeof(data) == 'string') {
+
         } else {
-            if(data.type == 'error') {
-                this.setState({
-                    displayNotification: true,
-                    notificationMessage: data.msg,
-                    displayScreenLoader: false
-                });
+            state.notificationMessage = data.msg;
+            if(data.type == 'success') {
+                state.notificationType = 'success';
             }
         }
+        this.setState(state);
     }
     hideNotification = () => {
         this.setState({

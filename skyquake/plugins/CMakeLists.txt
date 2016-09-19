@@ -42,6 +42,7 @@ set(
   subdirs
     about
     composer
+    config
     debug
 #    goodbyworld
 #    helloworld

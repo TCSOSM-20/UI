@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -123,18 +123,22 @@ class AccountSidebar extends React.Component{
         html = (
             <div className='accountSidebar'>
                  <Button className="refreshList light" onClick={this.props.store.refreshAll.bind(this, AccountData)} label={this.props.refreshingAll ? 'Checking Connectivity Status...' : refreshStatus}></Button>
-                <h1>VIM Accounts</h1>
-                {cloudAccounts}
-                <DashboardCard className="accountSidebarCard">
-                        <Link
-                        to={{pathname: '/accounts/cloud/create'}}
-                        title="Create Cloud Account"
-                        className={'accountSidebarCard_create'}
-                    >
-                            Add VIM Account
-                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                        </Link>
-                </DashboardCard>
+                {props.showVIM ? (
+                    <div>
+                        <h1>VIM Accounts</h1>
+                        {cloudAccounts}
+                        <DashboardCard className="accountSidebarCard">
+                                <Link
+                                to={{pathname: '/accounts/cloud/create'}}
+                                title="Create Cloud Account"
+                                className={'accountSidebarCard_create'}
+                            >
+                                    Add VIM Account
+                                    <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                                </Link>
+                        </DashboardCard>
+                    </div>)
+                : null}
                 <h1>SDN Accounts</h1>
                 {sdnAccounts}
                 <DashboardCard className="accountSidebarCard">

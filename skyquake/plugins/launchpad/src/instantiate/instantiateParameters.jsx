@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,6 +63,7 @@ class Instantiate extends Component {
             cloudAccounts={this.props.cloudAccounts}
             selectedCloudAccount={this.props.selectedCloudAccount}
             vnfdCloudAccounts={this.props.vnfdCloudAccounts}
+            ro={this.props.ro}
             dataCenters={this.props.dataCenters}
             configAgentAccounts={this.props.configAgentAccounts}
             inputParameters={this.props['input-parameters']}
@@ -82,6 +83,8 @@ class Instantiate extends Component {
             usersList = {this.props.usersList}
             selectedID={this.props.selectedNSDid}
             selectedNSD={selectedNSD}
+
+            isOpenMano={this.props.isOpenMano}
 
         /></Panel>
         </PanelWrapper>

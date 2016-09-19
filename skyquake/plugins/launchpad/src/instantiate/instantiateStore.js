@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,12 +39,13 @@ class LaunchNetworkServiceStore {
         this.selectedNSDid;
         this.selectedNSD = {};
         this.selectedCloudAccount = {};
-        this.dataCenters = {};
+        this.dataCenters = [];
         this.cloudAccounts = [];
         this.isLoading = false;
         this.hasConfigureNSD = false;
         this['input-parameters'] = [];
         this.displayPlacementGroups = false;
+        this.ro = {};
         this.bindActions(NetworkServiceActions);
         this.nsdConfiguration = {
             name:'',
@@ -59,6 +60,7 @@ class LaunchNetworkServiceStore {
         this.configAgentAccounts = [];
 
         this.isPreviewing = false;
+        this.isOpenMano = false;
         this.registerAsync(NetworkServiceSource);
         this.exportPublicMethods({
             getMockData: getMockData.bind(this),
@@ -148,12 +150,14 @@ class LaunchNetworkServiceStore {
             configAgentAccounts: configAgentAccounts
         })
     }
-    getDataCentersSuccess(dataCenters) {
+    getDataCentersSuccess(data) {
+        let dataCenters = data;
+
         let newState = {
-            dataCenters: dataCenters
+            dataCenters: dataCenters || []
         };
-        if (this.selectedCloudAccount['account-type'] == 'openmano') {
-            newState.dataCenterID = dataCenters[this.selectedCloudAccount.name][0].uuid
+        if (this.ro['account-type'] == 'openmano') {
+            newState.dataCenterID = dataCenters[this.ro.name][0].uuid
         }
         this.setState(newState)
     }
@@ -190,6 +194,15 @@ class LaunchNetworkServiceStore {
             sshKeysList: data,
             sshKeysRef: []
         })
+    }
+    getResourceOrchestratorSuccess = (data) => {
+        Alt.actions.global.hideScreenLoader.defer();
+        this.setState({
+            ro: data
+        })
+    }
+    getResourceOrchestratorError = (data) => {
+        console.log('getResourceOrchestrator Error: ', data)
     }
     //Form handlers
     nameUpdated = (e) => {
@@ -269,22 +282,18 @@ class LaunchNetworkServiceStore {
             updateSelectedCloudAccount: (cloudAccount) => {
                 let nsd = self.nsd[0];
                 var newState = {
-                    selectedCloudAccount: cloudAccount
+                    selectedCloudAccount: JSON.parse(cloudAccount.target.value)
                 };
                 if (cloudAccount['account-type'] == 'openstack') {
                     newState.displayPlacementGroups = true;
                 } else {
                      newState.displayPlacementGroups = false;
                 }
-                if (cloudAccount['account-type'] == 'openmano' && this.dataCenters && self.dataCenters[cloudAccount['name']]) {
-                    let datacenter = self.dataCenters[cloudAccount['name']][0];
-                    newState.dataCenterID = datacenter.uuid;
-                }
                 self.setState(newState);
             },
             updateSelectedDataCenter: (dataCenter) => {
                 self.setState({
-                    dataCenterID: dataCenter
+                    dataCenterID: JSON.parse(dataCenter.target.value)
                 });
             },
             placementGroupUpdate: (i, k, value) => {
@@ -363,7 +372,7 @@ class LaunchNetworkServiceStore {
                     if(!vnfCA.hasOwnProperty(id)) {
                         vnfCA[id] = {};
                     }
-                    vnfCA[id].account = cloudAccount;
+                    vnfCA[id].account = JSON.parse(cloudAccount.target.value);
 
                     if (cloudAccount['account-type'] == 'openmano' && this.dataCenters && self.dataCenters[cloudAccount['name']]) {
                         let datacenter = self.dataCenters[cloudAccount['name']][0];
@@ -409,7 +418,10 @@ class LaunchNetworkServiceStore {
             },
             updateSelectedDataCenter: (id, dataCenter) => {
                 let vnfCA = self.vnfdCloudAccounts;
-                vnfCA[id].datacenter = dataCenter;
+                if (!vnfCA[id]) {
+                    vnfCA[id] = {};
+                }
+                vnfCA[id].datacenter = JSON.parse(dataCenter.target.value);
                 self.setState({
                     vnfdCloudAccounts: vnfCA
                 });
@@ -645,9 +657,11 @@ class LaunchNetworkServiceStore {
             "admin-status": launch ? "ENABLED" : "DISABLED",
             "nsd": nsdPayload
         }
-        payload["cloud-account"] = this.state.selectedCloudAccount.name;
-        if (this.state.selectedCloudAccount['account-type'] == "openmano") {
+
+        if (this.state.ro['account-type'] == 'openmano') {
             payload['om-datacenter'] = this.state.dataCenterID;
+        } else {
+            payload["cloud-account"] = this.state.selectedCloudAccount.name;
         }
         if (this.state.hasConfigureNSD) {
             let ips = this.state['input-parameters'];
@@ -745,7 +759,9 @@ class LaunchNetworkServiceStore {
             if(vnfdCloudAccounts[k].hasOwnProperty('datacenter')) {
                 vnf['om-datacenter'] = vnfdCloudAccounts[k].datacenter;
             }
-            payload['vnf-cloud-account-map'].push(vnf);
+            if(vnf['om-datacenter'] || vnf['cloud-account'] || vnf['config-agent-account']) {
+                payload['vnf-cloud-account-map'].push(vnf);
+            }
         }
         //Add SSH-Keys
         payload['ssh-authorized-key'] = this.state.sshKeysRef.map(function(k) {
@@ -753,6 +769,7 @@ class LaunchNetworkServiceStore {
         });
         //Add Users
         payload['user'] = this.state.usersList;
+        // console.log(payload)
         this.launchNSR({
             'nsr': [payload]
         });
