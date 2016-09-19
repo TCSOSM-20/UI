@@ -243,7 +243,7 @@ export default class InstantiateInputParams extends Component {
                   let isUnknown = (currentType == 'unknown') || ((currentType != 'vim-network-name') && (currentType != 'ip-profile-ref'));
                   return (
                     <div key={self.props.nsd.id + '-' + i} className="inputControls">
-                        <h4 className="inputControls-title">VLD: {v['short-name']}</h4>
+                        <h4 className="inputControls-title">VLD: {v['short-name'] ? v['short-name'] : v['name']}</h4>
                         <div  className="inputControls-radioGroup">
                           <label className="inputControls-radio" style={{display: ipProfileList ? 'flex' : 'none'}}>
                             <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={!isVIM && !isUnknown} value='ip-profile-ref' />
