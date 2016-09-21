@@ -78,6 +78,9 @@ class Instantiate extends Component {
 
             ipProfileList={this.props.ipProfiles}
 
+            sshKeysList={this.props.sshKeysList}
+            sshKeysRef={this.props.sshKeysRef}
+
             dnsServers={this.props.dnsServers}
 
             usersList = {this.props.usersList}

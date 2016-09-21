@@ -420,8 +420,9 @@ export default class InstantiateInputParams extends Component {
 
             {
               sshKeysRef.map(function(ref, i) {
+                let keyref = JSON.stringify(ref)
                 return (
-                  <div key={i} className="inputControls inputControls-sshkeys">
+                  <div key={keyref.name + '-' + i} className="inputControls inputControls-sshkeys">
                     <label>
                       <div>
                       <SelectOption
@@ -434,13 +435,13 @@ export default class InstantiateInputParams extends Component {
                         })}
                         ref="keyPairSelection"
                         initial={false}
-                        defaultValue={sshKeysList[0].name}
-                        onChange={self.props.updateSshKeyRef(i)}>
+                        defaultValue={keyref.name || sshKeysList[0].name}
+                        onChange={props.sshFn.updateKeyRef(i)}>
                       </SelectOption>
                       </div>
                     </label>
                     <label>
-                      <span onClick={self.props.updateSshKeyRef(i, true)} className="removeInput">
+                      <span onClick={props.sshFn.updateKeyRef(i, true)} className="removeInput">
                         <img src={imgRemove} />
                         Remove
                       </span>
@@ -452,7 +453,7 @@ export default class InstantiateInputParams extends Component {
             <div className="inputControls inputControls-sshkeys ">
               <label style={{display: 'flex', 'flexDirection': 'row'}}>
               SSH KEY PAIR
-                <span onClick={self.props.updateSshKeyRef().bind(null, {target:{value: JSON.stringify(sshKeysList[0])}})} className="addInput">
+                <span onClick={props.sshFn.updateKeyRef().bind(null, {target:{value: JSON.stringify(sshKeysList[0])}})} className="addInput">
                   <img src={imgAdd} />
                   ADD
                 </span>
