@@ -36,6 +36,7 @@ cmake_minimum_required(VERSION 2.8)
 
 rift_externalproject_add(
   accounts
+  DEPENDS skyquake
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
   CONFIGURE_COMMAND echo
   BUILD_COMMAND
