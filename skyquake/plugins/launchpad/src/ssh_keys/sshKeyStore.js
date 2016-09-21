@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -174,10 +174,8 @@ export default class SshKeyStore {
         return {key: payload.key, name: payload.name};
     }
     validate(data) {
-        for (let k in data) {
-            if((data[k].trim() == '') || ((/[^\w _-]/).test(data[k]))) {
-                return false;
-            }
+        if((data['name'].trim() == '') || ((/[^\w _-]/).test(data['name']))) {
+            return false;
         }
         return true;
     }
