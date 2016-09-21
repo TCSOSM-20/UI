@@ -37,7 +37,7 @@ cp -Lrf $source_dir/public $dest_dir/plugins/$plugin/.
 cp -Lrf $source_dir/config.json $dest_dir/plugins/$plugin/.
 cp -Lrf $source_dir/routes.js $dest_dir/plugins/$plugin/.
 cp -Lrp $source_dir/api $dest_dir/plugins/$plugin/.
-tar -cf $dest_dir/plugins/$plugin/node_modules.tar $source_dir/node_modules $source_dir/package.json
+tar -cf $dest_dir/plugins/$plugin/node_modules.tar node_modules package.json -C $source_dir
 #cp -Lrp $source_dir/node_modules $dest_dir/plugins/$plugin/.
 mkdir -p $bcache_dir/plugins/$plugin
 cp -Lrf $source_dir/public $bcache_dir/plugins/$plugin/.
