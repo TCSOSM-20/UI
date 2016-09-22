@@ -36,9 +36,9 @@ start_servers() {
 	echo "Running Node.js Skyquake server. HTTPS Enabled: ${ENABLE_HTTPS}"
 	cd ..
 	if [ ! -z "${ENABLE_HTTPS}" ]; then
-		forever start -a -l forever.log -o out.log -e err.log skyquake.js	--enable-https --keyfile-path="${KEYFILE_PATH}" --certfile-path="${CERTFILE_PATH}"
+		forever start -a -l /dev/null -o out.log -e err.log skyquake.js	--enable-https --keyfile-path="${KEYFILE_PATH}" --certfile-path="${CERTFILE_PATH}"
 	else
-		forever start -a -l forever.log -o out.log -e err.log skyquake.js
+		forever start -a -l /dev/null -o out.log -e err.log skyquake.js
 	fi
 }
 
