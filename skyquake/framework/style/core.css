@@ -95,7 +95,8 @@ body {
     position: relative
 }
 .header-app h1 {
-    background: url(./img/header-logo.png) no-repeat left center;
+    /*background: url(./img/header-logo.png) no-repeat left center;*/
+    background: url(./img/svg/osm-logo_color_rgb.svg) no-repeat left center;
     height: 51px;
     line-height: 51px;
     margin-left: 80px;
@@ -2022,7 +2023,8 @@ a[role=button] {
     margin-top: 150px;
     margin-bottom: 20px;
     background-size: 154px 102px;
-    background-image: url(./img/header-logo.png)
+    /*background-image: url(./img/header-logo.png)*/
+    background-image: url(./img/svg/osm-logo_color_rgb.svg);
 }
 .login-cntnr .riftio {
     margin-bottom: 40px;
