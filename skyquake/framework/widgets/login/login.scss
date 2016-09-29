@@ -16,6 +16,7 @@
  *
  */
 .login-cntnr .logo {
-    background-image: url(../../style/img/header-logo.png);
-
+    /*background-image: url(../../style/img/header-logo.png);*/
+    background: url('../../style/img/svg/osm-logo_color_rgb.svg') no-repeat center;
+    background-size: contain;
 }

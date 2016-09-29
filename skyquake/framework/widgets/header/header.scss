@@ -27,7 +27,8 @@ header.header-app-component {
         align-items:center;
     }
     h1 {
-        background: url('../../style/img/header-logo.png') no-repeat;
+        /*background: url('../../style/img/header-logo.png') no-repeat;*/
+        background: url('../../style/img/svg/osm-logo_color_rgb.svg') no-repeat;
         background-size:contain;
         height: 51px;
         line-height: 51px;
