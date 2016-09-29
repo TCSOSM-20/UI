@@ -305,8 +305,14 @@ export default class InstantiateInputParams extends Component {
     );
   }
   ipProfilesHTML = (props) => {
+    let vldHasIPprofile = false;
+    props.vlds && props.vlds.map(function(v){
+      if(v.type == 'ip-profile-ref') {
+        vldHasIPprofile = true;
+      }
+    })
     let ipProfileList = props.ipProfileList;
-    return ipProfileList &&
+    return ipProfileList && vldHasIPprofile &&
       (
       <div className="configure-nsd_section">
         <h3 className="launchpadCard_title">IP Profiles</h3>
