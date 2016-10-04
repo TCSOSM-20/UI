@@ -82,7 +82,7 @@ export default class InstantiateInputParams extends Component {
                         isOpenMano(props.ro) ?
                           dataCentersHTML(
                                           props.dataCenters[props.ro.name],
-                                          props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index']))
+                                          props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index']), true)
                           : null
                       }
                       {
@@ -574,7 +574,7 @@ function constructCloudAccountOptions(cloudAccounts){
   });
   return CloudAccountOptions;
 }
-function dataCentersHTML(dataCenters, onChange) {
+function dataCentersHTML(dataCenters, onChange, initial) {
   //Build DataCenter options
   //Relook at this, why is it an object?
   let DataCenterOptions = [];
@@ -587,7 +587,7 @@ function dataCentersHTML(dataCenters, onChange) {
   if (dataCenters && dataCenters.length > 0) {
     return (
       <label>Select Data Center
-        <SelectOption options={DataCenterOptions} onChange={onChange} />
+        <SelectOption initial={!!initial} options={DataCenterOptions} onChange={onChange} />
       </label>
     )
   }
