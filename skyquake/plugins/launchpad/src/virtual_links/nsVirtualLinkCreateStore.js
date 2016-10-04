@@ -172,7 +172,8 @@ class NSVirtualLinkCreateStore {
 		let vld = _.cloneDeep(this.vld);
 		this.vldInitParamsTypes.map((vldInitParamType) => {
 			if (currentVLDInitParamsType == vldInitParamType) {
-				vld[currentVLDInitParamsType] = e.target.value;
+				let value = e.target.nodeName == "SELECT" ? JSON.parse(e.target.value) : e.target.value;
+				vld[currentVLDInitParamsType] = value;
 			} else {
 				vld[vldInitParamType] && delete vld[vldInitParamType];
 			}
