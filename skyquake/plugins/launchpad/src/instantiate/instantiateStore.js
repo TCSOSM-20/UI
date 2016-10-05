@@ -582,18 +582,19 @@ class LaunchNetworkServiceStore {
     usersFn = () => {
         let self = this;
         return {
-            add: function() {
-                console.log('adding user')
-                let newUser = {
-                    name: '',
-                    gecos: '',
-                    passwd: ''
+            add: function(sshKeysList) {
+                return function(e) {
+                    let newUser = {
+                        name: '',
+                        'user-info': '',
+                        'ssh-authorized-key': [sshKeysList[0].name]
+                    }
+                    let usersList = self.usersList;
+                    usersList.push(newUser);
+                    self.setState({
+                        usersList:  usersList
+                    })
                 }
-                let usersList = self.usersList;
-                usersList.push(newUser);
-                self.setState({
-                    usersList:  usersList
-                })
             },
             remove: function(i) {
                 return function() {
@@ -609,6 +610,25 @@ class LaunchNetworkServiceStore {
                     self.usersList[i][key] = value;
                     self.setState({
                         usersList: self.usersList
+                    })
+                }
+            },
+            updateSSHkeyRef: function(i, j, remove){
+                return function(e) {
+                    let usersList = _.cloneDeep(self.usersList)
+                    let keys = usersList[i]['ssh-authorized-key'];
+                    if(!remove) {
+                        let keyRef = JSON.parse(e.target.value).name;
+                        if(!isNaN(j)) {
+                            keys.splice(j, 1);
+                        }
+                        keys.push(keyRef);
+                    } else {
+                        keys.splice(j, 1);
+                    }
+                    usersList[i]['ssh-authorized-key'] = keys;
+                    self.setState({
+                        usersList: usersList
                     })
                 }
             }
@@ -658,7 +678,7 @@ class LaunchNetworkServiceStore {
             "nsd": nsdPayload
         }
 
-        if (this.state.ro['account-type'] == 'openmano') {
+        if (this.state.ro && this.state.ro['account-type'] == 'openmano') {
             payload['om-datacenter'] = this.state.dataCenterID;
         } else {
             payload["cloud-account"] = this.state.selectedCloudAccount.name;
@@ -768,7 +788,7 @@ class LaunchNetworkServiceStore {
             return {'key-pair-ref': JSON.parse(k).name};
         });
         //Add Users
-        payload['user'] = this.state.usersList;
+        payload['user'] = addKeyPairRefToUsers(this.state.usersList);
         // console.log(payload)
         this.launchNSR({
             'nsr': [payload]
@@ -777,6 +797,19 @@ class LaunchNetworkServiceStore {
 }
 
 
+function addKeyPairRefToUsers(list) {
+    return list.map(function(u) {
+        return {
+            name: u.name,
+            'user-info': u['user-info'],
+            'ssh-authorized-key': u['ssh-authorized-key'].map(function(k) {
+                return {
+                    'key-pair-ref' : k
+                }
+            })
+        }
+    })
+}
 
 function getMockSLA(id) {
     console.log('Getting mock SLA Data for id: ' + id);

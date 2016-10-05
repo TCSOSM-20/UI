@@ -471,14 +471,61 @@ export default class InstantiateInputParams extends Component {
   }
   usersHTML = (props) => {
     let usersFn = props.usersFn;
+    let sshKeysList = props.sshKeysList;
     let usersList = props.usersList && props.usersList.map(function(u, i) {
+      let sshKeysRef = u['ssh-authorized-key'];
       return (
         <div className="input_group input_group-users" key={i}>
           <div className="inputControls">
           <div style={{fontWeight: 'bold', display: 'flex'}}>USER <span onClick={usersFn.remove(i)} className="removeInput"><img src={imgRemove} />Remove</span></div>
             <TextInput onChange={usersFn.update(i, 'name')} label="USERNAME" value={i.name} />
-            <TextInput onChange={usersFn.update(i, 'gecos')} label="REAL NAME" value={i.gecos} />
-            <TextInput onChange={usersFn.update(i, 'passwd')} type="password" label="PASSWORD" value={i.passwd} />
+            <TextInput onChange={usersFn.update(i, 'user-info')} label="REAL NAME" value={i.gecos} />
+            {
+              sshKeysRef.map(function(ref, j) {
+                let keyref = JSON.stringify(ref)
+                return (
+                  <div key={keyref.name + '-' + i + '-' + j} className="inputControls inputControls-sshkeys">
+                    <label>
+                      <div>
+                      <SelectOption
+                        label="Key Pair"
+                        options={sshKeysList && sshKeysList.map(function(k) {
+                          return {
+                            label: k.name,
+                            value: k
+                          }
+                        })}
+                        ref="keyPairSelection"
+                        initial={false}
+                        defaultValue={ref}
+                        onChange={usersFn.updateSSHkeyRef(i, j)}>
+                      </SelectOption>
+                      </div>
+                    </label>
+                    {
+                      sshKeysRef.length > 0 ?
+                        <label>
+                          <span onClick={usersFn.updateSSHkeyRef(i, j, true)} className="removeInput">
+                            <img src={imgRemove} />
+                            Remove
+                          </span>
+                        </label>
+                      : null
+                    }
+
+                  </div>
+                )
+              })
+            }
+              <div className="inputControls inputControls-sshkeys ">
+                <label style={{display: 'flex', 'flexDirection': 'row', 'alignItems': 'center'}}>
+                SSH KEY PAIR
+                  <span onClick={usersFn.updateSSHkeyRef(i).bind(null, {target:{value: JSON.stringify(sshKeysList[0])}})} className="addInput">
+                    <img src={imgAdd} />
+                    ADD
+                  </span>
+                </label>
+              </div>
           </div>
         </div>
       )
@@ -487,9 +534,9 @@ export default class InstantiateInputParams extends Component {
       <div className="configure-nsd_section">
         <h3 className="launchpadCard_title">USERS</h3>
         {usersList}
-        <div className="inputControls inputControls-sshkeys ">
-            <span onClick={usersFn.add} className="addInput">
-              <img src={imgAdd} onClick={usersFn.add} />
+        <div className="inputControls inputControls-sshkeys inputControls-addUser ">
+            <span onClick={usersFn.add(sshKeysList)} className="addInput">
+              <img src={imgAdd} />
               ADD USER
             </span>
         </div>
