@@ -192,12 +192,23 @@ class RecordViewStore {
                 let parameterList = [];
 
                 const filterAndAddByValue = (paramObj) => {
+                    let nameValuePair = null;
+
                     if (paramObj['value'] != undefined) {
-                        parameterList.push({
+                        nameValuePair = {
                             name: paramObj.name,
                             value: paramObj.value
-                        });
+                        };
+                    } else if (paramObj['default-value'] != undefined) {
+                        nameValuePair = {
+                            name: paramObj.name,
+                            value: paramObj['default-value']
+                        }
                     }
+                    if (nameValuePair) {
+                        parameterList.push(nameValuePair);
+                    }
+
                     return paramObj['value'] != undefined;
                 }
 
