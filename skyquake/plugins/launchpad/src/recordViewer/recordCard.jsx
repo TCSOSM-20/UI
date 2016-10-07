@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -207,7 +207,7 @@ export default class RecordCard extends React.Component {
 
     let nfviMetrics = <LpCardNfviMetrics data={cardData["nfvi-metrics"]} />;
     metricsAndParams.push(<div className="monitoringParams" key="mp">
-                          {components.sort().map(function(c, k) {
+                          {components.map(function(c, k) {
                             return <div key={k} className="mpSlide">{c.title}{c.component}</div>
                           })}
                           </div>)
@@ -325,7 +325,7 @@ export default class RecordCard extends React.Component {
         if (consoleUrlsComponent) {
           let consoleUrlsTabTitle = '';
           consoleUrlsTabTitle = 'VDU Console Links';
-          
+
           tabList.push(
             <Tab key={cardData.id + '-cp'}>{consoleUrlsTabTitle}</Tab>
           );

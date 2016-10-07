@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,7 +128,6 @@ var SimpleSlider = React.createClass({
         list.push(<div key={i}  className={"component"}><h2 style={{flex: '0 1 auto', justifyContent: 'center', alignSelf: 'center', display: displayTitle, padding: '0.5rem'}}>{title}</h2><div className="componentWrapper">{this.props.component_list[i].component}</div></div>);
       }
     }
-
     return (
       <div className={list.length > 1 ? '' : 'hideButtons'}>
         <Slider {...settings}>

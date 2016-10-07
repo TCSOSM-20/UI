@@ -1,6 +1,6 @@
 /*
 
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -117,7 +117,9 @@ export default function parseCardObj(obj_list, type) {
       }
       ret.push(html)
     }
-    return ret.sort(function(a, b){
-      return (a.title > b.title) ? -1 : 1;
-    });
+    return ret.sort(function(a,b) {
+            var titleA = a.title && a.title.toUpperCase();
+            var titleB = b.title && b.title.toUpperCase();
+            return (titleA < titleB) ? -1 : (titleA > titleB) ? 1 : 0;
+          });
   }
