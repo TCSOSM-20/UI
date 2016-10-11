@@ -92,6 +92,7 @@ class AccountSidebar extends React.Component{
                      <header>
                         <Link to={'accounts/sdn/' + account.name} title="Edit Account">
                          <div className="accountSidebarCard--content">
+                            <img className="accountSidebarCard--logo" src={store.getImage(account['account-type'])} />
                             <h3>{account.name}<AccountConnectivityStatus status={status}/></h3>
                         </div>
                 </Link>
