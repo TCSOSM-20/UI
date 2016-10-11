@@ -509,7 +509,9 @@ class LaunchNetworkServiceStore {
                     }
                     //Removing DCHP property on disable to allow instantiation
                     if(!value) {
-                        delete self.ipProfiles[i]['ip-profile-params']['dhcp-params'];
+                        self.ipProfiles[i]['ip-profile-params']['dhcp-params'] = {
+                            enabled: false
+                        };
                     } else {
                         self.ipProfiles[i]['ip-profile-params']['dhcp-params'][property] = value;
                     }
