@@ -408,12 +408,12 @@ export default class InstantiateInputParams extends Component {
     function dhcpHTML(props, ipl, j){
       return (<div>
                   <TextInput
-                    label="DCHP Start Address"
+                    label="DHCP Start Address"
                     onChange={props.ipProfileFn.updateDHCP(j, 'start-address')}
                     value={ipl['dhcp-params'] && ipl['dhcp-params']['start-address']}
                     />
                   <TextInput
-                    label="DCHP Count"
+                    label="DHCP Count"
                     onChange={props.ipProfileFn.updateDHCP(j, 'count')}
                     value={ipl['dhcp-params'] && ipl['dhcp-params']['count']}
                     />
