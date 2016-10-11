@@ -527,9 +527,9 @@ class LaunchNetworkServiceStore {
                 let self = this;
                 return function(e) {
                     if(self.ipProfiles[i]['ip-profile-params']['dns-server']) {
-                        self.ipProfiles[i]['ip-profile-params']['dns-server'].unshift('')
+                        self.ipProfiles[i]['ip-profile-params']['dns-server'].unshift({})
                     } else {
-                        self.ipProfiles[i]['ip-profile-params']['dns-server'] = [''];
+                        self.ipProfiles[i]['ip-profile-params']['dns-server'] = [{}];
                     }
 
                     self.setState({ipProfiles:self.ipProfiles});
@@ -542,6 +542,14 @@ class LaunchNetworkServiceStore {
                     if(self.ipProfiles[i]['ip-profile-params']['dns-server'].length == 0) {
                         delete self.ipProfiles[i]['ip-profile-params']['dns-server'];
                     }
+                    self.setState({ipProfiles:self.ipProfiles});
+                }
+            },
+            updateDNS: (i, k) => {
+                let self = this;
+                return function(e) {
+                    let value = e.target.value;
+                    self.ipProfiles[i]['ip-profile-params']['dns-server'][k].address = value;
                     self.setState({ipProfiles:self.ipProfiles});
                 }
             }

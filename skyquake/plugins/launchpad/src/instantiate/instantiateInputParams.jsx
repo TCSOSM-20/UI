@@ -368,8 +368,8 @@ export default class InstantiateInputParams extends Component {
                           return (
                             <div key={k} style={{display:'flex'}}>
                               <TextInput
-                                  onChange={props.ipProfileFn.updateProfile(j,k)}
-                                  value={ipl['dns-server'][k]}
+                                  onChange={props.dnsFn.updateDNS(j,k)}
+                                  value={ipl['dns-server'][k].address}
                                   />
                               <span onClick={props.dnsFn.removeDNS(j,k)} className="removeInput">
                                 <img src={imgRemove} />Remove</span>
