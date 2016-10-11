@@ -90,16 +90,18 @@ export default class RecordCard extends React.Component {
                 <div className="scrollContainer">
                 {
                   //Sort for recent on top
-                    this.props.jobData.sort(function(a,b){
+                  this.props.jobData
+                  .sort(function(a,b){
                     return parseInt(b['job-id']) - parseInt(a['job-id']);
-                  }).map(function(job){
+                  })
+                  .map(function(job){
                     //Return only vnfr configs
                     if(job["triggered-by"] == 'vnf-primitive') {
                       return job.vnfr.map(function(v){
                         //That match the currently selected job id
                         if(v.id == cardData.id) {
                           return v.primitive.map(function(p, i) {
-                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={i} {...p} />
+                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={ob['job-id'] + '-' + i} {...p} />
                           })
                         }
                       })
@@ -157,16 +159,16 @@ export default class RecordCard extends React.Component {
                 <div className="scrollContainer">
                   {sortedJobs.map(function(job, i){
                     if(job["triggered-by"] == 'ns-primitive') {
-                      return <JobListCard type="nsr" job-id={job['job-id']} cardData={cardData} key={i} {...job} />
+                      return <JobListCard type="nsr" job-id={job['job-id']} cardData={cardData} key={job['job-id'] + '-' + 'nsr'} {...job} />
                     }
                   })
                   .concat(sortedJobs.map(function(job) {
                     if(!job.hasOwnProperty('job-name') && (job["triggered-by"] == 'ns-primitive')) {
-                      return job.vnfr.map(function(v){
+                      return job.vnfr.map(function(v, h){
                         //That match the currently selected job id
                         if(v.id == cardData.id) {
                           return v.primitive.map(function(p, i) {
-                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={i} {...p} />
+                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={ob['job-id'] + '-' + 'vnfr' + '-' + h} {...p} />
                           })
                         }
                       })
