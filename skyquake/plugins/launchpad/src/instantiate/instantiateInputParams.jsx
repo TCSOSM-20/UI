@@ -354,6 +354,11 @@ export default class InstantiateInputParams extends Component {
                     onChange={props.ipProfileFn.updateProfile(j, 'security-group')}
                     value={ipl['security-group']}
                     />
+                  <TextInput
+                    label="subnet prefix pool"
+                    onChange={props.ipProfileFn.updateProfile(j, 'subnet-prefix-pool')}
+                    value={ipl['subnet-prefix-pool']}
+                    />
                     <label>
                       <div style={{display:'flex'}}>
                         DNS SERVERS <span onClick={props.dnsFn.addDNS(j)} className="addInput"><img src={imgAdd} />Add</span>
