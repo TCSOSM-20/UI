@@ -259,10 +259,11 @@ export default class InstantiateInputParams extends Component {
             {vlds && vlds.map(function(v, i) {
                   let currentType = v.type;
                   let isVIM = (currentType == 'vim-network-name');
-                  let isUnknown = (currentType == 'unknown') || ((currentType != 'vim-network-name') && (currentType != 'ip-profile-ref'));
+                  let isUnknown = (currentType == 'none') || ((currentType != 'vim-network-name') && (currentType != 'ip-profile-ref'));
                   return (
                     <div key={self.props.nsd.id + '-' + i} className="inputControls">
                         <h4 className="inputControls-title">VLD: {v['short-name'] ? v['short-name'] : v['name']}</h4>
+                        <label><span>Specify VLD Parameters</span></label>
                         <div  className="inputControls-radioGroup">
                           <label className="inputControls-radio" style={{display: ipProfileList ? 'flex' : 'none'}}>
                             <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={!isVIM && !isUnknown} value='ip-profile-ref' />
@@ -273,8 +274,8 @@ export default class InstantiateInputParams extends Component {
                             VIM Network Name
                           </label>
                           <label className="inputControls-radio">
-                            <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={isUnknown} value='unknown' />
-                            Unknown
+                            <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={isUnknown} value='none' />
+                            None
                           </label>
                         </div>
                           {

@@ -233,7 +233,7 @@ class LaunchNetworkServiceStore {
                     if(v['vim-network-name']) {
                         v.type = 'vim-network-name';
                     } else {
-                        v.type = 'unknown';
+                        v.type = 'none';
                     }
                 }
                 return v;
@@ -447,7 +447,7 @@ class LaunchNetworkServiceStore {
                     } else {
                         delete vld[i]['dns-server'];
                     }
-                    if(type == 'unknown') {
+                    if(type == 'none') {
                         delete vld[i]['ip-profile-ref'];
                         delete vld[i]['vim-network-name'];
                     }
@@ -674,7 +674,7 @@ class LaunchNetworkServiceStore {
             nsdPayload['vnf-placement-groups'] && delete nsdPayload['vnf-placement-groups'];
             nsdPayload.vld = this.state.vld;
             nsdPayload.vld && nsdPayload.vld.map(function(v){
-                delete v['unknown'];
+                delete v['none'];
                 delete v.type;
             })
         }
