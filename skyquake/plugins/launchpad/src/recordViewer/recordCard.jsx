@@ -33,6 +33,10 @@ import JobListCard from '../launchpad_card/jobListCard.jsx';
 import NSVirtualLinks from '../virtual_links/nsVirtualLinks.jsx';
 import LaunchpadFleetStore from '../launchpadFleetStore.js';
 
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
+
+
 export default class RecordCard extends React.Component {
   constructor(props) {
     super(props)
@@ -66,7 +70,8 @@ export default class RecordCard extends React.Component {
     let displayNSVirtualLinks = false;
     let nsVirtualLinksProps = {};
     let nsVirtualLinksComponent = null;
-
+    let displayVolumesTab = false;
+    let volumesHTML = [];
     let tabList = [];
     let tabPanels = [];
 
@@ -127,6 +132,17 @@ export default class RecordCard extends React.Component {
               </li>
             )
             notice = <li className='notice'>* If a separate browser window does not open, please check if the popup was blocked and allow it.</li>
+            if(vdur.hasOwnProperty('volumer') && (vdur.volumer.length > 0)) {
+              displayVolumesTab = true;
+              vdur.volumer.map((volume, vi) => {
+                let html = Prism.highlight(JSON.stringify(volume), Prism.languages.javascript, 'javascript');
+                volumesHTML.push(
+                    <pre className="language-js" key={index + '-' + vi}>
+                      <code dangerouslySetInnerHTML={{__html: html}} />
+                    </pre>
+                )
+              })
+            }
           });
           consoleUrlsComponent = (
             <div className="consoleUrlsComponent">
@@ -337,6 +353,21 @@ export default class RecordCard extends React.Component {
               <div className="consoleUrls">
                 {consoleUrlsComponent}
               </div>
+              <div className="cardSectionFooter">
+              </div>
+            </TabPanel>
+          )
+        }
+
+        if (displayVolumesTab) {
+
+          tabList.push(
+            <Tab key={cardData.id + '-volumes'}>Volumes</Tab>
+          );
+
+          tabPanels.push(
+            <TabPanel key={cardData.id + '-volumes-panel'}>
+              {volumesHTML}
               <div className="cardSectionFooter">
               </div>
             </TabPanel>
