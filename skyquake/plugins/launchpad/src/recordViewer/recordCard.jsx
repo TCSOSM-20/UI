@@ -132,9 +132,9 @@ export default class RecordCard extends React.Component {
               </li>
             )
             notice = <li className='notice'>* If a separate browser window does not open, please check if the popup was blocked and allow it.</li>
-            if(vdur.hasOwnProperty('volumer') && (vdur.volumer.length > 0)) {
+            if(vdur.hasOwnProperty('volumes') && (vdur.volumes.length > 0)) {
               displayVolumesTab = true;
-              vdur.volumer.map((volume, vi) => {
+              vdur.volumes.map((volume, vi) => {
                 let html = Prism.highlight(JSON.stringify(volume), Prism.languages.javascript, 'javascript');
                 volumesHTML.push(
                     <pre className="language-js" key={index + '-' + vi}>
