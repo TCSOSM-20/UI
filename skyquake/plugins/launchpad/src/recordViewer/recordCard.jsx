@@ -134,12 +134,32 @@ export default class RecordCard extends React.Component {
             notice = <li className='notice'>* If a separate browser window does not open, please check if the popup was blocked and allow it.</li>
             if(vdur.hasOwnProperty('volumes') && (vdur.volumes.length > 0)) {
               displayVolumesTab = true;
-              vdur.volumes.map((volume, vi) => {
-                let html = Prism.highlight(JSON.stringify(volume), Prism.languages.javascript, 'javascript');
+              vdur.volumer.map((volume, vi) => {
+                // let html = Prism.highlight(JSON.stringify(volume), Prism.languages.javascript, 'javascript');
+                // volumesHTML.push(
+                //     <pre className="language-js" key={index + '-' + vi}>
+                //       <code dangerouslySetInnerHTML={{__html: html}} />
+                //     </pre>
+                let properties = [];
+                 _.forEach(volume, function(v, k) {
+                    properties.push(
+                      <div style={{display: 'flex', margin: '0.5rem 0'}} key={k + vi}>
+                        <div style={{margin: '0 1rem',
+    fontWeight: 'bold', textTransform: 'uppercase'}}>{k}</div>
+                        <div>{v}</div>
+                      </div>
+                    )
+                  })
                 volumesHTML.push(
-                    <pre className="language-js" key={index + '-' + vi}>
-                      <code dangerouslySetInnerHTML={{__html: html}} />
-                    </pre>
+                    <div key={vi}>
+                      <div className="launchpadCard_title">
+                        VOLUME
+                      </div>
+
+                      {
+                        properties
+                      }
+                    </div>
                 )
               })
             }
