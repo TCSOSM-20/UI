@@ -66,6 +66,16 @@ var loggingRoutes = [
     },
     {
         method: 'PUT',
+        endpoint: '/api/config/default-syslog-severity',
+        apiHandler: loggingAPI['config'].setDefaultSyslogSeverity
+    },
+    {
+        method: 'DELETE',
+        endpoint: '/api/config/default-syslog-severity',
+        apiHandler: loggingAPI['config'].deleteDefaultSyslogSeverity
+    },
+    {
+        method: 'PUT',
         endpoint: '/api/config/allow-duplicate-events',
         apiHandler: loggingAPI['config'].setAllowDuplicateEvents
     },

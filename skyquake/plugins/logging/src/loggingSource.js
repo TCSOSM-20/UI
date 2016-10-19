@@ -81,14 +81,15 @@ export default {
                 }
           });
           promises.push(change);
+          /* Backend bug disallows deleting: RIFT-14910
+          
           if(nulledCategories.length > 0) {
             remove = $.ajax({
-              url: apiUrl('api/config/default-severity'),
+              // url: apiUrl('api/config/default-severity'),
+              url: apiUrl('api/config/default-syslog-severity'),
               type: 'DELETE',
               beforeSend: Utils.addAuthorizationStub,
-              data: {
-                'default-severity' : nulledCategories
-              },
+              data: nulledCategories,
               success: function(data) {
                 resolve(data);
               },
@@ -100,6 +101,7 @@ export default {
             });
             promises.push(remove);
           }
+          */
 
 
           Promise.all(promises).then(function(data){

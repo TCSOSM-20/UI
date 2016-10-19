@@ -42,7 +42,7 @@ class DefaultCategorySeverityPanel extends React.Component {
     return (
       <DashboardCard className="defaultCategorySeverityPanel"
         showHeader={true}
-        title="Default Category Severity">
+        title="Syslog Category Severity">
         <CategorySeverityGrid defaultSeverities={defaultSeverities}
           severityOptions={severities}/>
       </DashboardCard>
@@ -223,45 +223,60 @@ export default class LoggingGeneral extends React.Component {
         isLoading: true
       });
       LoggingStore.updateLoggingConfig(
-         this.collectNulledCategories(
+         /* this.collectNulledCategories(
             this.state.initialLoggingConfig,
             this.state.loggingConfig),
-         this.removeCategoryNulls(
-            this.state.loggingConfig
-          )
-     );
+            this.removeCategoryNulls(
+            this.state.loggingConfig */
+        this.state.nulledCategories,
+        this.cleanupConfig(
+          this.state.loggingConfig
+        )
+      )
     } else {
       console.log("LoggingGeneral.handleSave failed validation");
     }
     this.context.router.push({pathname: ''});
   }
-  removeCategoryNulls(config) {
+  // removeCategoryNulls(config) {
+  //   let cleanConfig = _.cloneDeep(config);
+  //   let cleanSeverities = [];
+  //   config.defaultSeverities.map(function(d) {
+  //     if (d.severity) {
+  //       cleanSeverities.push(d);
+  //     }
+  //   });
+  //   cleanConfig.defaultSeverities = cleanSeverities;
+  //   return cleanConfig;
+  // }
+  cleanupConfig(config) {
     let cleanConfig = _.cloneDeep(config);
     let cleanSeverities = [];
-    config.defaultSeverities.map(function(d) {
-      if (d.severity) {
-        cleanSeverities.push(d);
+    cleanConfig.defaultSeverities && cleanConfig.defaultSeverities.map((defSev) => {
+      if (defSev.severity) {
+        cleanSeverities.push(defSev);
       }
     });
     cleanConfig.defaultSeverities = cleanSeverities;
+
     return cleanConfig;
   }
-  collectNulledCategories(oldCat, newCat) {
-    let nulledCategories = [];
-    let newSeverities = newCat.defaultSeverities;
-    let oldSeverities = oldCat.defaultSeverities;
-    newSeverities.map(function(c, i) {
-      if(!c.severity) {
-        if(oldSeverities[i].severity) {
-          //verify that categories are the same
-          if(oldSeverities[i].category == c.category) {
-            nulledCategories.push({category: c.category})
-          }
-        }
-      }
-    });
-    return nulledCategories;
-  }
+  // collectNulledCategories(oldCat, newCat) {
+  //   let nulledCategories = [];
+  //   let newSeverities = newCat.defaultSeverities;
+  //   let oldSeverities = oldCat.defaultSeverities;
+  //   newSeverities.map(function(c, i) {
+  //     if(!c.severity) {
+  //       if(oldSeverities[i].severity) {
+  //         //verify that categories are the same
+  //         if(oldSeverities[i].category == c.category) {
+  //           nulledCategories.push({category: c.category})
+  //         }
+  //       }
+  //     }
+  //   });
+  //   return nulledCategories;
+  // }
   validateData() {
 
     function isEventIdValid(eventID) {
@@ -341,6 +356,25 @@ export default class LoggingGeneral extends React.Component {
 
     let syslogViewerURL = this.state.loggingConfig.syslogviewer;
     let defaultSeverities = this.state.loggingConfig.defaultSeverities;
+    // NOTE: There are modifications to original code here
+    // for RIFT-14856 so that default severities map to syslog sink
+    
+    // Find first syslog sink with (WTF - no type on sinks!) name syslog.
+    let syslogSink = this.state.loggingConfig.sinks && _.find(this.state.loggingConfig.sinks, {
+      name: 'syslog'
+    });
+    let defaultSyslogSeverities = [];
+
+    this.state.loggingConfig && this.state.loggingConfig.defaultSeverities && this.state.loggingConfig.defaultSeverities.map((defaultSeverity) => {
+      // Mapping between default categories and names inside a sink
+      let syslogFilterCategory = (syslogSink.filter && syslogSink.filter.category && _.find(syslogSink.filter.category, {
+        name: defaultSeverity.category
+      })) || {
+        name: defaultSeverity.category,
+        severity: null
+      };
+      defaultSyslogSeverities.push(syslogFilterCategory);
+    });
     let severities = this.state.loggingConfig.severities;
     let allowDuplicateEvents = this.state.loggingConfig.allowDuplicateEvents;
     let denyEventIDs = this.state.loggingConfig.denyEventIDs;
@@ -361,7 +395,10 @@ export default class LoggingGeneral extends React.Component {
           {errorMessage}
           <ScreenLoader show={this.state.isLoading}/>
           <div className="panelContainer">
-            <DefaultCategorySeverityPanel defaultSeverities={defaultSeverities}
+            {/*<DefaultCategorySeverityPanel defaultSeverities={defaultSeverities}
+              severities={severities}
+              />*/}
+            <DefaultCategorySeverityPanel defaultSeverities={defaultSyslogSeverities}
               severities={severities}
               />
             <LoggingEventsPanel allowDuplicateEvents={allowDuplicateEvents}
