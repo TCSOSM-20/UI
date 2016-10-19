@@ -27,17 +27,29 @@ export default class CategorySeverityGrid extends React.Component {
   generateRows(defaultSeverities, severityOptions) {
     let self = this;
     return defaultSeverities.map(function(catsev) {
+      // let dropList = (<DropList options={severityOptions}
+      //   selectedOption={catsev.severity}
+      //   onChange={self.onChangeSeverity(catsev.category)} />);
       let dropList = (<DropList options={severityOptions}
         selectedOption={catsev.severity}
-        onChange={self.onChangeSeverity(catsev.category)} />);
-      return [catsev.category, dropList];
+        onChange={self.onChangeSyslogSeverity(catsev.name)} />);
+      return [catsev.name, dropList];
     });
   }
 
-  onChangeSeverity (category) {
+  // onChangeSeverity (category) {
+  //   return function(e) {
+  //     LoggingStore.updateCategoryDefaultSeverity({
+  //       category: category,
+  //       severity: e
+  //     });
+  //   }
+  // }
+
+  onChangeSyslogSeverity (name) {
     return function(e) {
-      LoggingStore.updateCategoryDefaultSeverity({
-        category: category,
+      LoggingStore.updateCategoryDefaultSyslogSeverity({
+        name: name,
         severity: e
       });
     }
@@ -60,7 +72,7 @@ export default class CategorySeverityGrid extends React.Component {
 
 CategorySeverityGrid.defaultProps = {
   cellLabels: [
-    'Category', 'Severity'
+    'Name', 'Severity'
   ],
   columnClasses: [
     'category', 'severity'

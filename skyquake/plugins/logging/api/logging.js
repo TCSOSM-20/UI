@@ -322,6 +322,34 @@ Config.deleteDefaultSeverity = function(req) {
 
 }
 
+// NOTE: In rel_4.3 we are going to affect syslog sink category by default
+
+Config.setDefaultSyslogSeverity = function(req) {
+  // TODO: verify there is one key at root of data: 'default-severity'
+  // OR just filter on the request body
+  return handlePutRequest(req, APIVersion + '/api/config/logging/sink/syslog');
+}
+
+Config.deleteDefaultSyslogSeverity = function(req) {
+  // TODO: verify there is one key at root of data: 'default-severity'
+  // OR just filter on the request body
+  var Categories = req.body;
+  return new Promise(function(resolve, reject) {
+    var promises = Categories.map(function(categoryName) {
+      return handleDeleteRequest(req, APIVersion + '/api/config/logging/sink/syslog/filter/category/' + categoryName);
+    });
+    return Promise.all(promises).then(
+      function(data) {
+        resolve(data[0]);
+      },
+      function(data) {
+        reject(data);
+      }
+    )
+  })
+
+}
+
 /*
   get body of forms
 
