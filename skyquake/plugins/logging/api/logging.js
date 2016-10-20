@@ -333,21 +333,21 @@ Config.setDefaultSyslogSeverity = function(req) {
 Config.deleteDefaultSyslogSeverity = function(req) {
   // TODO: verify there is one key at root of data: 'default-severity'
   // OR just filter on the request body
-  var Categories = req.body;
+  var Categories = req.params.nulledCategories.split(',');
+  var promises = [];
   return new Promise(function(resolve, reject) {
-    var promises = Categories.map(function(categoryName) {
-      return handleDeleteRequest(req, APIVersion + '/api/config/logging/sink/syslog/filter/category/' + categoryName);
+    promises.concat(Categories.map(function(categoryName) {
+        return handleDeleteRequest(req, APIVersion + '/api/config/logging/sink/syslog/filter/category/' + categoryName);
+      }));
+      return Promise.all(promises).then(
+        function(data) {
+          resolve({statusCode: 200, data: data[0]});
+        },
+        function(data) {
+          reject(data);
+        }
+      )
     });
-    return Promise.all(promises).then(
-      function(data) {
-        resolve(data[0]);
-      },
-      function(data) {
-        reject(data);
-      }
-    )
-  })
-
 }
 
 /*

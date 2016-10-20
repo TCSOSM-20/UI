@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,7 +66,25 @@ export default {
         return new Promise(function(resolve, reject) {
           let promises = [];
           let remove = null;
-          let change = $.ajax({
+          if(nulledCategories.length > 0) {
+            remove = $.ajax({
+              // url: apiUrl('api/config/default-severity'),
+              url: apiUrl('api/config/default-syslog-severity/' + nulledCategories.join(',')),
+              type: 'DELETE',
+              beforeSend: Utils.addAuthorizationStub,
+              success: function(data) {
+                resolve(data);
+              },
+              error: function(error) {
+                console.log("There was an error updating the logging config data",
+                  error);
+                reject(error);
+              }
+            });
+            promises.push(remove);
+          }
+          Promise.all(promises).then(function(data) {
+            return $.ajax({
                 url: apiUrl('api/aggregate'),
                 type: 'PUT',
                 beforeSend: Utils.addAuthorizationStub,
@@ -80,31 +98,7 @@ export default {
                   reject(error);
                 }
           });
-          promises.push(change);
-          /* Backend bug disallows deleting: RIFT-14910
-          
-          if(nulledCategories.length > 0) {
-            remove = $.ajax({
-              // url: apiUrl('api/config/default-severity'),
-              url: apiUrl('api/config/default-syslog-severity'),
-              type: 'DELETE',
-              beforeSend: Utils.addAuthorizationStub,
-              data: nulledCategories,
-              success: function(data) {
-                resolve(data);
-              },
-              error: function(error) {
-                console.log("There was an error updating the logging config data",
-                  error);
-                reject(error);
-              }
-            });
-            promises.push(remove);
-          }
-          */
-
-
-          Promise.all(promises).then(function(data){
+          }).then(function(data){
             resolve(data)
           }, function(){
             reject(arguments)

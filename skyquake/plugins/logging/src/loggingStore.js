@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,7 +126,7 @@ class LoggingStore {
                 // TODO/NOTE: Can't delete from model as sending a top-level payload with
                 // missing elements is not allowed!
                 // When backend supports it, in loggingSource change the order of operations
-                // Delete first followed by save/put.
+                // // Delete first followed by save/put.
                 // _.remove(loggingConfig.sinks[sinkIndex].filter.category, {
                 //   name: catsev.name
                 // });
@@ -134,6 +134,10 @@ class LoggingStore {
                 sink.filter.category[catIndex] = catsev;
               }
             } else {
+              _.remove(nulledCategories, (v) => v == catsev.name);
+              this.setState({
+                nulledCategories: nulledCategories
+              });
               sink.filter.category.push(catsev);
             }
           } else {
