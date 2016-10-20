@@ -112,10 +112,10 @@ function requestCallback(resolve, reject, transformFunc) {
       } else {
         var data = JSON.stringify(response.body);
       }
-      return resolve_with_delay(resolve, {
+      return resolve({
         statusCode: response.statusCode,
         data: data
-      }, 0);
+      });
     };
   };
 }
@@ -341,10 +341,10 @@ Config.deleteDefaultSyslogSeverity = function(req) {
       }));
       return Promise.all(promises).then(
         function(data) {
-          resolve({statusCode: 200, data: data[0]});
+          resolve({statusCode:  data[0].statusCode, data: data[0].data});
         },
         function(data) {
-          reject(data);
+          reject({statusCode:  data[0].statusCode, data: data[0].data});
         }
       )
     });
