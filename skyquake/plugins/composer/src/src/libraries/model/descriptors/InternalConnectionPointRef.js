@@ -15,9 +15,6 @@
  *   limitations under the License.
  *
  */
-/**
- * Created by onvelocity on 11/23/15.
- */
 
 'use strict';
 
@@ -27,7 +24,7 @@ import DescriptorModelFactory from '../DescriptorModelFactory'
 export default class InternalConnectionPointRef extends DescriptorModel {
 
 	static get type() {
-		return 'internal-connection-point-ref';
+		return 'internal-connection-point';
 	}
 
 	static get className() {
@@ -39,23 +36,35 @@ export default class InternalConnectionPointRef extends DescriptorModel {
 	}
 
 	constructor(m, parent) {
-		super(!m || typeof m === 'string' ? {id: m, isLeaf: true} : m, parent);
+		super(m, parent);
 		this.uid = this.id;
 		this.type = InternalConnectionPointRef.type;
 		this.uiState['qualified-type'] = InternalConnectionPointRef.qualifiedType;
 		this.className = InternalConnectionPointRef.className;
 	}
 
-	toString() {
-		return this.valueOf();
+	get key() {
+		return this.model['id-ref'];
+	}
+
+	get idRef() {
+		return this.model['id-ref'];
+	}
+
+	set idRef(id) {
+		return this.model['id-ref'] = id;
+	}
+
+	get cpNumber() {
+		return this.uiState.cpNumber;
+	}
+
+	set cpNumber(n) {
+		this.uiState.cpNumber = n;
 	}
 
 	remove() {
-		return this.parent.removeInternalConnectionPointRefForId(this.id);
-	}
-
-	valueOf() {
-		return this.id;
+		return this.parent.removeInternalConnectionPointRefForId(this.idRef);
 	}
 
 }

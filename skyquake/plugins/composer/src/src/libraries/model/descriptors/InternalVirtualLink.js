@@ -15,14 +15,12 @@
  *   limitations under the License.
  *
  */
-/**
- * Created by onvelocity on 11/23/15.
- */
 
 'use strict';
 
 import DescriptorModel from '../DescriptorModel'
 import DescriptorModelFactory from '../DescriptorModelFactory'
+import DescriptorModelMetaFactory from '../DescriptorModelMetaFactory'
 
 export default class InternalVirtualLink extends DescriptorModel {
 
@@ -50,22 +48,37 @@ export default class InternalVirtualLink extends DescriptorModel {
 	}
 
 	get connection() {
-		const list = this.model['internal-connection-point-ref'] || (this.model['internal-connection-point-ref'] = []);
-		return list.map(d => DescriptorModelFactory.newInternalConnectionPointRef(d, this));
+		if (!this.model['internal-connection-point']) {
+			this.model['internal-connection-point'] = [];
+		}
+		return this.model['internal-connection-point'].map(d => DescriptorModelFactory.newInternalConnectionPointRef(d, this));
 	}
 
 	set connection(connections) {
-		return this.updateModelList('internal-connection-point-ref', connections, DescriptorModelFactory.InternalConnectionPointRef);
+		return this.updateModelList('internal-connection-point', connections, DescriptorModelFactory.InternalConnectionPointRef);
+	}
+
+	createInternalConnectionPoint(model) {
+		model = model || DescriptorModelMetaFactory.createModelInstanceForType('vnfd.internal-vld.internal-connection-point');
+		return this.connection = DescriptorModelFactory.newInternalConnectionPointRef(model, this);
+	}
+
+	removeInternalConnectionPointRefForIdRefKey(cpRefKey) {
+		const child = this.connection.filter(d => d.key === cpRefKey)[0];
+		return this.removeModelListItem('connection', child);
 	}
 
 	addConnectionPoint(icp) {
-		icp.model['internal-vld-ref'] = this.id;
 		this.parent.removeAnyConnectionsForConnector(icp);
-		this.connection = icp.toInternalConnectionPointRef();
+		const icpRef = icp.toInternalConnectionPointRef();
+		// this.connection = icp.toInternalConnectionPointRef();
+		this.connection = this.connection.concat(icpRef);
 	}
 
-	removeInternalConnectionPointRefForId(id) {
-		return this.connection = this.connection.filter(d => d.id !== id).map(d => d.id);
+	removeInternalConnectionPointRefForId(idRef) {
+		// return this.connection = this.connection.filter(d => d.idRef !== idRef).map(d => d.idRef);
+		// KKTODO: Check if below works instead
+		return this.connection = this.connection.filter(d => d.idRef !== idRef).map(d => d.model);
 	}
 
 	remove() {

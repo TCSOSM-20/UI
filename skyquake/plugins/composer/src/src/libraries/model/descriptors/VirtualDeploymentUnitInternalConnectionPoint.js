@@ -15,21 +15,16 @@
  *   limitations under the License.
  *
  */
-/**
- * Created by onvelocity on 11/23/15.
- */
 
 'use strict';
 
 import Position from '../../graph/Position'
-import DescriptorModel from '../DescriptorModel'
 import InternalConnectionPoint from './InternalConnectionPoint'
-import RspConnectionPointRef from './RspConnectionPointRef'
-import VnfdConnectionPointRef from './VnfdConnectionPointRef'
-import DescriptorModelFactory from '../DescriptorModelFactory'
+
 
 /**
- * A VirtualNetworkFunctionConnectionPoint is always a child of a VNFD. We use it to build VnfdConnectionPointRef instances. So convenience
+ * A VirtualDeploymentUnitInternalConnectionPoint is always a child of a VDU.
+ * We use it to build internal-connection-point.id-ref instances. So convenience
  * methods are add to access the fields needed to do that.
  */
 export default class VirtualDeploymentUnitInternalConnectionPoint extends InternalConnectionPoint {

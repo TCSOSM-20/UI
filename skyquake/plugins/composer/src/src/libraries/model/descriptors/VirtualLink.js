@@ -15,9 +15,6 @@
  *   limitations under the License.
  *
  */
-/**
- * Created by onvelocity on 11/23/15.
- */
 
 'use strict';
 
