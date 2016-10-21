@@ -66,14 +66,8 @@ export default {
         return new Promise(function(resolve, reject) {
           let promises = [];
           let remove = null;
-          // $.ajax({
-          //   url: 'https://10.66.202.130:8008/api/config/logging/allow/duplicate',
-          //   type: 'DELETE',
-          //   beforeSend: Utils.addAuthorizationStub
-          // })
           if(loggingConfig.hasOwnProperty('allowDuplicateEvents')) {
             promises.push($.ajax({
-              // url: apiUrl('api/config/default-severity'),
               url: apiUrl('api/config/allow-duplicate-events'),
               type: 'PUT',
               beforeSend: Utils.addAuthorizationStub,
