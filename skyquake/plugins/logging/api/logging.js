@@ -369,15 +369,14 @@ Config.deleteDefaultSyslogSeverity = function(req) {
 Config.setAllowDuplicateEvents = function(req) {
   // TODO: verify there is one key at root of data: 'default-severity'
   // OR just filter on the request body
-
-  if (req.body.hasOwnProperty('allowDuplicateEvents') &&
-    typeof req.body.allowDuplicateEvents == 'boolean') {
-    if (req.body.allowDuplicateEvents) {
-      return handlePutRequest(req, APIVersion + '/api/config/logging/allow', {
+console.log(req.body)
+  if (req.body.hasOwnProperty('allowDuplicateEvents')) {
+    if (req.body.allowDuplicateEvents.toUpperCase() == "TRUE") {
+      return handlePutRequest(req, '/api/config/logging/allow', {
         "duplicate": "events"
       });
     } else { // false, remove entry from logging config
-      return handleDeleteRequest(req, APIVersion + '/api/config/logging/allow/duplicate');
+      return handleDeleteRequest(req, '/api/config/logging/allow/duplicate');
     }
   } else {
     return handleReject(statusCode=400,

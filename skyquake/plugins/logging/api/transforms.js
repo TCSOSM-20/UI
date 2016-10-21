@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -168,7 +168,7 @@ LoggingConfigEncoder.prototype.denyEvents = function(data) {
  * or absence of the { "allow": { "duplicate": "events" }} key/value hierarchy
  */
 LoggingConfigEncoder.prototype.allow = function(data) {
-  if (data.allowDuplicateEvents) {
+  if (data.allowDuplicateEvents.toUpperCase() == "TRUE") {
     return { duplicate: "events" };
   } else {
     return null;
