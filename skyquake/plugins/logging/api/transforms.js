@@ -168,7 +168,7 @@ LoggingConfigEncoder.prototype.denyEvents = function(data) {
  * or absence of the { "allow": { "duplicate": "events" }} key/value hierarchy
  */
 LoggingConfigEncoder.prototype.allow = function(data) {
-  if (data.allowDuplicateEvents.toUpperCase() == "TRUE") {
+  if (data.allowDuplicateEvent && data.allowDuplicateEvents.toUpperCase() == "TRUE") {
     return { duplicate: "events" };
   } else {
     return null;
