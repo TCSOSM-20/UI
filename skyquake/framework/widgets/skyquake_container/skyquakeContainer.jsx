@@ -22,7 +22,7 @@ import SkyquakeNav from './skyquakeNav.jsx';
 import EventCenter from './eventCenter.jsx';
 import SkyquakeContainerActions from './skyquakeContainerActions.js'
 import SkyquakeContainerStore from './skyquakeContainerStore.js';
-import Breadcrumbs from 'react-breadcrumbs';
+// import Breadcrumbs from 'react-breadcrumbs';
 import Utils from 'utils/utils.js';
 import _ from 'lodash';
 import Crouton from 'react-crouton';
