@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,6 +63,16 @@ var loggingRoutes = [
         method: 'DELETE',
         endpoint: '/api/config/default-severity',
         apiHandler: loggingAPI['config'].deleteDefaultSeverity
+    },
+    {
+        method: 'PUT',
+        endpoint: '/api/config/default-syslog-severity',
+        apiHandler: loggingAPI['config'].setDefaultSyslogSeverity
+    },
+    {
+        method: 'DELETE',
+        endpoint: '/api/config/default-syslog-severity/:nulledCategories',
+        apiHandler: loggingAPI['config'].deleteDefaultSyslogSeverity
     },
     {
         method: 'PUT',

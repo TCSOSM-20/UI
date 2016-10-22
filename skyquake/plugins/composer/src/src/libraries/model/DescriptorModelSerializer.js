@@ -165,6 +165,11 @@ const DescriptorModelSerializer = {
 			return _.pick(ref, ['member-vnf-index-ref', 'vnfd-id-ref', 'vnfd-connection-point-ref']);
 		}
 	},
+	'internal-connection-point': {
+		serialize(ref) {
+			return _.pick(ref, ['id-ref']);
+		}
+	},
 	'constituent-vnfd': {
 		serialize(cvnfdModel) {
 			if(!cvnfdFields) cvnfdFields = DescriptorModelMetaFactory.getModelFieldNamesForType('nsd.constituent-vnfd');

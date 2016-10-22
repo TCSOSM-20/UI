@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,6 +133,18 @@
               -ms-flex: 0 1;
                   flex: 0 1;
             }
+            .inputControls-sshkeys {
+              margin-bottom:1rem;
+              padding-top:0;
+              -ms-flex-align: end;
+              align-items: flex-end;
+              > label {
+                width:auto;
+                &:nth-child(2) {
+                    margin-bottom: 1.25rem;
+                }
+              }
+            }
           }
           button {
             /*remove button*/
@@ -180,6 +192,16 @@
       &-radioGroup {
         display:-ms-flexbox;
         display:flex;
+      }
+      &-addUser {
+        margin-top:1rem;
+        .addInput {
+          margin-left:0;
+          font-size:1rem;
+          >span {
+            color: #5b5b5b;
+          }
+        }
       }
     }
      .addInput, .removeInput {

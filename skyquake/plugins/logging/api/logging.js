@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,13 @@
  *   limitations under the License.
  *
  */
+'use strict';
 var Promise = require('bluebird');
 var utils = require('../../../framework/core/api_utils/utils.js');
 var request = utils.request;
 var constants = require('../../../framework/core/api_utils/constants.js');
 var _ = require('lodash');
-var APIVersion = '/v1';
+var APIVersion = '/v2';
 var transforms = require('./transforms.js');
 
 var foreverOn = true;
@@ -111,10 +112,10 @@ function requestCallback(resolve, reject, transformFunc) {
       } else {
         var data = JSON.stringify(response.body);
       }
-      return resolve_with_delay(resolve, {
+      return resolve({
         statusCode: response.statusCode,
         data: data
-      }, 0);
+      });
     };
   };
 }
@@ -251,11 +252,13 @@ Aggregate.set = function(req) {
   // Do nothing to test delay in response
   var encoder = new transforms.LoggingConfigEncoder();
   var data = encoder.encode(req.body);
-  //console.log("Aggregate.set. encoded data=");
-  //console.log(data);
+  // console.log("Aggregate.set. encoded data=");
+  // console.log(data);
   // dumpLoggingConfig(data);
-
-  return handlePutRequest(req, APIVersion + '/api/config/logging', data);
+  let setData = {
+    'rwlog-mgmt:logging' : data
+  }
+  return handlePutRequest(req, APIVersion + '/api/config/logging', setData);
   // if (this.mockResponse['set']) {
   //   return handleMockResponse(req, true, 201, data, delay=100);
   // }
@@ -319,6 +322,34 @@ Config.deleteDefaultSeverity = function(req) {
 
 }
 
+// NOTE: In rel_4.3 we are going to affect syslog sink category by default
+
+Config.setDefaultSyslogSeverity = function(req) {
+  // TODO: verify there is one key at root of data: 'default-severity'
+  // OR just filter on the request body
+  return handlePutRequest(req, APIVersion + '/api/config/logging/sink/syslog');
+}
+
+Config.deleteDefaultSyslogSeverity = function(req) {
+  // TODO: verify there is one key at root of data: 'default-severity'
+  // OR just filter on the request body
+  var Categories = req.params.nulledCategories.split(',');
+  var promises = [];
+  return new Promise(function(resolve, reject) {
+    promises.concat(Categories.map(function(categoryName) {
+        return handleDeleteRequest(req, APIVersion + '/api/config/logging/sink/syslog/filter/category/' + categoryName);
+      }));
+      return Promise.all(promises).then(
+        function(data) {
+          resolve({statusCode:  data[0].statusCode, data: data[0].data});
+        },
+        function(data) {
+          reject({statusCode:  data[0].statusCode, data: data[0].data});
+        }
+      )
+    });
+}
+
 /*
   get body of forms
 
@@ -338,15 +369,14 @@ Config.deleteDefaultSeverity = function(req) {
 Config.setAllowDuplicateEvents = function(req) {
   // TODO: verify there is one key at root of data: 'default-severity'
   // OR just filter on the request body
-
-  if (req.body.hasOwnProperty('allowDuplicateEvents') &&
-    typeof req.body.allowDuplicateEvents == 'boolean') {
-    if (req.body.allowDuplicateEvents) {
-      return handlePutRequest(req, APIVersion + '/api/config/logging/allow', {
+console.log(req.body)
+  if (req.body.hasOwnProperty('allowDuplicateEvents')) {
+    if (req.body.allowDuplicateEvents.toUpperCase() == "TRUE") {
+      return handlePutRequest(req, '/api/config/logging/allow', {
         "duplicate": "events"
       });
     } else { // false, remove entry from logging config
-      return handleDeleteRequest(req, APIVersion + '/api/config/logging/allow/duplicate');
+      return handleDeleteRequest(req, '/api/config/logging/allow/duplicate');
     }
   } else {
     return handleReject(statusCode=400,
@@ -398,6 +428,7 @@ Config.setSyslogViewer = function(req) {
 // Operational calls
 
 Operational.get = function(req) {
+  var APIVersion = '/v1'
   return handleGetRequest(req, APIVersion + '/api/operational/logging?deep',
     transformLoggingRootResponseCallback
   );

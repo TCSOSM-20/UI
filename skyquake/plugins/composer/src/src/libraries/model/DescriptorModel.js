@@ -182,7 +182,10 @@ export default class DescriptorModel {
 			throw new ReferenceError('child must be an instance of DescriptorModel class');
 		}
 		if (this.findChildByUid(child.uid)) {
-			throw new ReferenceError('child already exists');
+			console.warn('Child already exists');
+			// NOTE: Commented out this line because it was causing issues with Internal VLD.
+			// TODO: Check why it caused issues with Internal VLD
+			// throw new ReferenceError('child already exists');
 		}
 		if (child.parent instanceof DescriptorModel) {
 			throw new ReferenceError('child already has a parent');

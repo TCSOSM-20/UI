@@ -15,15 +15,13 @@
  *   limitations under the License.
  *
  */
-/**
- * Created by onvelocity on 11/23/15.
- */
 
 'use strict';
 
-import Position from '../../graph/Position'
-import DescriptorModel from '../DescriptorModel'
-import DescriptorModelFactory from '../DescriptorModelFactory'
+import Position from '../../graph/Position';
+import DescriptorModel from '../DescriptorModel';
+import DescriptorModelFactory from '../DescriptorModelFactory';
+import InternalConnectionPointRef from './InternalConnectionPointRef';
 
 export default class InternalConnectionPoint extends DescriptorModel {
 
@@ -56,8 +54,31 @@ export default class InternalConnectionPoint extends DescriptorModel {
 		return this.id;
 	}
 
+	get id() {
+		return this.model.id;
+	}
+
+	get name() {
+		return this.model.name
+	}
+
+	get idRef() {
+		return this.parent.idRef;
+	}
+
+	get cpNumber() {
+		return this.uiState.cpNumber;
+	}
+
+	set cpNumber(n) {
+		this.uiState.cpNumber = n;
+	}
+
 	toInternalConnectionPointRef() {
-		return DescriptorModelFactory.newInternalConnectionPointRef(this.id);
+		const ref = new InternalConnectionPointRef({});
+		ref.idRef = this.id;
+		// ref.cpNumber = this.cpNumber;
+		return ref;
 	}
 
 	canConnectTo(obj) {

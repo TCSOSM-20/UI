@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,11 +21,14 @@
 @import '../node_modules/open-iconic/font/css/open-iconic.css';
 
 .app-body {
+    display:-ms-flexbox;
     display:flex;
-    flex-direction:column;
+    -ms-flex-direction:column;
+        flex-direction:column;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
+    -ms-flex-align: stretch;
+        align-items: stretch;
     height: 100%;
 }
 
@@ -33,16 +36,20 @@
   color: $gray-darkest;
 }
 .lpReactDashboard {
+  display:-ms-flexbox;
   display:flex;
   height:100%;
   .app-body {
     > header {
-      flex: 0 1 auto;
-      flex-shrink: 0;
+      -ms-flex: 0 1 auto;
+          flex: 0 1 auto;
+      -ms-flex-negative: 0;
+          flex-shrink: 0;
     }
   }
 }
 .lp-react-launch {
+  display: -ms-flexbox;
   display: flex;
 }
 .app-body.create-fleet {
@@ -60,9 +67,12 @@
 }
 
 .baseGridCell {
-  align-items: center;
+  -ms-flex-align: center;
+      align-items: center;
+  display: -ms-flexbox;
   display: flex;
-  flex: 0 0 auto;
+  -ms-flex: 0 0 auto;
+      flex: 0 0 auto;
   min-height: 30px;
   overflow: hidden;
   padding-left: 2px;
@@ -72,16 +82,21 @@
 }
 
 .lp_dashboard {
+  display: -ms-flexbox;
   display: flex;
-  flex: 1;
-  flex-direction: row;
+  -ms-flex: 1;
+      flex: 1;
+  -ms-flex-direction: row;
+      flex-direction: row;
   height: 100%;
 
   /* Network service list styles */
 
   .leftMinimizedNsListPanel {
+    display: -ms-flexbox;
     display: flex;
-    flex: 1 100%;
+    -ms-flex: 1 100%;
+        flex: 1 100%;
     height: auto;
     max-width: 30px;
     min-width: 30px;
@@ -89,9 +104,9 @@
       background-color: white;
       display:block;
       h3 {
-        // vertical | horizontal
-        // top | horizonal | bottom
-        // top right bottom left
+        /* vertical | horizontal*/
+        /* top | horizonal | bottom*/
+        /* top right bottom left*/
         padding: 1.5rem 0;
         color: white;
 
@@ -100,11 +115,14 @@
   }
 
   .nsListPanel {
+    display: -ms-flexbox;
     display: flex;
-    flex: 1 100%;
+    -ms-flex: 0 1;
+        flex: 0 1;
     height: auto;
-    max-width: 500px;
-    min-width: 500px;
+    width: auto;
+    /* max-width: 500px;*/
+    /* min-width: 500px;*/
 
     header {
       background-color: white;
@@ -112,7 +130,8 @@
     }
 
     &-body {
-      flex-flow: col wrap;
+      -ms-flex-flow: col wrap;
+          flex-flow: col wrap;
     }
   }
 
@@ -121,6 +140,7 @@
     top:1.5rem;
     right:0.5rem;
     cursor:pointer;
+    display:-ms-flexbox;
     display:flex;
     &:before {
     }
@@ -130,14 +150,18 @@
 
   .nsListPanelToolbar {
     background-color: $gray;
+    display: -ms-flexbox;
     display: flex;
-    flex: 0 0 auto;
-    flex-direction: row;
+    -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+    -ms-flex-direction: row;
+        flex-direction: row;
     padding-left: 1rem;
     .button {
       cursor: pointer;
+      display: -ms-flexbox;
       display: flex;
-      //flex: 0;
+      /*flex: 0;*/
       margin: 4px;
       margin: 0.5rem;
       img {
@@ -150,19 +174,25 @@
     }
   }
   .nsList {
+    display: -ms-flexbox;
     display: flex;
-    flex: 1;
-    flex-direction: column;
+    -ms-flex: 1;
+        flex: 1;
+    -ms-flex-direction: column;
+        flex-direction: column;
     overflow: auto;
     padding-left: 0;
     padding-right: 0;
     &-body {
-      overflow-y: scroll;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
   }
   .nsListItemRow {
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: row;
+    -ms-flex-direction: row;
+        flex-direction: row;
   }
   .cellValue {
     overflow: hidden;
@@ -181,9 +211,12 @@
     background-color: $gray;
     border-top: 1px solid $gray-lightest;
     border-bottom: 1px solid $gray-lightest;
+    display: -ms-flexbox;
     display: flex;
-    flex: 0 0 auto;
-    flex-direction: row;
+    -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+    -ms-flex-direction: row;
+        flex-direction: row;
   }
   .nsListItemField {
     @extend .baseGridCell;
@@ -229,8 +262,8 @@
 
   .actionButton {
     cursor: pointer;
-    // margin-top is a hack to fix the top of the glyph from
-    // being chopped off
+    /* margin-top is a hack to fix the top of the glyph from*/
+    /* being chopped off*/
     margin-top: 5px;
   }
 
@@ -242,10 +275,13 @@
   /* Network service detail card styles */
 
   .nsCardPanel {
-    //border: 1px solid black;
+    /*border: 1px solid black;*/
+    display: -ms-flexbox;
     display: flex;
-    flex: 1 1 auto;
-    flex-wrap: nowrap;
+    -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
+    -ms-flex-wrap: nowrap;
+        flex-wrap: nowrap;
     height: auto;
     header {
       background-color: white;
@@ -254,9 +290,12 @@
     }
     &-body {
       background-color: $gray;
+      display: -ms-flexbox;
       display: flex;
-      flex: 1;
-      flex-direction: row;
+      -ms-flex: 1;
+          flex: 1;
+      -ms-flex-direction: row;
+          flex-direction: row;
       min-width: 0;
       min-height: 0;
       overflow-y: auto;
@@ -266,6 +305,7 @@
 
   /* Angular wrapping */
   lp-react-dashboard {
+    display:-ms-flexbox;
     display:flex;
   }
 }

@@ -82,7 +82,7 @@ export default class InstantiateInputParams extends Component {
                         isOpenMano(props.ro) ?
                           dataCentersHTML(
                                           props.dataCenters[props.ro.name],
-                                          props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index']))
+                                          props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index']), true)
                           : null
                       }
                       {
@@ -259,10 +259,11 @@ export default class InstantiateInputParams extends Component {
             {vlds && vlds.map(function(v, i) {
                   let currentType = v.type;
                   let isVIM = (currentType == 'vim-network-name');
-                  let isUnknown = (currentType == 'unknown') || ((currentType != 'vim-network-name') && (currentType != 'ip-profile-ref'));
+                  let isUnknown = (currentType == 'none') || ((currentType != 'vim-network-name') && (currentType != 'ip-profile-ref'));
                   return (
                     <div key={self.props.nsd.id + '-' + i} className="inputControls">
                         <h4 className="inputControls-title">VLD: {v['short-name'] ? v['short-name'] : v['name']}</h4>
+                        <label><span>Specify VLD Parameters</span></label>
                         <div  className="inputControls-radioGroup">
                           <label className="inputControls-radio" style={{display: ipProfileList ? 'flex' : 'none'}}>
                             <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={!isVIM && !isUnknown} value='ip-profile-ref' />
@@ -273,8 +274,8 @@ export default class InstantiateInputParams extends Component {
                             VIM Network Name
                           </label>
                           <label className="inputControls-radio">
-                            <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={isUnknown} value='unknown' />
-                            Unknown
+                            <input type="radio" name={'vld-' + i } onChange={self.props.vldFn.updateType(i)} checked={isUnknown} value='none' />
+                            None
                           </label>
                         </div>
                           {
@@ -354,6 +355,11 @@ export default class InstantiateInputParams extends Component {
                     onChange={props.ipProfileFn.updateProfile(j, 'security-group')}
                     value={ipl['security-group']}
                     />
+                  <TextInput
+                    label="subnet prefix pool"
+                    onChange={props.ipProfileFn.updateProfile(j, 'subnet-prefix-pool')}
+                    value={ipl['subnet-prefix-pool']}
+                    />
                     <label>
                       <div style={{display:'flex'}}>
                         DNS SERVERS <span onClick={props.dnsFn.addDNS(j)} className="addInput"><img src={imgAdd} />Add</span>
@@ -363,8 +369,8 @@ export default class InstantiateInputParams extends Component {
                           return (
                             <div key={k} style={{display:'flex'}}>
                               <TextInput
-                                  onChange={props.ipProfileFn.updateProfile(j,k)}
-                                  value={ipl['dns-server'][k]}
+                                  onChange={props.dnsFn.updateDNS(j,k)}
+                                  value={ipl['dns-server'][k].address}
                                   />
                               <span onClick={props.dnsFn.removeDNS(j,k)} className="removeInput">
                                 <img src={imgRemove} />Remove</span>
@@ -403,12 +409,12 @@ export default class InstantiateInputParams extends Component {
     function dhcpHTML(props, ipl, j){
       return (<div>
                   <TextInput
-                    label="DCHP Start Address"
+                    label="DHCP Start Address"
                     onChange={props.ipProfileFn.updateDHCP(j, 'start-address')}
                     value={ipl['dhcp-params'] && ipl['dhcp-params']['start-address']}
                     />
                   <TextInput
-                    label="DCHP Count"
+                    label="DHCP Count"
                     onChange={props.ipProfileFn.updateDHCP(j, 'count')}
                     value={ipl['dhcp-params'] && ipl['dhcp-params']['count']}
                     />
@@ -471,14 +477,61 @@ export default class InstantiateInputParams extends Component {
   }
   usersHTML = (props) => {
     let usersFn = props.usersFn;
+    let sshKeysList = props.sshKeysList;
     let usersList = props.usersList && props.usersList.map(function(u, i) {
+      let sshKeysRef = u['ssh-authorized-key'];
       return (
         <div className="input_group input_group-users" key={i}>
           <div className="inputControls">
           <div style={{fontWeight: 'bold', display: 'flex'}}>USER <span onClick={usersFn.remove(i)} className="removeInput"><img src={imgRemove} />Remove</span></div>
             <TextInput onChange={usersFn.update(i, 'name')} label="USERNAME" value={i.name} />
-            <TextInput onChange={usersFn.update(i, 'gecos')} label="REAL NAME" value={i.gecos} />
-            <TextInput onChange={usersFn.update(i, 'passwd')} type="password" label="PASSWORD" value={i.passwd} />
+            <TextInput onChange={usersFn.update(i, 'user-info')} label="REAL NAME" value={i.gecos} />
+            {
+              sshKeysRef.map(function(ref, j) {
+                let keyref = JSON.stringify(ref)
+                return (
+                  <div key={keyref.name + '-' + i + '-' + j} className="inputControls inputControls-sshkeys">
+                    <label>
+                      <div>
+                      <SelectOption
+                        label="Key Pair"
+                        options={sshKeysList && sshKeysList.map(function(k) {
+                          return {
+                            label: k.name,
+                            value: k
+                          }
+                        })}
+                        ref="keyPairSelection"
+                        initial={false}
+                        defaultValue={ref}
+                        onChange={usersFn.updateSSHkeyRef(i, j)}>
+                      </SelectOption>
+                      </div>
+                    </label>
+                    {
+                      sshKeysRef.length > 0 ?
+                        <label>
+                          <span onClick={usersFn.updateSSHkeyRef(i, j, true)} className="removeInput">
+                            <img src={imgRemove} />
+                            Remove
+                          </span>
+                        </label>
+                      : null
+                    }
+
+                  </div>
+                )
+              })
+            }
+              <div className="inputControls inputControls-sshkeys ">
+                <label style={{display: 'flex', 'flexDirection': 'row', 'alignItems': 'center'}}>
+                SSH KEY PAIR
+                  <span onClick={usersFn.updateSSHkeyRef(i).bind(null, {target:{value: JSON.stringify(sshKeysList[0])}})} className="addInput">
+                    <img src={imgAdd} />
+                    ADD
+                  </span>
+                </label>
+              </div>
           </div>
         </div>
       )
@@ -487,9 +540,9 @@ export default class InstantiateInputParams extends Component {
       <div className="configure-nsd_section">
         <h3 className="launchpadCard_title">USERS</h3>
         {usersList}
-        <div className="inputControls inputControls-sshkeys ">
-            <span onClick={usersFn.add} className="addInput">
-              <img src={imgAdd} onClick={usersFn.add} />
+        <div className="inputControls inputControls-sshkeys inputControls-addUser ">
+            <span onClick={usersFn.add(sshKeysList)} className="addInput">
+              <img src={imgAdd} />
               ADD USER
             </span>
         </div>
@@ -574,7 +627,7 @@ function constructCloudAccountOptions(cloudAccounts){
   });
   return CloudAccountOptions;
 }
-function dataCentersHTML(dataCenters, onChange) {
+function dataCentersHTML(dataCenters, onChange, initial) {
   //Build DataCenter options
   //Relook at this, why is it an object?
   let DataCenterOptions = [];
@@ -587,7 +640,7 @@ function dataCentersHTML(dataCenters, onChange) {
   if (dataCenters && dataCenters.length > 0) {
     return (
       <label>Select Data Center
-        <SelectOption options={DataCenterOptions} onChange={onChange} />
+        <SelectOption initial={!!initial} options={DataCenterOptions} onChange={onChange} />
       </label>
     )
   }

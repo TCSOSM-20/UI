@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,10 +26,12 @@ class LoggingStore {
     this.loggingConfig = {};
     // initialLoggingConfig is the saved state
     this.initialLoggingConfig = {};
+    this.nulledCategories = [];
     this.bindActions(LoggingActions);
     this.registerAsync(LoggingSource);
     this.exportPublicMethods({
       updateCategoryDefaultSeverity: this.updateCategoryDefaultSeverity,
+      updateCategoryDefaultSyslogSeverity: this.updateCategoryDefaultSyslogSeverity,
       updateAllowDuplicateEvents: this.updateAllowDuplicateEvents,
       addDenyEvent: this.addDenyEvent,
       updateDenyEvent: this.updateDenyEvent,
@@ -95,6 +97,64 @@ class LoggingStore {
     }  else {
       console.log("ERROR: catIndex not founds for default category", catsev.category);
     }
+  }
+
+  updateCategoryDefaultSyslogSeverity = (catsev) => {
+    console.log("LoggingStore.updateCategoryDefaultSyslogSeverity:", catsev);
+    // find the category (name) in the syslog sink
+
+    let self = this;
+    let loggingConfig = _.cloneDeep(this.loggingConfig);
+    let syslogSinkIndex = -1;
+    let nulledCategories = this.nulledCategories;
+
+    loggingConfig.sinks && loggingConfig.sinks.map((sink, sinkIndex) => {
+      if (sink.name == 'syslog') {
+        if (sink.filter) {
+          if (sink.filter.category) {
+            let catIndex = _.findIndex(sink.filter.category, {
+              name: catsev.name
+            });
+            if (catIndex != -1) {
+              // found it
+              if (catsev.severity == "") {
+                // blank was selected
+                nulledCategories.push(catsev.name);
+                this.setState({
+                  nulledCategories: nulledCategories
+                });
+                // TODO/NOTE: Can't delete from model as sending a top-level payload with
+                // missing elements is not allowed!
+                // When backend supports it, in loggingSource change the order of operations
+                // // Delete first followed by save/put.
+                // _.remove(loggingConfig.sinks[sinkIndex].filter.category, {
+                //   name: catsev.name
+                // });
+              } else {
+                sink.filter.category[catIndex] = catsev;
+              }
+            } else {
+              _.remove(nulledCategories, (v) => v == catsev.name);
+              this.setState({
+                nulledCategories: nulledCategories
+              });
+              sink.filter.category.push(catsev);
+            }
+          } else {
+            sink.filter.category = [];
+            sink.filter.category.push(catsev);
+          }
+        } else {
+          sink.filter = {};
+          sink.filter.category = [];
+          sink.filter.category.push(catsev);
+        }
+      }
+    });
+
+    this.setState({
+      loggingConfig: loggingConfig
+    });
   }
 
   updateAllowDuplicateEvents = (allowFlag) => {

@@ -262,7 +262,7 @@ class DescriptorModelFactory {
 
 	static newInternalConnectionPointRef(model, parent) {
 		// note do not find children bc model is not an object it is a leaf-list primative and so the class manages it
-		return new InternalConnectionPointRef(model, parent);
+		return findChildDescriptorModelAndUpdateModel(model, parent) || new InternalConnectionPointRef(model, parent);
 	}
 
 	/**

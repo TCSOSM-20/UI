@@ -233,7 +233,7 @@ class LaunchNetworkServiceStore {
                     if(v['vim-network-name']) {
                         v.type = 'vim-network-name';
                     } else {
-                        v.type = 'unknown';
+                        v.type = 'none';
                     }
                 }
                 return v;
@@ -447,7 +447,7 @@ class LaunchNetworkServiceStore {
                     } else {
                         delete vld[i]['dns-server'];
                     }
-                    if(type == 'unknown') {
+                    if(type == 'none') {
                         delete vld[i]['ip-profile-ref'];
                         delete vld[i]['vim-network-name'];
                     }
@@ -509,7 +509,9 @@ class LaunchNetworkServiceStore {
                     }
                     //Removing DCHP property on disable to allow instantiation
                     if(!value) {
-                        delete self.ipProfiles[i]['ip-profile-params']['dhcp-params'];
+                        self.ipProfiles[i]['ip-profile-params']['dhcp-params'] = {
+                            enabled: false
+                        };
                     } else {
                         self.ipProfiles[i]['ip-profile-params']['dhcp-params'][property] = value;
                     }
@@ -525,9 +527,9 @@ class LaunchNetworkServiceStore {
                 let self = this;
                 return function(e) {
                     if(self.ipProfiles[i]['ip-profile-params']['dns-server']) {
-                        self.ipProfiles[i]['ip-profile-params']['dns-server'].unshift('')
+                        self.ipProfiles[i]['ip-profile-params']['dns-server'].unshift({})
                     } else {
-                        self.ipProfiles[i]['ip-profile-params']['dns-server'] = [''];
+                        self.ipProfiles[i]['ip-profile-params']['dns-server'] = [{}];
                     }
 
                     self.setState({ipProfiles:self.ipProfiles});
@@ -540,6 +542,14 @@ class LaunchNetworkServiceStore {
                     if(self.ipProfiles[i]['ip-profile-params']['dns-server'].length == 0) {
                         delete self.ipProfiles[i]['ip-profile-params']['dns-server'];
                     }
+                    self.setState({ipProfiles:self.ipProfiles});
+                }
+            },
+            updateDNS: (i, k) => {
+                let self = this;
+                return function(e) {
+                    let value = e.target.value;
+                    self.ipProfiles[i]['ip-profile-params']['dns-server'][k].address = value;
                     self.setState({ipProfiles:self.ipProfiles});
                 }
             }
@@ -582,18 +592,19 @@ class LaunchNetworkServiceStore {
     usersFn = () => {
         let self = this;
         return {
-            add: function() {
-                console.log('adding user')
-                let newUser = {
-                    name: '',
-                    gecos: '',
-                    passwd: ''
+            add: function(sshKeysList) {
+                return function(e) {
+                    let newUser = {
+                        name: '',
+                        'user-info': '',
+                        'ssh-authorized-key': [sshKeysList[0].name]
+                    }
+                    let usersList = self.usersList;
+                    usersList.push(newUser);
+                    self.setState({
+                        usersList:  usersList
+                    })
                 }
-                let usersList = self.usersList;
-                usersList.push(newUser);
-                self.setState({
-                    usersList:  usersList
-                })
             },
             remove: function(i) {
                 return function() {
@@ -609,6 +620,25 @@ class LaunchNetworkServiceStore {
                     self.usersList[i][key] = value;
                     self.setState({
                         usersList: self.usersList
+                    })
+                }
+            },
+            updateSSHkeyRef: function(i, j, remove){
+                return function(e) {
+                    let usersList = _.cloneDeep(self.usersList)
+                    let keys = usersList[i]['ssh-authorized-key'];
+                    if(!remove) {
+                        let keyRef = JSON.parse(e.target.value).name;
+                        if(!isNaN(j)) {
+                            keys.splice(j, 1);
+                        }
+                        keys.push(keyRef);
+                    } else {
+                        keys.splice(j, 1);
+                    }
+                    usersList[i]['ssh-authorized-key'] = keys;
+                    self.setState({
+                        usersList: usersList
                     })
                 }
             }
@@ -644,7 +674,7 @@ class LaunchNetworkServiceStore {
             nsdPayload['vnf-placement-groups'] && delete nsdPayload['vnf-placement-groups'];
             nsdPayload.vld = this.state.vld;
             nsdPayload.vld && nsdPayload.vld.map(function(v){
-                delete v['unknown'];
+                delete v['none'];
                 delete v.type;
             })
         }
@@ -658,7 +688,7 @@ class LaunchNetworkServiceStore {
             "nsd": nsdPayload
         }
 
-        if (this.state.ro['account-type'] == 'openmano') {
+        if (this.state.ro && this.state.ro['account-type'] == 'openmano') {
             payload['om-datacenter'] = this.state.dataCenterID;
         } else {
             payload["cloud-account"] = this.state.selectedCloudAccount.name;
@@ -768,7 +798,7 @@ class LaunchNetworkServiceStore {
             return {'key-pair-ref': JSON.parse(k).name};
         });
         //Add Users
-        payload['user'] = this.state.usersList;
+        payload['user'] = addKeyPairRefToUsers(this.state.usersList);
         // console.log(payload)
         this.launchNSR({
             'nsr': [payload]
@@ -777,6 +807,19 @@ class LaunchNetworkServiceStore {
 }
 
 
+function addKeyPairRefToUsers(list) {
+    return list.map(function(u) {
+        return {
+            name: u.name,
+            'user-info': u['user-info'],
+            'ssh-authorized-key': u['ssh-authorized-key'].map(function(k) {
+                return {
+                    'key-pair-ref' : k
+                }
+            })
+        }
+    })
+}
 
 function getMockSLA(id) {
     console.log('Getting mock SLA Data for id: ' + id);

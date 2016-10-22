@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -182,6 +182,7 @@ export default function EditDescriptorModelProperties(props) {
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 		const placeholder = changeCase.title(property.name);
 		const className = ClassNames(property.name + '-input', {'-is-guid': isGuid});
+		const fieldValue = value ? value.constructor.name == "String" ? value : '' : undefined;
 		if (isEnumeration) {
 			const enumeration = Property.getEnumeration(property, value);
 			const options = enumeration.map((d, i) => {
@@ -207,7 +208,7 @@ export default function EditDescriptorModelProperties(props) {
 					  id={fieldKey.toString()}
 					  type="text"
 					  name={name}
-					  value={value}
+					  value={fieldValue}
 					  className={className}
 					  placeholder={placeholder}
 					  onChange={onChange}
@@ -229,8 +230,9 @@ export default function EditDescriptorModelProperties(props) {
 			if (typeof value === 'object') {
 				childValue = value[property.name];
 			}
-			childPath.push(property.name);
-
+			if(property.type != 'choice'){
+						childPath.push(property.name);
+			}
 			return build(container, property, childPath, childValue);
 
 		});
@@ -271,17 +273,18 @@ export default function EditDescriptorModelProperties(props) {
 
 				const statePath = ['uiState.choice'].concat(name);
 				const stateObject = utils.resolvePath(this.model, statePath.join('.')) || {};
+				const selected = stateObject.selected ? stateObject.selected.split('.')[1] : undefined;
 				// write state back to the model so the new state objects are captured
 				utils.assignPathValue(this.model, statePath.join('.'), stateObject);
 
 				// write the current choice value into the state
-				const choiceObject = utils.resolvePath(this.model, [name, stateObject.selected].join('.'));
+				const choiceObject = utils.resolvePath(this.model, [name, selected].join('.'));
 				if (choiceObject) {
-					utils.assignPathValue(stateObject, ['case', stateObject.selected].join('.'), _.cloneDeep(choiceObject));
+					utils.assignPathValue(stateObject, ['case', selected].join('.'), _.cloneDeep(choiceObject));
 				}
 
 				// remove the current choice value from the model
-				utils.removePathValue(this.model, [name, stateObject.selected].join('.'));
+				utils.removePathValue(this.model, [name, selected].join('.'));
 
 				// get any state for the new selected choice
 				const newChoiceObject = utils.resolvePath(stateObject, ['case', value].join('.')) || {};
@@ -303,7 +306,12 @@ export default function EditDescriptorModelProperties(props) {
 		const cases = property.properties.map(d => {
 			if (d.type === 'case') {
 				caseByNameMap[d.name] = d.properties[0];
-				return {optionName: d.name, optionTitle: d.description};
+				return {
+					optionName: d.name,
+					optionTitle: d.description,
+					//represents case name and case element name
+					optionValue: [d.name, d.properties[0].name].join('.')
+				};
 			}
 			caseByNameMap[d.name] = d;
 			return {optionName: d.name};
@@ -311,7 +319,7 @@ export default function EditDescriptorModelProperties(props) {
 
 		const options = [{optionName: ''}].concat(cases).map((d, i) => {
 			return (
-				<option key={i} value={d.optionName} title={d.optionTitle}>
+				<option key={i} value={d.optionValue} title={d.optionTitle}>
 					{d.optionName}
 					{i ? null : changeCase.title(property.name)}
 				</option>
@@ -319,11 +327,30 @@ export default function EditDescriptorModelProperties(props) {
 		});
 
 		const selectName = path.join('.');
-		const selectedOptionPath = ['uiState.choice', selectName, 'selected'].join('.');
-		const selectedOptionValue = utils.resolvePath(container.model, selectedOptionPath);
-		const valueProperty = caseByNameMap[selectedOptionValue] || {properties: []};
-
-		const valueResponse = valueProperty.properties.map((d, i) => {
+		let selectedOptionPath = ['uiState.choice', selectName, 'selected'].join('.');
+		//Currently selected choice/case statement on UI model
+		let selectedOptionValue = utils.resolvePath(container.model, selectedOptionPath);
+		//If first time loaded, and none is selected, check if there is a value corresponding to a case statement in the container model
+		if(!selectedOptionValue) {
+			//get field properties for choice on container model
+			let fieldProperties = utils.resolvePath(container.model, selectName);
+			if(fieldProperties) {
+				//Check each case statement in model and see if it is present in container model.
+				cases.map(function(c){
+					if(fieldProperties.hasOwnProperty(c.optionName)) {
+						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), c.optionValue);
+					}
+				});
+				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
+			}
+		}
+		//If selectedOptionValue is present, take first item in string which represents the case name.
+		const valueProperty = caseByNameMap[selectedOptionValue ? selectedOptionValue.split('.')[0] : undefined] || {properties: []};
+		const isLeaf = Property.isLeaf(valueProperty);
+		const hasProperties = _.isArray(valueProperty.properties) && valueProperty.properties.length;
+		const isMissingDescriptorMeta = !hasProperties && !Property.isLeaf(valueProperty);
+		//Some magic that prevents errors for arising
+		const valueResponse = valueProperty.properties.length ? valueProperty.properties.map((d, i) => {
 			const childPath = path.concat(valueProperty.name, d.name);
 			const childValue = utils.resolvePath(container.model, childPath.join('.'));
 			return (
@@ -331,8 +358,8 @@ export default function EditDescriptorModelProperties(props) {
 					{build(container, d, childPath, childValue, props)}
 				</div>
 			);
-		});
-
+		}) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.'))) : null
+		// end magic
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 
 		return (
