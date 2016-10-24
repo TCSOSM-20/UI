@@ -40,6 +40,7 @@ export default {
                         type: 'GET',
                         // beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
+                            Utils.detectInactivity();
                             resolve(data);
                         }
                     })
