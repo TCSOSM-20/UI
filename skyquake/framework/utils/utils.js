@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@ var AuthActions = require('../widgets/login/loginAuthActions.js');
 var $ = require('jquery');
 var rw = require('utils/rw.js');
 var API_SERVER = rw.getSearchParams(window.location).api_server;
-var NODE_PORT = 3000;
+var NODE_PORT = 8000;
 var SockJS = require('sockjs-client');
 
 var Utils = {};
@@ -188,9 +188,20 @@ Utils.setAuthentication = function(username, password, cb) {
     var AuthBase64 = btoa(username + ":" + password);
     window.sessionStorage.setItem("auth", AuthBase64);
     self.detectInactivity();
-    if (cb) {
-        cb();
-    }
+    $.ajax({
+            url: '//' + window.location.hostname + ':' + NODE_PORT + '/check-auth?api_server=' + API_SERVER,
+            type: 'GET',
+            beforeSend: Utils.addAuthorizationStub,
+            success: function(data) {
+              //console.log("LoggingSource.getLoggingConfig success call. data=", data);
+                if (cb) {
+                    cb();
+                };
+            },
+            error: function(data) {
+                Utils.clearAuthentication();
+            }
+          });
 }
 Utils.clearAuthentication = function(callback) {
     var self = this;

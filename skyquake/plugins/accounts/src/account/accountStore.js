@@ -18,7 +18,7 @@
 import AccountActions from './accountActions.js';
 import AccountSource from './accountSource.js';
 
-
+var Utils = require('utils/utils.js');
 var rw = require('utils/rw.js');
 var altImage = rw.getSearchParams(window.location).alt_image;
 
@@ -252,7 +252,6 @@ export default class AccountStore {
     openAccountSocketSuccess = (connection) => {
         let self = this;
         let  ws = window.multiplexer.channel(connection);
-
         if (!connection) return;
         this.setState({
             socket: ws.ws,
@@ -261,6 +260,9 @@ export default class AccountStore {
         ws.onmessage = (socket) => {
             try {
                 var data = JSON.parse(socket.data);
+                Utils.checkAuthentication(data.statusCode, function() {
+                    self.closeSocket();
+                });
                 let SdnOptions = [{
                     label: 'Select an SDN Account',
                     value: false
@@ -407,18 +409,3 @@ export default class AccountStore {
     }
 }
 
-
-/**
- *Cloud
- *
- * {"name":"eng2","account-type":"openstack","openstack":{"key":"lmaultsb","secret":"mypasswd","auth_url":"http://engstack.eng.riftio.com:5000/v3/","tenant":"lmaultsb","mgmt-network":"private"}}
-Name
-Path
-
-
-SDN
-
-
- *
- *
- */
