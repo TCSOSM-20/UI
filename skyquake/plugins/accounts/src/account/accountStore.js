@@ -350,7 +350,7 @@ export default class AccountStore {
     }
     generateOptionsByName(data) {
         let results = [];
-        if (data.constructor.name == "Array") {
+        if (data && data.constructor.name == "Array") {
           data.map(function(d) {
               results.push({
                   label: d.name,
