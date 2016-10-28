@@ -156,7 +156,7 @@ class LaunchNetworkServiceStore {
         let newState = {
             dataCenters: dataCenters || []
         };
-        if (this.ro['account-type'] == 'openmano') {
+	if (this.state.ro && this.state.ro['account-type'] == 'openmano') {
             newState.dataCenterID = dataCenters[this.ro.name][0].uuid
         }
         this.setState(newState)

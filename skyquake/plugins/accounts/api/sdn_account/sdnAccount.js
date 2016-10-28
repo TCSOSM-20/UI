@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +41,7 @@ Sdn.get = function(req) {
           'Authorization': req.get('Authorization')
         });
       request({
-          url: utils.confdPort(api_server) + '/api/operational/sdn-account?deep',
+          url: utils.confdPort(api_server) + '/api/operational/sdn/account?deep',
           type: 'GET',
           headers: requestHeaders,
           forever: constants.FOREVER_ON,
@@ -51,7 +51,7 @@ Sdn.get = function(req) {
           var data;
           if (utils.validateResponse('Sdn.get', error, response, body, resolve, reject)) {
             try {
-              data = JSON.parse(response.body).collection['rw-sdn:sdn-account']
+              data = JSON.parse(response.body).collection['rw-sdn:account']
             } catch (e) {
               console.log('Problem with "Sdn.get"', e);
 
@@ -81,7 +81,7 @@ Sdn.get = function(req) {
         });
 
       request({
-          url: utils.confdPort(api_server) + '/api/operational/sdn-account/' + id + '?deep',
+          url: utils.confdPort(api_server) + '/api/operational/sdn/account/' + id + '?deep',
           type: 'GET',
           headers: requestHeaders,
           forever: constants.FOREVER_ON,
@@ -91,7 +91,7 @@ Sdn.get = function(req) {
           var data;
           if (utils.validateResponse('Sdn.get', error, response, body, resolve, reject)) {
             try {
-              data = JSON.parse(response.body)['rw-sdn:sdn-account'];
+              data = JSON.parse(response.body)['rw-sdn:sdn'];
             } catch (e) {
               console.log('Problem with "Sdn.get"', e);
 
@@ -134,7 +134,7 @@ Sdn.create = function(req) {
       });
 
     request({
-      url: utils.confdPort(api_server) + '/api/config/sdn-account',
+      url: utils.confdPort(api_server) + '/api/config/sdn/account',
       method: 'POST',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -159,7 +159,7 @@ Sdn.update = function(req) {
 
   return new Promise(function(resolve, reject) {
     var jsonData = {
-      "rw-sdn:sdn-account": data
+      "rw-sdn:sdn": data
     };
 
     console.log('Updating SDN account ', id, ' with', JSON.stringify(jsonData));
@@ -172,7 +172,7 @@ Sdn.update = function(req) {
       });
 
     request({
-      url: utils.confdPort(api_server) + '/api/config/sdn-account/' + id,
+      url: utils.confdPort(api_server) + '/api/config/sdn/account/' + id,
       method: 'PUT',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -215,7 +215,7 @@ Sdn.delete = function(req) {
       });
 
     request({
-      url: utils.confdPort(api_server) + '/api/config/sdn-account/' + id,
+      url: utils.confdPort(api_server) + '/api/config/sdn/account/' + id,
       method: 'DELETE',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ var ConfigAgent = require('./config_agent/configAgent')
 var Accounts = {};
 var nameSpace = {
     cloud: 'cloud',
-    sdn: 'sdn-account',
+    sdn: 'sdn',
     'config-agent': 'config-agent'
 };
 Accounts.get = function(req) {
@@ -81,11 +81,7 @@ function getAccount(req) {
         var id = req.params.id || req.params.name;
         var requestHeaders = {};
         var type = nameSpace[req.params.type];
-        var url = utils.confdPort(api_server) + '/api/operational/' + type;
-        //SDN model doesn't follow convention
-        if (type != 'sdn-account') {
-            url += '/account';
-        }
+        var url = utils.confdPort(api_server) + '/api/operational/' + type + '/account';
         if (id) {
             url += '/' + id;
         }
@@ -108,16 +104,12 @@ function getAccount(req) {
                 var data;
                 var objKey = 'rw-' + type + ':account';
                 //SDN model doesn't follow convention
-                if (type == 'sdn-account') {
-                    objKey = 'rw-sdn:sdn-account';
-                }
                 if (utils.validateResponse(type.toUpperCase() + '.get', error, response, body, resolve, reject)) {
                     try {
                         data = JSON.parse(response.body);
                         if (!id) {
                             data = data.collection;
                         }
-
                         data = data[objKey]
                     } catch (e) {
                         console.log('Problem with "' + type.toUpperCase() + '.get"', e);
@@ -148,27 +140,14 @@ function updateAccount(req) {
     var url = utils.confdPort(api_server) + '/api/config/' + type;
     var method = 'POST'
     if (!id) {
-        if (type == 'sdn-account') {
-            createData = {
-                'sdn-account': Array.isArray(data) ? data : [data]
-            }
-        } else {
-            createData = {
-                'account': Array.isArray(data) ? data : [data]
-            }
+        createData = {
+            'account': Array.isArray(data) ? data : [data]
         }
         console.log('Creating ' + type + ' account: ', createData);
     } else {
         method = 'PUT';
-        if (type == 'sdn-account') {
-            url += '/' + id;
-            createData['rw-sdn:sdn-account'] = Array.isArray(data) ? data : [data];
-
-        } else {
-            url += '/account/' + id;
-            createData['rw-' + type + ':account'] = Array.isArray(data) ? data : [data];
-        }
-        //createData = createData[0];
+        url += '/account/' + id;
+        createData['rw-' + type + ':account'] = Array.isArray(data) ? data : [data];
     }
 
 
@@ -206,11 +185,7 @@ function deleteAccount(req) {
     var requestHeaders = {};
     var createData = {};
     var url = utils.confdPort(api_server) + '/api/config/' + type;
-    if (type == 'sdn-account') {
-        url += '/' + id;
-    } else {
-        url += '/account/' + id;
-    }
+    url += '/account/' + id;
     return new Promise(function(resolve, reject) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
