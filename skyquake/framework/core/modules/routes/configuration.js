@@ -1,6 +1,6 @@
 
 /*
- *
+ * 
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
  */
 
 /**
- * Node configuration routes module.
+ * Node configuration routes module. 
  * Provides a RESTful API to provide configuration
  * details such as api_server.
  * @module framework/core/modules/routes/configuration
@@ -30,9 +30,6 @@ var bodyParser = require('body-parser');
 var configurationAPI = require('../api/configuration');
 var Router = require('express').Router();
 var utils = require('../../api_utils/utils');
-var CONSTANTS = require('../../api_utils/constants.js');
-var request = require('request');
-var _ = require('lodash');
 
 Router.use(bodyParser.json());
 Router.use(cors());
@@ -51,43 +48,9 @@ Router.put('/server-configuration', cors(), function(req, res) {
 Router.get('/server-configuration', cors(), function(req, res) {
     configurationAPI.get(req).then(function(data) {
         utils.sendSuccessResponse(data, res);
-    }, function(error) {
-        utils.sendErrorResponse(error, res);
-    });
+	}, function(error) {
+		utils.sendErrorResponse(error, res);
+	});
 });
-
-Router.get('/check-auth', function(req, res) {
-    console.log('testing auth')
-    var api_server = req.query["api_server"];
-    var uri = utils.confdPort(api_server) + '/api/config/';
-
-    checkAuth(uri, req).then(function(data) {
-        utils.sendSuccessResponse(data, res);
-    }, function(error) {
-        utils.sendErrorResponse(error, res);
-    });
-});
-
-function checkAuth(uri, req){
-    return new Promise(function(resolve, reject) {
-        request({
-            uri: uri,
-            method: 'GET',
-            headers: _.extend({}, {
-                'Authorization': req.get('Authorization'),
-                forever: CONSTANTS.FOREVER_ON,
-                rejectUnauthorized: false,
-            })
-        }, function(error, response, body) {
-            console.log(arguments)
-            if( response.statusCode == 401) {
-                reject({statusCode: 401, error: response.body});
-            } else {
-                resolve({statusCode:200, data:response.body})
-            }
-        });
-    });
-}
-
 
 module.exports = Router;

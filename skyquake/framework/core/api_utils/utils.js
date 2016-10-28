@@ -1,5 +1,5 @@
 /*
- *
+ * 
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -217,34 +217,6 @@ var passThroughConstructor = function(app) {
 	});
 }
 
-
-var testAuthentication = function(app) {
-    app.get('/check-auth', function(req, res) {
-        console.log('testing auth')
-        var api_server = req.query["api_server"];
-        var uri = confdPort(api_server) + '/api/config/';
-                new Promise(function(resolve, reject) {
-            request({
-                uri: uri,
-                method: 'GET',
-                headers: _.extend({}, CONSTANTS.HTTP_HEADERS.accept[type], {
-                    'Authorization': req.get('Authorization'),
-                    forever: CONSTANTS.FOREVER_ON,
-                    rejectUnauthorized: false,
-                })
-            }, function(error, response, body) {
-                if (validateResponse('Passthrough: ' + url, error, response, body, resolve, reject)) {
-                    resolve(JSON.parse(response.body))
-                };
-            });
-        }).then(function(data) {
-            res.send(data);
-        }, function(error) {
-			res.send({'error': error, uri: uri})
-        });;
-    })
-}
-
 module.exports = {
 	/**
 	 * Ensure confd port is on api_server variable.
@@ -261,7 +233,5 @@ module.exports = {
 
 	sendSuccessResponse: sendSuccessResponse,
 
-    passThroughConstructor: passThroughConstructor,
-
-    testAuthentication: testAuthentication
+	passThroughConstructor: passThroughConstructor
 };

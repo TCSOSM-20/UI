@@ -123,6 +123,7 @@ class ConfigDashboard extends React.Component {
                             }
                 </div>
                 <div className="form-actions">
+                    <Button  className="light" label="Cancel" />
                     <Button key="4" role="button" className="update dark" label="Update"  onClick={this.updateAccount} />
                 </div>
             </form>

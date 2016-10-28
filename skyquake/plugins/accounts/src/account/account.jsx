@@ -1,5 +1,5 @@
 /*
- *
+ * 
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +47,6 @@ class Account extends React.Component {
         }
     }
     componentWillUnmount() {
-        this.props.store.closeSocket();
         this.props.store.unlisten(this.storeListener);
     }
     setUp(props){

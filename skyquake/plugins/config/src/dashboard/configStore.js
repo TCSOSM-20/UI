@@ -52,7 +52,7 @@ let AccountMeta = {
     }
 }
 
-export default class ConfigStore {
+export default class AccountStore {
     constructor() {
         this.account = {};
         this.accountType = 'openmano';
