@@ -42,7 +42,9 @@ Accounts.get = function(req) {
                             type: req.params.type
                         })
                     });
-                })
+                }, function(reason) {
+            reject(reason);
+        })
         } else {
             getAll(req, resolve, reject);
         }
@@ -66,6 +68,8 @@ Accounts.get = function(req) {
                 statusCode: 200,
                 data: ReturnData
             });
+        }, function(reason) {
+            reject(reason);
         })
     }
 }
