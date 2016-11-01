@@ -128,7 +128,15 @@ export default function(Alt){
           }).fail(function(xhr){
             //Authentication and the handling of fail states should be wrapped up into a connection class.
             Utils.checkAuthentication(xhr.status);
-            reject();
+            var error;
+            if(xhr.responseText) {
+              try {
+                error = JSON.stringify(xhr.responseText);
+              } catch(e){
+
+              }
+            }
+            reject(error);
           });
         })
       },
