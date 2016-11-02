@@ -184,9 +184,9 @@ class LaunchNetworkServiceStore {
     }
     launchNSRError(error) {
         var msg = 'Something went wrong while trying to instantiate. Check the error logs for more information';
-        // if(error) {
-        //     msg = error;
-        // }
+        if(error) {
+            msg = error;
+        }
         Alt.actions.global.showNotification.defer(msg);
         Alt.actions.global.hideScreenLoader.defer();
         this.setState({

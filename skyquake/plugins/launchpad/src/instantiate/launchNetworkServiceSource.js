@@ -131,9 +131,10 @@ export default function(Alt){
             var error;
             if(xhr.responseText) {
               try {
-                error = JSON.stringify(xhr.responseText);
+                error = JSON.parse(xhr.responseText);
+                error = JSON.parse(error.error)['rpc-reply']['rpc-error']['error-message'];
               } catch(e){
-
+                console.log(e);
               }
             }
             reject(error);
