@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -145,7 +145,10 @@ const DescriptorModelSerializer = {
 				if (confd.hasOwnProperty(key) && confd[key] === '') {
 					delete confd[key];
 				}
+				//removes choice properties from top level object and copies immediate children onto it.
+				checkForChoiceAndRemove(key, confd, vldModel);
 			}
+
 
 			const deepProperty = 'provider-network';
 			for (var key in confd[deepProperty]) {
@@ -186,10 +189,29 @@ const DescriptorModelSerializer = {
 	},
 	vdu: {
 		serialize(vduModel) {
-			const confd = _.omit(vduModel, ['uiState']);
+			const copy = _.clone(vduModel);
+			for (let k in copy) {
+				checkForChoiceAndRemove(k, copy, vduModel)
+			}
+			const confd = _.omit(copy, ['uiState']);
 			return confd;
 		}
 	}
 };
+
+
+function checkForChoiceAndRemove(k, confd, model) {
+				let state = model.uiState;
+				if (state.choice) {
+					let choice = state.choice[k]
+					if(choice) {
+						for (let key in confd[k]) {
+							confd[key] = confd[k][key]
+						};
+						delete confd[k];
+					}
+				}
+				return confd;
+			}
 
 export default DescriptorModelSerializer;

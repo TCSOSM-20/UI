@@ -342,6 +342,14 @@ export default function EditDescriptorModelProperties(props) {
 					}
 				});
 				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
+			} else {
+				property.properties.map(function(p) {
+					let pname = p.properties[0].name;
+					if(container.model.hasOwnProperty(pname)) {
+						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), [p.name, pname].join('.'));
+					}
+				})
+				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
 			}
 		}
 		//If selectedOptionValue is present, take first item in string which represents the case name.
@@ -358,7 +366,7 @@ export default function EditDescriptorModelProperties(props) {
 					{build(container, d, childPath, childValue, props)}
 				</div>
 			);
-		}) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.'))) : null
+		}) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name]) : null
 		// end magic
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 
@@ -510,6 +518,14 @@ export default function EditDescriptorModelProperties(props) {
 
 		if (property.type === 'choice') {
 			value = utils.resolvePath(container.model, ['uiState.choice'].concat(path, 'selected').join('.'));
+			if(!value) {
+				property.properties.map(function(p) {
+					let pname = p.properties[0].name;
+					if(container.model.hasOwnProperty(pname)) {
+						value = container.model[pname];
+					}
+				})
+			}
 		}
 
 		let displayValue = typeof value === 'object' ? '' : value;
