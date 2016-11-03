@@ -47,7 +47,6 @@ class Account extends React.Component {
         }
     }
     componentWillUnmount() {
-        this.props.store.closeSocket();
         this.props.store.unlisten(this.storeListener);
     }
     setUp(props){
