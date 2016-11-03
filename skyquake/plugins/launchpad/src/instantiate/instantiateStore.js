@@ -156,7 +156,7 @@ class LaunchNetworkServiceStore {
         let newState = {
             dataCenters: dataCenters || []
         };
-        if (this.ro['account-type'] == 'openmano') {
+	if (this.ro && this.ro['account-type'] == 'openmano') {
             newState.dataCenterID = dataCenters[this.ro.name][0].uuid
         }
         this.setState(newState)
@@ -183,7 +183,11 @@ class LaunchNetworkServiceStore {
         return window.location.hash = 'launchpad/' + tokenizedHash[2];
     }
     launchNSRError(error) {
-        Alt.actions.global.showError.defer('Something went wrong while trying to instantiate. Check the error logs for more information');
+        var msg = 'Something went wrong while trying to instantiate. Check the error logs for more information';
+        if(error) {
+            msg = error;
+        }
+        Alt.actions.global.showNotification.defer(msg);
         Alt.actions.global.hideScreenLoader.defer();
         this.setState({
             isLoading: false

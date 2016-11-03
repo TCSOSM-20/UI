@@ -128,7 +128,16 @@ export default function(Alt){
           }).fail(function(xhr){
             //Authentication and the handling of fail states should be wrapped up into a connection class.
             Utils.checkAuthentication(xhr.status);
-            reject();
+            var error;
+            if(xhr.responseText) {
+              try {
+                error = JSON.parse(xhr.responseText);
+                error = JSON.parse(error.error)['rpc-reply']['rpc-error']['error-message'];
+              } catch(e){
+                console.log(e);
+              }
+            }
+            reject(error);
           });
         })
       },

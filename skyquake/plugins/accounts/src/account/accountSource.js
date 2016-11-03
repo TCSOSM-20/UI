@@ -34,6 +34,7 @@ module.exports = function(Alt) {
             return new Promise(function(resolve, reject) {
               //If socket connection already exists, eat the request.
               if(state.socket) {
+                console.log('connection already exists')
                 return resolve(false);
               }
                $.ajax({

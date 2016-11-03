@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,6 +47,7 @@ class Account extends React.Component {
         }
     }
     componentWillUnmount() {
+        this.props.store.closeSocket();
         this.props.store.unlisten(this.storeListener);
     }
     setUp(props){
@@ -328,12 +329,12 @@ class Account extends React.Component {
                     <div className="accountForm-content" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                             <AccountConnectivityStatus status={Account['connection-status'].status} />
-                            {Account['connection-status'].status.toUpperCase()}
+                            {Account['connection-status'] && Account['connection-status'].status &&  Account['connection-status'].status.toUpperCase()}
                         </div>
                             <Button className="refreshList light" onClick={this.props.store.refreshAccount.bind(this, Account.name, AccountType)} label="REFRESH STATUS"></Button>
                     </div>
                     {
-                        Account['connection-status'].status.toUpperCase() === 'FAILURE' ?
+                        (Account['connection-status'] && Account['connection-status'].status && Account['connection-status'].status.toUpperCase()) === 'FAILURE' ?
                         displayFailureMessage(Account['connection-status'].details) : null
                     }
                 </div>
