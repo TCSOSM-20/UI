@@ -131,7 +131,13 @@ class LaunchNetworkServiceStore {
     }
     getLaunchCloudAccountSuccess(cloudAccounts) {
         let newState = {};
-        newState.cloudAccounts = cloudAccounts || [];
+        newState.cloudAccounts = cloudAccounts.filter(function(v) {
+            console.log(v)
+                return v['connection-status'].status == 'success';
+            }) || [];
+        if(cloudAccounts.length != newState.cloudAccounts.length) {
+            Alt.actions.global.showNotification.defer({type: 'warning', msg: 'One or more VIM accounts have failed to connect'});
+        }
         if(cloudAccounts && cloudAccounts.length > 0) {
             newState.selectedCloudAccount = cloudAccounts[0];
             if (cloudAccounts[0]['account-type'] == 'openstack') {

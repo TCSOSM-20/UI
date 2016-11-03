@@ -1664,7 +1664,7 @@ VDUR.consoleUrl.get = function(req) {
 CloudAccount.get = function(req) {
     var api_server = req.query["api_server"];
     var uri = utils.confdPort(api_server);
-    uri += APIVersion + '/api/config/cloud/account?deep';
+    uri += APIVersion + '/api/operational/cloud/account?deep';
     var headers = _.extend({}, constants.HTTP_HEADERS.accept.collection, {
         'Authorization': req.get('Authorization')
     });
