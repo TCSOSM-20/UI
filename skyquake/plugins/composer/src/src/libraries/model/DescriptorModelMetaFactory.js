@@ -82,7 +82,20 @@ export default {
 		// resolve paths like 'nsd' or 'vnfd.vdu' or 'nsd.constituent-vnfd'
 		const found = utils.resolvePath(modelMetaByPropertyNameMap, getPathForType(typeOrPath));
 		if (found) {
-			return found[':meta'].properties.map(p => p.name);
+			let result = [];
+			found[':meta'].properties.map((p) => {
+				// if(false) {
+				if(p.type == 'choice') {
+					result.push(p.name)
+					return p.properties.map(function(q){
+						result.push(q.properties[0].name);
+					})
+
+				} else  {
+					return result.push(p.name);
+				}
+			})
+			return result;
 		}
 		console.warn('no model uiState found for type', typeOrPath);
 	}

@@ -245,8 +245,9 @@ export default function EditDescriptorModelProperties(props) {
 
 				event.preventDefault();
 
-				const name = event.target.name;
+				let name = event.target.name;
 				const value = event.target.value;
+
 
 				/*
 					Transient State is stored for convenience in the uiState field.
@@ -255,22 +256,22 @@ export default function EditDescriptorModelProperties(props) {
 					the system to determine which type is selected by the name of
 					the element contained within the field.
 				 */
-
-				//const stateExample = {
-				//	uiState: {
-				//		choice: {
-				//			'conf-config': {
-				//				selected: 'rest',
-				//				'case': {
-				//					rest: {},
-				//					netconf: {},
-				//					script: {}
-				//				}
-				//			}
-				//		}
-				//	}
-				//};
-
+				/*
+					const stateExample = {
+						uiState: {
+							choice: {
+								'conf-config': {
+									selected: 'rest',
+									'case': {
+										rest: {},
+										netconf: {},
+										script: {}
+									}
+								}
+							}
+						}
+					};
+				*/
 				const statePath = ['uiState.choice'].concat(name);
 				const stateObject = utils.resolvePath(this.model, statePath.join('.')) || {};
 				const selected = stateObject.selected ? stateObject.selected.split('.')[1] : undefined;
@@ -278,19 +279,34 @@ export default function EditDescriptorModelProperties(props) {
 				utils.assignPathValue(this.model, statePath.join('.'), stateObject);
 
 				// write the current choice value into the state
-				const choiceObject = utils.resolvePath(this.model, [name, selected].join('.'));
-				if (choiceObject) {
-					utils.assignPathValue(stateObject, ['case', selected].join('.'), _.cloneDeep(choiceObject));
+				let choiceObject = utils.resolvePath(this.model, [name, selected].join('.'));
+				let isTopCase = false;
+				if (!choiceObject) {
+					isTopCase = true;
+					choiceObject = utils.resolvePath(this.model, [selected].join('.'));
+				}
+				utils.assignPathValue(stateObject, [selected].join('.'), _.cloneDeep(choiceObject));
+
+				if(this.model.uiState.choice.hasOwnProperty(name)) {
+					delete this.model[selected];
+					utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
+				} else {
+					// remove the current choice value from the model
+				utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
 				}
 
-				// remove the current choice value from the model
-				utils.removePathValue(this.model, [name, selected].join('.'));
+
 
 				// get any state for the new selected choice
-				const newChoiceObject = utils.resolvePath(stateObject, ['case', value].join('.')) || {};
+				const newChoiceObject = utils.resolvePath(stateObject, [value].join('.')) || {};
 
 				// assign new choice value to the model
-				utils.assignPathValue(this.model, [name, value].join('.'), newChoiceObject);
+				if (isTopCase) {
+					utils.assignPathValue(this.model, [name, value].join('.'), newChoiceObject);
+				} else {
+					utils.assignPathValue(this.model, [value].join('.'), newChoiceObject)
+				}
+
 
 				// update the selected name
 				utils.assignPathValue(this.model, statePath.concat('selected').join('.'), value);

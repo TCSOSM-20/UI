@@ -121,7 +121,9 @@ const DescriptorModelSerializer = {
 				return constituentVNFD;
 
 			});
-
+			for (var key in confd) {
+				checkForChoiceAndRemove(key, confd, nsdModel);
+			}
 			// serialize the VLD instances
 			confd.vld = confd.vld.map(d => {
 				return DescriptorModelSerializer.serialize(d);
@@ -142,11 +144,12 @@ const DescriptorModelSerializer = {
 			// once that is fixed, remove this piece of code.
 			// fix-start
 			for (var key in confd) {
-				if (confd.hasOwnProperty(key) && confd[key] === '') {
-					delete confd[key];
-				}
-				//removes choice properties from top level object and copies immediate children onto it.
-				checkForChoiceAndRemove(key, confd, vldModel);
+			  	if (confd.hasOwnProperty(key) && confd[key] === '') {
+                	delete confd[key];
+                } else {
+                	//removes choice properties from top level object and copies immediate children onto it.
+					checkForChoiceAndRemove(key, confd, vldModel);
+                }
 			}
 
 
@@ -157,8 +160,6 @@ const DescriptorModelSerializer = {
 				}
 			}
 			// fix-end
-
-
 			confd[property] = confd[property].map(d => DescriptorModelSerializer[property].serialize(d));
 			return confd;
 		}
@@ -189,7 +190,7 @@ const DescriptorModelSerializer = {
 	},
 	vdu: {
 		serialize(vduModel) {
-			const copy = _.clone(vduModel);
+			const copy = _.cloneDeep(vduModel);
 			for (let k in copy) {
 				checkForChoiceAndRemove(k, copy, vduModel)
 			}
@@ -201,17 +202,19 @@ const DescriptorModelSerializer = {
 
 
 function checkForChoiceAndRemove(k, confd, model) {
-				let state = model.uiState;
-				if (state.choice) {
-					let choice = state.choice[k]
-					if(choice) {
-						for (let key in confd[k]) {
-							confd[key] = confd[k][key]
-						};
-						delete confd[k];
-					}
+	let state = model.uiState;
+	if (state.choice) {
+		let choice = state.choice[k]
+		if(choice) {
+			for (let key in confd[k]) {
+				if(choice && (choice.selected.indexOf(key) > -1)) {
+					confd[key] = confd[k][key]
 				}
-				return confd;
-			}
+			};
+			delete confd[k];
+		}
+	}
+	return confd;
+}
 
 export default DescriptorModelSerializer;

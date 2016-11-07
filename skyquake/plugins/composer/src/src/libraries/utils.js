@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,7 +71,7 @@ export default {
 		}, obj);
 		resolvedObj[name] = value;
 	},
-	updatePathValue(obj, path, value) {
+	updatePathValue(obj, path, value, isCase) {
 		// todo: replace implementation of assignPathValue with this impl and
 		// remove updatePathValue (only need one function, not both)
 		// same as assignPathValue except removes property if value is undefined
@@ -92,18 +92,27 @@ export default {
 				if (isArray) {
 					r[p] = r[p].filter((d, i) => i !== index);
 				} else {
-					delete r[p][name];
+					if(isCase) {
+						delete r[name];
+					} else {
+						delete r[p][name];
+					}
 				}
 			}
-			return r[p];
+			if(isCase) {
+				return r;
+			} else {
+				return r[p];
+			}
+
 		}, obj);
 		if (!isRemove) {
 			resolvedObj[name] = value;
 		}
 	},
-	removePathValue(obj, path) {
+	removePathValue(obj, path, isCase) {
 		// note updatePathValue removes value if third argument is undefined
-		return this.updatePathValue(obj, path);
+		return this.updatePathValue(obj, path, undefined, isCase);
 	},
 
 	suffixAsInteger: (field) => {
