@@ -21,7 +21,7 @@ import SshKeyCard from './sshKeyCard.jsx';
 import SshKeyStore from './sshKeyStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import '../../node_modules/open-iconic/font/css/open-iconic.css';
-import 'style/base.scss';
+// import 'style/base.scss';
 
 
 class SshKeys extends Component {
