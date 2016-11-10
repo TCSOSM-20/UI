@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,20 @@
  */
 @import "style/_colors.scss";
 
+.sshKeyCards {
+    display:-ms-flexbox;
+    display:flex;
+    -ms-flex-direction:column;
+        flex-direction:column;
+}
+
 .sshKeyCard {
     display:-ms-flexbox;
     display:flex;
     -ms-flex-align: start;
         align-items: flex-start;
-    height:250px;
+    -ms-flex: 1 0 auto;
+        flex: 1 0 auto;
     border-top: 1px solid $neutral-white;
     &:nth-child(odd) {
         background:$gray-lighter;
@@ -58,20 +66,15 @@
     }
     &-key.sqTextInput {
         font-size:1rem;
-        -ms-flex-align: stretch;
-            -ms-grid-row-align: stretch;
-            align-items: stretch;
-            -ms-flex:1;
-                flex:1;
+
         > textarea {
             padding:0.5rem;
             min-height:190px;
         }
         > .readonly {
-            -ms-flex: 1;
-                flex: 1;
             background: none !important;
             word-break: break-all;
+            height:auto;
         }
     }
     &-name {
@@ -95,8 +98,8 @@
         -ms-flex-align: center;
         -ms-grid-row-align: center;
     align-items: center;
-        height: 100%;
-        border-left: 1px solid $neutral-white;
+        -ms-flex-item-align: center;
+            align-self: center;
         >div {
             display:-ms-flexbox;
             display:flex;

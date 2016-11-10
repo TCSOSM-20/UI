@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +121,9 @@ const DescriptorModelSerializer = {
 				return constituentVNFD;
 
 			});
-
+			for (var key in confd) {
+				checkForChoiceAndRemove(key, confd, nsdModel);
+			}
 			// serialize the VLD instances
 			confd.vld = confd.vld.map(d => {
 				return DescriptorModelSerializer.serialize(d);
@@ -142,10 +144,14 @@ const DescriptorModelSerializer = {
 			// once that is fixed, remove this piece of code.
 			// fix-start
 			for (var key in confd) {
-				if (confd.hasOwnProperty(key) && confd[key] === '') {
-					delete confd[key];
-				}
+			  	if (confd.hasOwnProperty(key) && confd[key] === '') {
+                	delete confd[key];
+                } else {
+                	//removes choice properties from top level object and copies immediate children onto it.
+					checkForChoiceAndRemove(key, confd, vldModel);
+                }
 			}
+
 
 			const deepProperty = 'provider-network';
 			for (var key in confd[deepProperty]) {
@@ -154,8 +160,6 @@ const DescriptorModelSerializer = {
 				}
 			}
 			// fix-end
-
-
 			confd[property] = confd[property].map(d => DescriptorModelSerializer[property].serialize(d));
 			return confd;
 		}
@@ -186,10 +190,31 @@ const DescriptorModelSerializer = {
 	},
 	vdu: {
 		serialize(vduModel) {
-			const confd = _.omit(vduModel, ['uiState']);
+			const copy = _.cloneDeep(vduModel);
+			for (let k in copy) {
+				checkForChoiceAndRemove(k, copy, vduModel)
+			}
+			const confd = _.omit(copy, ['uiState']);
 			return confd;
 		}
 	}
 };
+
+
+function checkForChoiceAndRemove(k, confd, model) {
+	let state = model.uiState;
+	if (state.choice) {
+		let choice = state.choice[k]
+		if(choice) {
+			for (let key in confd[k]) {
+				if(choice && (choice.selected.indexOf(key) > -1)) {
+					confd[key] = confd[k][key]
+				}
+			};
+			delete confd[k];
+		}
+	}
+	return confd;
+}
 
 export default DescriptorModelSerializer;

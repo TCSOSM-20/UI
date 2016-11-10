@@ -173,8 +173,8 @@ class SkyquakeContainerStore {
 
         } else {
             state.notificationMessage = data.msg;
-            if(data.type == 'success') {
-                state.notificationType = 'success';
+            if(data.type) {
+                state.notificationType = data.type;
             }
         }
         this.setState(state);

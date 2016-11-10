@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,23 +19,33 @@
 @import 'style/_colors.scss';
 @import '../../node_modules/open-iconic/font/css/open-iconic.css';
 .launchpadCard {
+  display:-ms-flexbox;
   display:flex;
   margin-top: 0.75rem;
   &-body{
     position: relative;
   }
   .deletingIndicator {
+    display: -ms-flexbox;
     display: flex;
-    flex:1;
-    align-items: center;
-    justify-content: center;
+    -ms-flex:1;
+        flex:1;
+    -ms-flex-align: center;
+        align-items: center;
+    -ms-flex-pack: center;
+        justify-content: center;
   }
   &_launch {
+    display:-ms-flexbox;
     display:flex;
-    flex-direction:column;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
+    -ms-flex-direction:column;
+        flex-direction:column;
+    -ms-flex: 1;
+        flex: 1;
+    -ms-flex-pack: center;
+        justify-content: center;
+    -ms-flex-align: center;
+        align-items: center;
     img {
       width: 88px;
       padding:1rem;
@@ -47,27 +57,39 @@
     min-width: 693px;
     max-width: 693px;
     &-link, a {
+      display:-ms-flexbox;
       display:flex;
-      align-items:center;
+      -ms-flex-align:center;
+          align-items:center;
       text-decoration: none;
       color: inherit;
     }
     &-link {
       margin-left:0.5rem;
       cursor:pointer;
+      .title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 460px;
+        display: block;
+      }
     }
     .oi {
       margin:0 0 -0.25rem 0.5rem;
     }
     &-title {
+      display: -ms-flexbox;
       display: flex;
       line-height: 3rem;
       background-color: $brand-green-light;
-      //background-color: $primary-header;
+      /*background-color: $primary-header;*/
       position: relative;
-      flex-direction: row;
-      align-items: center;
-      justify-content: flex-start;
+      -ms-flex-direction: row;
+          flex-direction: row;
+      -ms-flex-align: center;
+          align-items: center;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
       padding-right:1rem;
       &-off {
         background-color:white;
@@ -92,9 +114,12 @@
         position:relative;
       }
     &-actions {
-      flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+      display: -ms-flexbox;
       display: flex;
-      justify-content: flex-end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
       padding-right: 1rem;
       h3{
         padding-right:0.25rem;
@@ -105,8 +130,10 @@
     &-status {
       background-color: $brand-green;
       &-current {
+        display:-ms-flexbox;
         display:flex;
-        justify-content:space-between;
+        -ms-flex-pack:justify;
+            justify-content:space-between;
         padding: 0.5rem 0;
         span,a {
           padding: 0 0.25rem;
@@ -121,11 +148,15 @@
     }
     &-operational-status {
       &_loading {
+        display:-ms-flexbox;
         display:flex;
-        flex-direction:column;
+        -ms-flex-direction:column;
+            flex-direction:column;
+        -ms-flex-pack: center;
+            justify-content: center;
         justify-content: center;
-        justify-content: center;
-        align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
         color:$gray-darkest;
      }
      &_open {
@@ -137,11 +168,16 @@
         position: absolute;
         width: 100%;
         z-index: 99;
+        display: -ms-flexbox;
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        align-content: center;
+        -ms-flex-direction: column;
+            flex-direction: column;
+        -ms-flex-align: center;
+            align-items: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-line-pack: center;
+            align-content: center;
         color: black;
         h2{
               padding: 2rem;
@@ -174,10 +210,14 @@
     &-vnfr_management-links {
 
       &_loading {
+        display:-ms-flexbox;
         display:flex;
-        flex-direction:column;
-        justify-content: center;
-        align-items: center;
+        -ms-flex-direction:column;
+            flex-direction:column;
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-align: center;
+            align-items: center;
         color:$gray-darkest;
      }
       &_open {
@@ -189,11 +229,16 @@
         position:absolute;
         width:100%;
         z-index: 99;
+        display: -ms-flexbox;
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        align-content: center;
+        -ms-flex-direction: column;
+            flex-direction: column;
+        -ms-flex-align: center;
+            align-items: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-line-pack: center;
+            align-content: center;
         color:black;
 
         .notice {
@@ -229,7 +274,9 @@
           height: inherit;
         }
         li {
-          justify-content: space-between;
+          -ms-flex-pack: justify;
+              justify-content: space-between;
+          display: -ms-flexbox;
           display: flex;
         }
       }
@@ -256,31 +303,39 @@
     .empty {
       min-height:50px;
       max-width: 100%;
+      display:-ms-flexbox;
       display:flex;
-      justify-content: center;
-      align-items: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+      -ms-flex-align: center;
+          align-items: center;
     }
   }
   &_title {
       color:$black;
       background:$secondary-header;
       padding: 0.5rem;
-      // margin: 0 0 0.5rem 0;
-      // border-top:1px solid #666;
-      // border-bottom:1px solid #666;
+      /* margin: 0 0 0.5rem 0;*/
+      /* border-top:1px solid #666;*/
+      /* border-bottom:1px solid #666;*/
       border-top:1px solid #f1f1f1;
       border-bottom:1px solid #f1f1f1;
   }
 
   &_data-list {
     ul, dl{
+      display:-ms-flexbox;
       display:flex;
-      flex-direction:row;
-      flex-wrap:wrap;
-      align-items:flex-start;
+      -ms-flex-direction:row;
+          flex-direction:row;
+      -ms-flex-wrap:wrap;
+          flex-wrap:wrap;
+      -ms-flex-align:start;
+          align-items:flex-start;
        font-size: 0.825rem;
       li{
-        flex:1 1 30%;
+        -ms-flex:1 1 30%;
+            flex:1 1 30%;
       }
     }
     dl {
@@ -305,7 +360,7 @@
     }
   }
   &_data-list.EPA-PARAMS {
-      // height: 105px;
+      /* height: 105px;*/
       width: 715px;
       overflow-y: scroll;
       h1 {
@@ -316,10 +371,13 @@
       }
   }
   &_controls{
+    display:-ms-flexbox;
     display:flex;
-    flex-direction:row;
+    -ms-flex-direction:row;
+        flex-direction:row;
     .react-tabs {
-      flex: auto;
+      -ms-flex: auto;
+          flex: auto;
     [role=tab][aria-selected=true] {
       background:none;
       border:none;
@@ -343,11 +401,14 @@
       border:none;
       margin: 0 0 10px;
       padding: 0;
+      display: -ms-flexbox;
       display: flex;
-      justify-content: flex-end;
+      -ms-flex-pack: end;
+          justify-content: flex-end;
 
          [role=tab]:first-child {
-            flex: 1;
+            -ms-flex: 1;
+                flex: 1;
          }
     }
 
@@ -355,7 +416,7 @@
 
   }
   .slick-initialized.slick-slider {
-    // min-height:200px;
+    /* min-height:200px;*/
   }
 
   .close-btn {

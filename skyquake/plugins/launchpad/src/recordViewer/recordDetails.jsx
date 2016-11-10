@@ -27,7 +27,17 @@ export default class RecordDetails extends React.Component{
   }
   render(){
     let html;
-    let text = JSON.stringify(this.props.data, undefined, 2);
+    // Prism can't handle escaped \n and other characters
+    let text = JSON.stringify(this.props.data, undefined, 2)
+                .replace(/\r\n/g, '\n')
+                .replace(/\\\\n/g, "\n")
+                .replace(/\\\\'/g, "\'")
+                .replace(/\\\\"/g, '\"')
+                .replace(/\\\\&/g, "\&")
+                .replace(/\\\\r/g, "\r")
+                .replace(/\\\\t/g, "\t")
+                .replace(/\\\\b/g, "\b")
+                .replace(/\\\\f/g, "\f");
     // html = this.props.isLoading ? <LoadingIndicator size={10} show={true} /> : <pre className="json">{JSON.stringify(this.props.data, undefined, 2)}</pre>;
     html = this.props.isLoading ? <LoadingIndicator size={10} show={true} /> : Prism.highlight(text, Prism.languages.javascript, 'javascript');
     return (

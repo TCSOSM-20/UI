@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -127,12 +127,12 @@ class LaunchpadHeader extends React.Component {
             <h3 className="launchpadCard_header-link">
               {
                 isLoading ?
-                            <a title="Open Viewport Dashboard" style={{cursor:'default'}}>
+                            <a title={this.props.name} className="title" style={{cursor:'default'}}>
                               {this.props.name}
                             </a>
                           : <Link to={{pathname: '/viewport', query: {id: this.props.nsr.id,
                               sdnpresent: sdnpresent}}}
-                              title="Open Viewport Dashboard">
+                              title={"Open Viewport Dashboard for " + this.props.name}>
                               {this.props.name}
                               <span className="oi" data-glyph="external-link" aria-hidden="true"></span>
                             </Link>

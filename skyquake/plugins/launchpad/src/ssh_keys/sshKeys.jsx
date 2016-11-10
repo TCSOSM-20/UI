@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ import SshKeyCard from './sshKeyCard.jsx';
 import SshKeyStore from './sshKeyStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import '../../node_modules/open-iconic/font/css/open-iconic.css';
-import 'style/base.scss';
+// import 'style/base.scss';
 
 
 class SshKeys extends Component {
@@ -45,7 +45,7 @@ class SshKeys extends Component {
         let Store = self.Store;
         // return <div>test</div>
         return (
-          <div>
+          <div className="sshKeyCards">
             {
               self.state.data && self.state.data.keys.map(function(k, i) {
                 let sshKey = self.state.data.entities[k];

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +27,7 @@ export default {
 	nsd: common.concat(['constituent-vnfd', 'vnffgd', 'vld']),
 	vld: common.concat([]),
 	vnfd: common.concat(['vdu', 'internal-vld']),
-	'vnfd.vdu': common.concat(['image', 'external-interface', 'vm-flavor', 'cloud-init']),
+	'vnfd.vdu': common.concat(['image', 'external-interface', 'vm-flavor', 'cloud-init', 'filename']),
 	// white-list valid fields to send in the meta field
 	meta: ['containerPositionMap']
 };
