@@ -407,7 +407,8 @@ function connectionManager(type, connection) {
                 name: nsrs.name,
                 id: nsrs.id,
                 nsd_name: nsrs.nsd_name,
-                type: 'nsr'
+                type: 'nsr',
+                logo: nsrs.nsd && nsrs.nsd.logo
             });
 
             // Scaled VNFRs
@@ -424,10 +425,12 @@ function connectionManager(type, connection) {
 
                     sgInstance['vnfrs'] && sgInstance['vnfrs'].map((vnfr, vnfrIndex) => {
                         scaledVnfrs.push(vnfr);
+                        let vnfrObj = _.findWhere(nsrs.vnfrs, {id: vnfr});
                         scaledVnfNav.vnfr.push({
-                            name: _.findWhere(nsrs.vnfrs, {id: vnfr})['short-name'],
+                            name: vnfrObj['short-name'],
                             id: vnfr,
-                            type: 'vnfr'
+                            type: 'vnfr',
+                            logo: vnfrObj['vnfd'] && vnfrObj['vnfd']['logo']
                         });
                     });
                     nav.push(scaledVnfNav);
@@ -440,7 +443,8 @@ function connectionManager(type, connection) {
                     nav.push({
                         name: vnfr["short-name"],
                         id: vnfr.id,
-                        type: 'vnfr'
+                        type: 'vnfr',
+                        logo: vnfr['vnfd'] && vnfr['vnfd']['logo']
                     });
                 }
             });

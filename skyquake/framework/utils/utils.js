@@ -295,4 +295,20 @@ Utils.arrayIntersperse = (arr, sep) => {
     }, [arr[0]]);
 }
 
+Utils.cleanImageDataURI = (imageString, type, id) => {
+    if (/\bbase64\b/g.test(imageString)) {
+        return imageString;
+    } else if (/<\?xml\b/g.test(imageString)) {
+        const imgStr = imageString.substring(imageString.indexOf('<?xml'));
+        return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(imgStr);
+    } else if (/\.(svg|png|gif|jpeg|jpg)$/.test(imageString)) {
+        return '/composer/assets/logos/' + type + '/' + id + '/' + imageString;
+        // return require('../images/logos/' + imageString);
+    }
+    if(type == 'nsd' || type == 'vnfd') {
+        return require('style/img/catalog-'+type+'-default.svg');
+    }
+    return require('style/img/catalog-default.svg');
+}
+
 module.exports = Utils;
