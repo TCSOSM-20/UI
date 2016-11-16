@@ -287,15 +287,15 @@ export default function EditDescriptorModelProperties(props) {
 				}
 				utils.assignPathValue(stateObject, [selected].join('.'), _.cloneDeep(choiceObject));
 
-				if(this.model.uiState.choice.hasOwnProperty(name)) {
-					delete this.model[selected];
-					utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
-				} else {
-					// remove the current choice value from the model
-				utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
+				if(selected) {
+					if(this.model.uiState.choice.hasOwnProperty(name)) {
+						delete this.model[selected];
+						utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
+					} else {
+						// remove the current choice value from the model
+						utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
+					}
 				}
-
-
 
 				// get any state for the new selected choice
 				const newChoiceObject = utils.resolvePath(stateObject, [value].join('.')) || {};
@@ -333,7 +333,7 @@ export default function EditDescriptorModelProperties(props) {
 			return {optionName: d.name};
 		});
 
-		const options = [{optionName: ''}].concat(cases).map((d, i) => {
+		const options = [{optionName: '', optionValue: false}].concat(cases).map((d, i) => {
 			return (
 				<option key={i} value={d.optionValue} title={d.optionTitle}>
 					{d.optionName}
@@ -353,7 +353,7 @@ export default function EditDescriptorModelProperties(props) {
 			if(fieldProperties) {
 				//Check each case statement in model and see if it is present in container model.
 				cases.map(function(c){
-					if(fieldProperties.hasOwnProperty(c.optionName)) {
+					if(fieldProperties.hasOwnProperty(c.optionValue.split('.')[1])) {
 						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), c.optionValue);
 					}
 				});

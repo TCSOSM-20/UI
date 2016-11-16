@@ -129,7 +129,7 @@ const DescriptorModelSerializer = {
 				return DescriptorModelSerializer.serialize(d);
 			});
 
-			return confd;
+			return cleanEmptyTopKeys(confd);
 
 		}
 	},
@@ -161,7 +161,7 @@ const DescriptorModelSerializer = {
 			}
 			// fix-end
 			confd[property] = confd[property].map(d => DescriptorModelSerializer[property].serialize(d));
-			return confd;
+			return cleanEmptyTopKeys(confd);
 		}
 	},
 	'vnfd-connection-point-ref': {
@@ -185,7 +185,7 @@ const DescriptorModelSerializer = {
 			if(!vnfdFields) vnfdFields = DescriptorModelMetaFactory.getModelFieldNamesForType('vnfd').concat('uiState');
 			const confd = _.pick(vnfdModel, vnfdFields);
 			confd.vdu = confd.vdu.map(d => DescriptorModelSerializer.serialize(d));
-			return confd;
+			return cleanEmptyTopKeys(confd);
 		}
 	},
 	vdu: {
@@ -195,26 +195,48 @@ const DescriptorModelSerializer = {
 				checkForChoiceAndRemove(k, copy, vduModel)
 			}
 			const confd = _.omit(copy, ['uiState']);
-			return confd;
+			return cleanEmptyTopKeys(confd);
 		}
 	}
 };
 
 
 function checkForChoiceAndRemove(k, confd, model) {
-	let state = model.uiState;
-	if (state.choice) {
-		let choice = state.choice[k]
-		if(choice) {
-			for (let key in confd[k]) {
-				if(choice && (choice.selected.indexOf(key) > -1)) {
-					confd[key] = confd[k][key]
-				}
-			};
-			delete confd[k];
-		}
-	}
-	return confd;
+    let state = model.uiState;
+    if (state.choice) {
+        let choice = state.choice[k]
+        if(choice) {
+            if (choice.constructor.name == "Array") {
+                for(let i = 0; i < choice.length; i++) {
+                    for (let key in confd[k][i]) {
+                        if(choice[i] && (choice[i].selected.indexOf(key) > -1)) {
+                            confd[k][i][key] = confd[k][i][key]
+                        }
+                        confd[key];
+                    };
+                }
+            } else {
+                for (let key in confd[k]) {
+                    if(choice && (choice.selected.indexOf(key) > -1)) {
+                        confd[key] = confd[k][key]
+                    }
+                };
+                delete confd[k];
+            }
+
+        }
+    }
+    return confd;
+}
+
+function cleanEmptyTopKeys(m){
+    Object.keys(m).forEach(k => {
+        const isEmptyObject = typeof m[k] === 'object' && _.isEmpty(m[k]);
+        if (typeof m[k] === 'undefined' || isEmptyObject || m[k] === '') {
+            delete m[k];
+        }
+    });
+    return m;
 }
 
 export default DescriptorModelSerializer;
