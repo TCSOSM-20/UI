@@ -32,6 +32,16 @@ export default class RecordNavigator extends React.Component{
       console.log('Bad logo path, using default');
       e.target.src = require('style/img/catalog-default.svg');
   }
+
+  getDescriptorTypeFromRecordType = (recordType) => {
+      if (recordType == 'nsr') {
+        return 'nsd';
+      } else if (recordType == 'vnfr') {
+        return 'vnfd';
+      }
+      return null;
+  }
+
   render(){
     let navClass = 'catalogItems';
 
@@ -60,7 +70,7 @@ export default class RecordNavigator extends React.Component{
             <div key={'id' + k + '-' + vnfr.id}  onClick={self.props.loadRecord.bind(self,vnfr)} className={iClassName}>
               <img
                   onError={self.handleImageError}
-                  src={Utils.cleanImageDataURI(vnfr.logo, vnfr.type, vnfr.id)}
+                  src={Utils.cleanImageDataURI(vnfr.logo, self.getDescriptorTypeFromRecordType(vnfr.type), vnfr.id)}
               />
               <section id={vnfr.id}>
               <h1 title={vnfr.name}>{vnfr.name}</h1>
@@ -77,7 +87,7 @@ export default class RecordNavigator extends React.Component{
           <div key={'id' + k + '-' + n.id}  onClick={self.props.loadRecord.bind(self,n)} className={itemClassName}>
             <img
                 onError={self.handleImageError}
-                src={Utils.cleanImageDataURI(n.logo, n.type, n.id)}
+                src={Utils.cleanImageDataURI(n.logo, self.getDescriptorTypeFromRecordType(n.type), n.id)}
             />
             <section id={n.id}>
             <h1 title={n.name}>{n.name}</h1>
