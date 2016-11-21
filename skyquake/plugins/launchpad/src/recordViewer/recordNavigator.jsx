@@ -45,9 +45,9 @@ export default class RecordNavigator extends React.Component{
 
   getDescriptorIdFromRecord = (record) => {
       if (record.type && record.type == 'nsr') {
-          return nsr.nsd && nsr.nsd.id;
+          return record.nsd && record.nsd.id;
       } else if (record.type && record.type == 'vnfr') {
-          return vnfr.vnfd && vnfr.vnfd.id;
+          return record.vnfd && record.vnfd.id;
       }
 
       return null;
