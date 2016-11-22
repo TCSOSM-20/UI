@@ -408,7 +408,8 @@ function connectionManager(type, connection) {
                 id: nsrs.id,
                 nsd_name: nsrs.nsd_name,
                 type: 'nsr',
-                logo: nsrs.nsd && nsrs.nsd.logo
+                logo: nsrs.nsd && nsrs.nsd.logo,
+                logoId: nsrs.nsd && nsrs.nsd && nsrs.nsd.id
             });
 
             // Scaled VNFRs
@@ -430,7 +431,8 @@ function connectionManager(type, connection) {
                             name: vnfrObj['short-name'],
                             id: vnfr,
                             type: 'vnfr',
-                            logo: vnfrObj['vnfd'] && vnfrObj['vnfd']['logo']
+                            logo: vnfrObj['vnfd'] && vnfrObj['vnfd']['logo'],
+                            logoId: vnfrObj['vnfd'] && vnfrObj['vnfd']['id']
                         });
                     });
                     nav.push(scaledVnfNav);
@@ -444,7 +446,8 @@ function connectionManager(type, connection) {
                         name: vnfr["short-name"],
                         id: vnfr.id,
                         type: 'vnfr',
-                        logo: vnfr['vnfd'] && vnfr['vnfd']['logo']
+                        logo: vnfr['vnfd'] && vnfr['vnfd']['logo'],
+                        logoId: vnfr['vnfd'] && vnfr['vnfd']['id']
                     });
                 }
             });

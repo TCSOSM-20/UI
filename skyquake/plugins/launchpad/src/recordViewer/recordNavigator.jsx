@@ -43,16 +43,6 @@ export default class RecordNavigator extends React.Component{
       return null;
   }
 
-  getDescriptorIdFromRecord = (record) => {
-      if (record.type && record.type == 'nsr') {
-          return record.nsd && record.nsd.id;
-      } else if (record.type && record.type == 'vnfr') {
-          return record.vnfd && record.vnfd.id;
-      }
-
-      return null;
-  }
-
   render(){
     let navClass = 'catalogItems';
 
@@ -81,7 +71,7 @@ export default class RecordNavigator extends React.Component{
             <div key={'id' + k + '-' + vnfr.id}  onClick={self.props.loadRecord.bind(self,vnfr)} className={iClassName}>
               <img
                   onError={self.handleImageError}
-                  src={Utils.cleanImageDataURI(vnfr.logo, self.getDescriptorTypeFromRecordType(vnfr.type), getDescriptorIdFromRecord(vnfr))}
+                  src={Utils.cleanImageDataURI(vnfr.logo, self.getDescriptorTypeFromRecordType(vnfr.type), vnfr.logoId)}
               />
               <section id={vnfr.id}>
               <h1 title={vnfr.name}>{vnfr.name}</h1>
@@ -98,7 +88,7 @@ export default class RecordNavigator extends React.Component{
           <div key={'id' + k + '-' + n.id}  onClick={self.props.loadRecord.bind(self,n)} className={itemClassName}>
             <img
                 onError={self.handleImageError}
-                src={Utils.cleanImageDataURI(n.logo, self.getDescriptorTypeFromRecordType(n.type), self.getDescriptorIdFromRecord(n))}
+                src={Utils.cleanImageDataURI(n.logo, self.getDescriptorTypeFromRecordType(n.type), n.logoId)}
             />
             <section id={n.id}>
             <h1 title={n.name}>{n.name}</h1>
