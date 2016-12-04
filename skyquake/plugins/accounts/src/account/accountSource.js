@@ -42,7 +42,7 @@ module.exports = function(Alt) {
                 type: 'POST',
                 beforeSend: Utils.addAuthorizationStub,
                 data: {
-                    url: '/accounts/all?api_server=' + API_SERVER
+                    url: 'accounts/all?api_server=' + API_SERVER
                 },
                 success: function(data, textStatus, jqXHR) {
                   Utils.checkAndResolveSocketRequest(data, resolve, reject);
