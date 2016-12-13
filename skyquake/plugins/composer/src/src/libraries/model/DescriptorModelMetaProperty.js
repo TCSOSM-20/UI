@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,10 +35,10 @@ export default {
 		return /leaf|choice/.test(property.type);
 	},
 	isList(property = {}) {
-		return /list|leaf-list/.test(property.type);
+        return /list|leaf_list/.test(property.type);
 	},
 	isLeafList(property = {}) {
-		return property.type === 'leaf-list';
+        return property.type === 'leaf_list';
 	},
 	isArray(property = {}) {
 		// give '1' or '0..N' or '0..1' or '0..5' determine if represents an array
@@ -58,7 +58,7 @@ export default {
 		return /^1/.test(property.cardinality);
 	},
 	isObject(property = {}) {
-		return !/^(leaf|leaf-list)$/.test(property.type);
+        return !/^(leaf|leaf_list)$/.test(property.type);
 	},
 	isSimpleList(property = {}) {
 		return _.contains(DescriptorModelFields.simpleList, property.name);
