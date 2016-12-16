@@ -115,6 +115,14 @@ let AccountMeta = {
             }, {
                 label: "Authentication URL",
                 ref: 'auth_url'
+            },{
+                label: "User Domain",
+                ref: 'user-domain',
+                optional: true
+            },{
+                label: "Project Domain",
+                ref: 'project-domain',
+                optional: true
             }, {
                 label: "Tenant",
                 ref: 'tenant'
