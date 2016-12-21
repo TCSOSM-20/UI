@@ -127,9 +127,9 @@ class LoggingStore {
                 // missing elements is not allowed!
                 // When backend supports it, in loggingSource change the order of operations
                 // // Delete first followed by save/put.
-                // _.remove(loggingConfig.sinks[sinkIndex].filter.category, {
-                //   name: catsev.name
-                // });
+                _.remove(loggingConfig.sinks[sinkIndex].filter.category, {
+                  name: catsev.name
+                });
               } else {
                 sink.filter.category[catIndex] = catsev;
               }
