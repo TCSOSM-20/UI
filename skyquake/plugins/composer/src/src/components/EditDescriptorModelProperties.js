@@ -205,7 +205,7 @@ export default function EditDescriptorModelProperties(props) {
 		}
 
 		if (isLeafRef) {
-			let fullFieldKey = fieldKey;
+			let fullFieldKey = _.isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
 			let containerRef = container;
 			while (containerRef.parent) {
 				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
