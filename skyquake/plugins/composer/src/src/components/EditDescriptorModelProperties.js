@@ -39,6 +39,7 @@ import SelectionManager from '../libraries/SelectionManager'
 import DeletionManager from '../libraries/DeletionManager'
 import DescriptorModelIconFactory from '../libraries/model/IconFactory'
 import getEventPath from '../libraries/getEventPath'
+import CatalogDataStore from '../stores/CatalogDataStore'
 
 import imgAdd from '../../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
@@ -173,12 +174,15 @@ export default function EditDescriptorModelProperties(props) {
 	}
 
 	function buildField(container, property, path, value, fieldKey) {
+		let cds = CatalogDataStore;
+		let catalogs = cds.getTransientCatalogs();
 
 		const name = path.join('.');
 		const isEditable = true;
 		const isGuid = Property.isGuid(property);
 		const onChange = onFormFieldValueChanged.bind(container);
 		const isEnumeration = Property.isEnumeration(property);
+		const isLeafRef = Property.isLeafRef(property);
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 		const placeholder = changeCase.title(property.name);
 		const className = ClassNames(property.name + '-input', {'-is-guid': isGuid});
@@ -196,6 +200,26 @@ export default function EditDescriptorModelProperties(props) {
 			if (!isValueSet || property.cardinality === '0..1') {
 				const noValueDisplayText = changeCase.title(property.name);
 				options.unshift(<option key={'(value-not-in-enum)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
+			}
+			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+		}
+
+		if (isLeafRef) {
+			let fullFieldKey = fieldKey;
+			let containerRef = container;
+			while (containerRef.parent) {
+				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
+				containerRef = containerRef.parent;
+			}
+			const leafRefPathValues = Property.getLeafRef(property, path, value, fullFieldKey, catalogs, container);
+
+			const options = leafRefPathValues && leafRefPathValues.map((d, i) => {
+				return <option key={fieldKey.toString() + ':' + i} value={d.value}>{d.value}</option>;
+			});
+			const isValueSet = leafRefPathValues.filter(d => d.isSelected).length > 0;
+			if (!isValueSet || property.cardinality === '0..1') {
+				const noValueDisplayText = changeCase.title(property.name);
+				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
 			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
 		}

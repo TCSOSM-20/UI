@@ -29,6 +29,7 @@ import changeCase from 'change-case'
 import InstanceCounter from './../InstanceCounter'
 import DescriptorModelFields from './DescriptorModelFields'
 import DescriptorTemplateFactory from './DescriptorTemplateFactory'
+import utils from '../utils'
 
 export default {
 	isLeaf(property = {}) {
@@ -39,6 +40,10 @@ export default {
 	},
 	isLeafList(property = {}) {
         return property.type === 'leaf_list';
+	},
+	isLeafRef(property = {}) {
+		const type = property['data-type'] || {};
+		return type.hasOwnProperty('leafref');
 	},
 	isArray(property = {}) {
 		// give '1' or '0..N' or '0..1' or '0..5' determine if represents an array
@@ -106,6 +111,30 @@ export default {
 			//}
 			return {name: enumName, value: enumValue, isSelected: String(enumValue) === String(value)};
 		});
+	},
+	getLeafRef(property = {}, path, value, fullFieldKey, transientCatalogs, container) {
+		const leafRefPath = property['data-type']['leafref']['path'];
+
+		const transientCatalogHash = {};
+
+		transientCatalogs.map((catalog) => {
+			transientCatalogHash[catalog.type + '-catalog'] = {};
+			transientCatalogHash[catalog.type + '-catalog'][catalog.type] = catalog['descriptors'];
+		});
+
+		let leafRefPathValues = utils.resolveLeafRefPath(transientCatalogHash, leafRefPath, fullFieldKey, path, container);
+
+		let leafRefObjects = [];
+
+		leafRefPathValues && leafRefPathValues.map((leafRefPathValue) => {
+			leafRefObjects.push({
+				name: leafRefPathValue,
+				value: leafRefPathValue,
+				isSelected: String(leafRefPathValue) === String(value)
+			});
+		});
+
+		return leafRefObjects;
 	},
 	isGuid(property = {}) {
 		const type = property['data-type'];

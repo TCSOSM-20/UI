@@ -61,6 +61,14 @@ class CatalogDataStore {
 		this.registerAsync(CatalogDataSource);
 		this.bindActions(CatalogDataSourceActions);
 		this.bindActions(CatalogItemsActions);
+		this.exportPublicMethods({
+            getCatalogs: this.getCatalogs,
+            getCatalogItemById: this.getCatalogItemById,
+            getCatalogItemByUid: this.getCatalogItemByUid,
+            getTransientCatalogs: this.getTransientCatalogs,
+            getTransientCatalogItemById: this.getTransientCatalogItemById,
+            getTransientCatalogItemByUid: this.getTransientCatalogItemByUid
+        });
 	}
 
 	resetSelectionState = () => {
@@ -70,6 +78,10 @@ class CatalogDataStore {
 
 	getCatalogs() {
 		return this.catalogs || (this.catalogs = []);
+	}
+
+	getTransientCatalogs() {
+		return this.state.catalogs || (this.state.catalogs = []);
 	}
 
 	getAllSelectedCatalogItems() {
@@ -95,8 +107,20 @@ class CatalogDataStore {
 		}, [])[0];
 	}
 
+	getTransientCatalogItemById(id) {
+		return this.getTransientCatalogs().reduce((r, catalog) => {
+			return r.concat(catalog.descriptors.filter(d => d.id === id));
+		}, [])[0];
+	}
+
 	getCatalogItemByUid(uid) {
 		return this.getCatalogs().reduce((r, catalog) => {
+			return r.concat(catalog.descriptors.filter(d => UID.from(d) === uid));
+		}, [])[0];
+	}
+
+	getTransientCatalogItemByUid(uid) {
+		return this.getTransientCatalogs().reduce((r, catalog) => {
 			return r.concat(catalog.descriptors.filter(d => UID.from(d) === uid));
 		}, [])[0];
 	}
