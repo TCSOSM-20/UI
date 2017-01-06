@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,10 +47,11 @@ import CatalogDataStore from '../stores/CatalogDataStore'
 import TooltipManager from '../libraries/TooltipManager'
 import CatalogItemsActions from '../actions/CatalogItemsActions'
 import CommonUtils from 'utils/utils.js'
-
+import FileManagerActions from './filemanager/FileManagerActions';
 import 'normalize.css'
 import '../styles/AppRoot.scss'
 import 'style/layout.scss'
+
 
 const resizeManager = new ResizableManager(window);
 
@@ -58,6 +59,7 @@ const clearLocalStorage = utils.getSearchParams(window.location).hasOwnProperty(
 
 const preventDefault = e => e.preventDefault();
 const clearDragState = () => ComposerAppActions.setDragState(null);
+
 
 const ComposerApp = React.createClass({
 	mixins: [PureRenderMixin],
@@ -71,6 +73,9 @@ const ComposerApp = React.createClass({
 		if (clearLocalStorage) {
 			window.localStorage.clear();
 		}
+        if(this.item) {
+            FileManagerActions.openFileManagerSockets();
+        }
 		this.state.isLoading = CatalogDataStore.getState().isLoading;
 		ComposerAppStore.listen(this.onChange);
 		CatalogDataStore.listen(this.onCatalogDataChanged);
@@ -88,6 +93,7 @@ const ComposerApp = React.createClass({
 		window.removeEventListener('dragover', preventDefault);
 		window.removeEventListener('drop', preventDefault);
 		window.removeEventListener('drop', clearDragState);
+        FileManagerActions.closeFileManagerSockets();
 		// resizeManager automatically registered its event handlers
 		resizeManager.removeAllEventListeners();
 		ComposerAppStore.unlisten(this.onChange);
@@ -178,14 +184,17 @@ const ComposerApp = React.createClass({
 			const hasNoCatalogs = CatalogDataStore.getState().catalogs.length === 0;
 			const isLoading = self.state.isLoading;
 
+            //Bridge element for Crouton fix. Should eventually put Composer on same flux context
+            const Bridge = this.state.ComponentBridgeElement;
+
 			html = (
 				<div ref="appRoot" id="RIFT_wareLaunchpadComposerAppRoot" className="AppRoot" onClick={onClickUpdateSelection}>
+                    <Bridge />
 					<i className="corner-accent top left" />
 					<i className="corner-accent top right" />
 					<i className="corner-accent bottom left" />
 					<i className="corner-accent bottom right" />
 					{AppHeader}
-					<Crouton id={Date.now()} type={self.state.messageType} message={self.state.message} onDismiss={ComposerAppActions.clearError} />
 					<div className="AppBody">
 						<div className={classNames}>
 							<CatalogPanel layout={self.state.layout}
@@ -197,12 +206,23 @@ const ComposerApp = React.createClass({
 										 showMore={self.state.showMore}
 										 containers={containers}
 										 title={canvasTitle}
-										 zoom={self.state.zoom} />
-							<DetailsPanel layout={self.state.layout}
+										 zoom={self.state.zoom}
+										 panelTabShown={self.state.panelTabShown}
+										 files={self.state.files}
+										 filesState={self.state.filesState}
+										 item={self.state.item}
+										 type={self.state.filterCatalogByTypeValue}
+										  />
+						 	{
+ 						 		(self.state.panelTabShown == 'descriptor') ?
+ 						 		<DetailsPanel layout={self.state.layout}
 										  hasNoCatalogs={hasNoCatalogs}
 										  showMore={self.state.showMore}
 										  containers={containers}
 										  showJSONViewer={self.state.showJSONViewer} />
+							  : null
+ 						 	}
+
 							<ComposerAppToolbar layout={self.state.layout}
 												showMore={self.state.showMore}
 												isEditingNSD={isEditingNSD}
@@ -210,7 +230,8 @@ const ComposerApp = React.createClass({
 												isModified={isModified}
 												isNew={isNew}
 												disabled={!hasItem}
-												onClick={event => event.stopPropagation()}/>
+												onClick={event => event.stopPropagation()}
+												panelTabShown={self.state.panelTabShown}/>
 						</div>
 					</div>
 					<ModalOverlay />

@@ -47,12 +47,12 @@ import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 import '../styles/EditDescriptorModelProperties.scss'
 
 function getDescriptorMetaBasicForType(type) {
-	const basicPropertiesFilter = d => _.contains(DESCRIPTOR_MODEL_FIELDS[type], d.name);
+	const basicPropertiesFilter = d => _.includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
 	return DescriptorModelMetaFactory.getModelMetaForType(type, basicPropertiesFilter) || {properties: []};
 }
 
 function getDescriptorMetaAdvancedForType(type) {
-	const advPropertiesFilter = d => !_.contains(DESCRIPTOR_MODEL_FIELDS[type], d.name);
+	const advPropertiesFilter = d => !_.includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
 	return DescriptorModelMetaFactory.getModelMetaForType(type, advPropertiesFilter) || {properties: []};
 }
 

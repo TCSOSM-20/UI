@@ -23,7 +23,8 @@
 import guid from '../libraries/guid'
 import DropZone from 'dropzone'
 import Utils from '../libraries/utils'
-import CatalogPackageManagerActions from '../actions/CatalogPackageManagerActions'
+import CatalogPackageManagerActions from '../actions/CatalogPackageManagerActions';
+import FileManagerActions from '../components/filemanager/FileManagerActions.js';
 
 /**
  * This class is responsible for wiring the DropZone.js to our React actions.
@@ -39,9 +40,9 @@ function getCatalogPackageManagerServerOrigin() {
 	return window.location.origin;
 }
 
-function initializeDropZone(element = '#dropzone', button = false, action = ACTIONS.onboard) {
+function initializeDropZone(element = '#dropzone', button = false, action = ACTIONS.onboard, type, id, path) {
 	let Auth = 'Basic ' + window.sessionStorage.getItem("auth");
-    let dev_download_server = Utils.getSearchParams(window.location).dev_download_server;
+	let dev_download_server = Utils.getSearchParams(window.location).dev_download_server;
 	DropZone.autoDiscover = false;
 	return new DropZone(element, {
 		paramName: 'package',
@@ -49,19 +50,22 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 			if (action === ACTIONS.update) {
 				return getCatalogPackageManagerServerOrigin() + '/api/update';
 			}
-			return getCatalogPackageManagerServerOrigin() + '/composer/upload?api_server=' + Utils.getSearchParams(window.location).api_server + '&upload_server=' + Utils.getSearchParams(window.location).upload_server + ( dev_download_server ? '&dev_download_server=' + dev_download_server : '');
+			return getCatalogPackageManagerServerOrigin() + '/composer/api/file-manager?api_server=' + Utils.getSearchParams(window.location).api_server + '&package_type=' + type + '&package_id=' + id + '&package_path=' + path + ( dev_download_server ? '&dev_download_server=' + dev_download_server : '');
 		},
 		headers: {
 			'Authorization': Auth
 		},
 		maxFilesize: 10000000000,
 		clickable: button,
-		acceptedFiles: 'application/octet-stream,.gz,.tar.gz,.tar,.qcow,.qcow2,.iso,application/yaml,.yaml,application/json,.json,application/zip,.zip,application/x-rar-compressed,.rar,application/x-7z-compressed,.7z,application/x-bzip,.bz,application/x-bzip2,.bz2,application/x-gtar,.gtar',
 		autoProcessQueue: true,
 		previewTemplate: '',
 		sending(file, xhr, formData) {
 			// NOTE ie11 does not get this form data
 			formData.append('id', file.id);
+			FileManagerActions.addFileSuccess({
+				fileName: file.name,
+				path: path
+			})
 		},
 		error(file, errorMessage) {
 			const response = {
@@ -80,12 +84,12 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 				state: file,
 				data: data
 			};
-			CatalogPackageManagerActions.uploadCatalogPackageStatusUpdated(response);
+			//CatalogPackageManagerActions.uploadCatalogPackageStatusUpdated(response);
 		},
 		addedfile(file) {
 			file.id = file.id || guid();
 			file.riftAction = action;
-			CatalogPackageManagerActions.uploadCatalogPackage(file);
+			//CatalogPackageManagerActions.uploadCatalogPackage(file);
 		},
 		thumbnail(file, dataUrl) {
 			const response = {
@@ -95,9 +99,13 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 					dataUrl: dataUrl
 				}
 			};
-			CatalogPackageManagerActions.uploadCatalogPackageStatusUpdated(response);
+			//CatalogPackageManagerActions.uploadCatalogPackageStatusUpdated(response);
 		},
 		uploadprogress(file, progress, bytesSent) {
+			// FileManagerActions.addFileSuccess({
+			// 	path: path,
+			// 	fileName: file.name
+			// });
 			const response = {
 				state: file,
 				data: {
@@ -106,15 +114,15 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 					bytesSent: bytesSent
 				}
 			};
-			CatalogPackageManagerActions.uploadCatalogPackageStatusUpdated(response);
+			//CatalogPackageManagerActions.uploadCatalogPackageStatusUpdated(response);
 		}
 	});
 }
 
 export default class CatalogPackageManagerUploadDropZone {
 
-	constructor(element, button, action) {
-		this.dropZone = initializeDropZone(element, button, action);
+	constructor(element, button, action, type, id, path) {
+		this.dropZone = initializeDropZone(element, button, action, type, id, path);
 	}
 
 	static get ACTIONS() {

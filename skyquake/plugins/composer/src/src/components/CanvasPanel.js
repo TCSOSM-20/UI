@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,8 @@ import CanvasPanelTray from './CanvasPanelTray'
 import EditForwardingGraphPaths from './EditorForwardingGraph/EditForwardingGraphPaths'
 import SelectionManager from '../libraries/SelectionManager'
 import DescriptorModelIconFactory from '../libraries/model/IconFactory'
+
+import FileManager from './filemanager/FileManager.jsx';
 
 import '../styles/CanvasPanel.scss'
 
@@ -69,8 +71,22 @@ const CanvasPanel = React.createClass({
 		var req = require.context("../", true, /^\.\/.*\.svg$/);
 		const hasItem = this.props.containers.length !== 0;
 		const isEditingNSD = DescriptorModelFactory.isNetworkService(this.props.containers[0]);
+		const isDescriptorView = (this.props.panelTabShown == 'descriptor');
 		const hasNoCatalogs = this.props.hasNoCatalogs;
 		const bodyComponent = hasItem ? <CatalogItemCanvasEditor zoom={this.props.zoom} isShowingMoreInfo={this.props.showMore} containers={this.props.containers}/> : messages.canvasWelcome();
+		const viewFiles = this.props.panelTabShown == 'assets';
+		const viewButtonTabs =  !hasItem ? null : (
+	           <div className="CanvasPanelTabs">
+	               <div className="CatalogFilter">
+						<button className={isDescriptorView ? '-selected' : ''} onClick={ComposerAppActions.showDescriptor}>
+							Descriptor
+						</button>
+						<button className={!isDescriptorView ? '-selected' : ''}  onClick={ComposerAppActions.showAssets}>
+							Assets
+						</button>
+					</div>
+				</div>
+       		)
 		return (
 			<div id="canvasPanelDiv" className="CanvasPanel" style={style} onDragOver={this.onDragOver} onDrop={this.onDrop}>
 				<div onDoubleClick={this.onDblClickOpenFullScreen}  className="CanvasPanelHeader panel-header" data-resizable="limit_bottom">
@@ -79,18 +95,23 @@ const CanvasPanel = React.createClass({
 						<span className="model-name">{this.props.title}</span>
 					</h1>
 				</div>
+				{viewButtonTabs}
 				<div className="CanvasPanelBody panel-body" style={{marginRight: this.props.layout.right, bottom: this.props.layout.bottom}} >
-					{hasNoCatalogs ? null : bodyComponent}
+					{hasNoCatalogs ? null : viewFiles ? <FileManager files={this.props.files} type={this.props.type} item={this.props.item} filesState={this.props.filesState} /> : bodyComponent}
 				</div>
-				<CanvasZoom zoom={this.props.zoom} style={{bottom: this.props.layout.bottom + 20}}/>
-				<CanvasPanelTray layout={this.props.layout} show={isEditingNSD}>
+				{
+					isDescriptorView ?
+						<CanvasZoom zoom={this.props.zoom} style={{bottom: this.props.layout.bottom + 20}}/>
+						: null
+				}
+				<CanvasPanelTray layout={this.props.layout} show={isEditingNSD && isDescriptorView}>
 					<EditForwardingGraphPaths containers={this.props.containers} />
 				</CanvasPanelTray>
 			</div>
 		);
 	},
 	onDragOver(event) {
-		const isDraggingFiles = _.contains(event.dataTransfer.types, 'Files');
+		const isDraggingFiles = _.includes(event.dataTransfer.types, 'Files');
 		if (!isDraggingFiles) {
 			event.preventDefault();
 			event.dataTransfer.dropEffect = 'copy';

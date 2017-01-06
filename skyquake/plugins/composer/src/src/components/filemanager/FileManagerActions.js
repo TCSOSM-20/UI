@@ -1,4 +1,3 @@
-
 /*
  *
  *   Copyright 2016 RIFT.IO Inc
@@ -16,29 +15,17 @@
  *   limitations under the License.
  *
  */
-@import 'variables';
-@import 'main';
 
-.ComposerAppToolbar {
-    @extend .panel-header;
-    top: 56px;
-    left: 300px;
-    right: 0;
-    height: 55px;
-    z-index: 4;
-    position: absolute;
-    padding: 10px 20px;
-    background-color: $panel-bg-color-contrast;
-    white-space: nowrap;
-    div {
-        display: inline-block;
+import alt from '../../alt';
+
+class FileManagerActions {
+
+    constructor() {
+        this.generateActions('getFilelistSuccess', 'getFilelistError', 'updateFileLocationInput','sendDownloadFileRequst', 'addFileSuccess', 'addFileError','deletePackageFile','deleteFileSuccess','deleteFileError','openDownloadMonitoringSocketSuccess', 'openDownloadMonitoringSocketError',
+                             'getFilelistSocketSuccess',
+                             'openFileManagerSockets', 'closeFileManagerSockets');
     }
-    .disableOverlay {
-        background-color: #cbd1d1;
-        width: 100%;
-        height: 40px;
-        opacity: 0.8;
-        position: absolute;
-        pointer-events: none;
-    }
+
 }
+
+export default alt.createActions(FileManagerActions);
