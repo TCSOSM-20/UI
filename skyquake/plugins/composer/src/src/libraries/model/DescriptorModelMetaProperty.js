@@ -66,7 +66,7 @@ export default {
         return !/^(leaf|leaf_list)$/.test(property.type);
 	},
 	isSimpleList(property = {}) {
-		return _.contains(DescriptorModelFields.simpleList, property.name);
+		return _.includes(DescriptorModelFields.simpleList, property.name);
 	},
 	isPrimativeDataType(property = {}) {
 		const Property = this;
@@ -152,7 +152,7 @@ export default {
 				if (uiState.name === 'name') {
 					return changeCase.param(parentMeta.name) + '-' + InstanceCounter.count(parentMeta[':qualified-type']);
 				}
-				if (_.isArray(parentMeta.key) && _.contains(parentMeta.key, uiState.name)) {
+				if (_.isArray(parentMeta.key) && _.includes(parentMeta.key, uiState.name)) {
 					if (/uuid/.test(uiState['data-type'])) {
 						return guid();
 					}

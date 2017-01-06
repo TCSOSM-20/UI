@@ -136,8 +136,9 @@ class CatalogPackageManagerStore {
 
 	downloadCatalogPackage(data) {
 		let catalogItems = data['selectedItems'] || [];
-		let format = data['selectedFormat'] || 'mano';
+		let schema = data['selectedFormat'] || 'mano';
 		let grammar = data['selectedGrammar'] || 'osm';
+		let format = "YAML";
 		if (catalogItems.length) {
 			const catalogPackage = Object.assign({}, defaults.downloadPackage, {id: guid()});
 			catalogPackage.name = catalogItems[0].name;
@@ -148,7 +149,7 @@ class CatalogPackageManagerStore {
 			catalogPackage.ids = catalogItems.map(d => d.id).sort().toString();
 			catalogPackage.catalogItems = catalogItems;
 			this.addPackage(catalogPackage);
-			this.getInstance().requestCatalogPackageDownload(catalogPackage, format, grammar).catch(exception);
+			this.getInstance().requestCatalogPackageDownload(catalogPackage, format, grammar, schema).catch(exception);
 		}
 	}
 
@@ -189,9 +190,9 @@ function updateStatusInfo(response) {
 		success: false,
 		error: false
 	};
-	const responseData = response.data;
+	const responseData = (response.data.output) ? response.data.output :  response.data;
 	const catalogPackage = response.state;
-	switch(responseData.status) {
+	switch(response.data.status) {
 	case 'upload-progress':
 		statusInfo.pending = true;
 		statusInfo.progress = parseFloat(responseData.progress) || 0;
@@ -201,7 +202,7 @@ function updateStatusInfo(response) {
 		statusInfo.pending = true;
 		statusInfo.progress = 100;
 		statusInfo.message = 'Upload completed.';
-		statusInfo.transactionId = responseData.transaction_id;
+		statusInfo.transactionId = responseData['transaction-id'] || catalogPackage.transactionId;
 		break;
 	case 'upload-error':
 		statusInfo.error = true;
@@ -210,7 +211,7 @@ function updateStatusInfo(response) {
 	case 'download-requested':
 		statusInfo.pending = true;
 		statusInfo.progress = 25;
-		statusInfo.transactionId = responseData.transaction_id;
+		statusInfo.transactionId = responseData['transaction-id']  || catalogPackage.transactionId;
 		break;
 	case 'pending':
 		statusInfo.pending = true;

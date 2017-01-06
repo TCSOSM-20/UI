@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -167,7 +167,7 @@ const CatalogPanel = React.createClass({
 			uiTransientState.isDrop = false;
 			uiTransientState.isDragging = true;
 			uiTransientState.wasTrayOpen = this.state.isTrayOpen;
-			uiTransientState.isDraggingFiles = _.contains(e.dataTransfer.types, 'Files');
+			uiTransientState.isDraggingFiles = _.includes(e.dataTransfer.types, 'Files');
 			const dragState = ComposerAppStore.getState().drag || {};
 			if (uiTransientState.isDraggingFiles || (dragState.type === 'catalog-item')) {
 				CatalogPanelTrayActions.open();

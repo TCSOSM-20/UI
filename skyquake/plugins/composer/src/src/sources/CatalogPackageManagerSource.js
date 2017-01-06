@@ -27,8 +27,8 @@ function getApiServerOrigin() {
 	return utils.getSearchParams(window.location).upload_server + ':4567';
 }
 
-function ajaxRequest(path, catalogPackage, resolve, reject, method = 'GET') {
-	$.ajax({
+function ajaxRequest(path, catalogPackage, resolve, reject, method = 'GET', input, urlOverride) {
+	let options = {
 		url: getApiServerOrigin() + path,
 		type: method,
 		beforeSend: Utils.addAuthorizationStub,
@@ -51,17 +51,26 @@ function ajaxRequest(path, catalogPackage, resolve, reject, method = 'GET') {
 				state: catalogPackage
 			});
 		}
-	}).fail(function(xhr){
+	};
+	if(input) {
+		options.data = input;
+	}
+	if (urlOverride) {
+		options.url = window.location.origin + path;
+	}
+	$.ajax(options).fail(function(xhr){
 			            //Authentication and the handling of fail states should be wrapped up into a connection class.
 			            Utils.checkAuthentication(xhr.status);
 		          	});
 }
 
+
+
 const CatalogPackageManagerSource = {
 
-	requestCatalogPackageDownload: function () {
+		requestCatalogPackageDownload: function () {
 		return {
-			remote: function (state, download, format, grammar) {
+			remote: function (state, download, format, grammar, schema) {
 				return new Promise((resolve, reject) => {
 					// the server does not add a status in the payload
 					// so we add one so that the success handler will
@@ -74,9 +83,20 @@ const CatalogPackageManagerSource = {
 					// Backend no longer supports mixed multi-package download.
 					// Probably does not even support multi-package download of same type.
 					// Hence, pick the type from the first element.
-					const path = '/api/export/' + download['catalogItems'][0]['uiState']['type'] + '?schema=' + format + '&grammar=' + grammar + '&format=yaml&ids=' + download.ids;
-					ajaxRequest(path, download, setStatusBeforeResolve, reject);
-				});
+					const data = {
+						"package-type": download['catalogItems'][0]['uiState']['type'].toUpperCase(),
+						"package-id": download.ids,
+						"export-format": format && format.toUpperCase() || 'YAML',
+						"export-grammar": grammar && grammar.toUpperCase() || 'OSM',
+						"export-schema": schema && schema.toUpperCase() || "RIFT"
+					}
+					const path = "/composer/api/package-export?api_server=" + utils.getSearchParams(window.location).api_server;
+					ajaxRequest(path, download, setStatusBeforeResolve, reject, 'POST', data, true);
+				})
+				//.then(function(data) {
+				//	let filename = data.data.output.filename;
+				//	window.open(getApiServerOrigin() + "/api/export/" + filename, "_blank")
+				//});
 			},
 			success: CatalogPackageManagerActions.downloadCatalogPackageStatusUpdated,
 			error: CatalogPackageManagerActions.downloadCatalogPackageError

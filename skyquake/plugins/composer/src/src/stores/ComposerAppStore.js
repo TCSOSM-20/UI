@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,23 @@ import SelectionManager from '../libraries/SelectionManager'
 import CatalogDataStore from '../stores/CatalogDataStore'
 import isFullScreen from '../libraries/isFullScreen'
 
+import FileManagerSource from '../components/filemanager/FileManagerSource';
+import FileManagerActions from '../components/filemanager/FileManagerActions';
+
+import React from 'react';
+
+//Hack for crouton fix. Should eventually put composer in skyquake alt context
+import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
+let NotificationError = null;
+class ComponentBridge extends React.Component {
+    constructor(props) {
+        super(props);
+        NotificationError = this.props.flux.actions.global.showNotification;
+    }
+    render(){
+        return <i></i>
+    }
+}
 const getDefault = (name, defaultValue) => {
 	const val = window.localStorage.getItem('defaults-' + name);
 	if (val) {
@@ -79,6 +96,10 @@ const uiTransientState = {};
 class ComposerAppStore {
 
 	constructor() {
+        //Bridge for crouton fix
+        this.ComponentBridgeElement = SkyquakeComponent(ComponentBridge);
+
+		this.exportAsync(FileManagerSource)
 		// the catalog item currently being edited in the composer
 		this.item = null;
 		// the left and right sides of the canvas area
@@ -99,6 +120,12 @@ class ComposerAppStore {
 		this.showClassifiers = {};
 		this.editPathsMode = false;
 		this.fullScreenMode = false;
+		this.panelTabShown = 'descriptor';
+		//File manager values
+		this.files = [];
+		this.filesState = {};
+		this.downloadJobs = {};
+		//End File  manager values
 		this.bindListeners({
 			onResize: PanelResizeAction.RESIZE,
 			editCatalogItem: CatalogItemsActions.EDIT_CATALOG_ITEM,
@@ -124,8 +151,23 @@ class ComposerAppStore {
 			openCanvasPanelTray: CanvasPanelTrayActions.OPEN,
 			closeCanvasPanelTray: CanvasPanelTrayActions.CLOSE,
 			enterFullScreenMode: ComposerAppActions.ENTER_FULL_SCREEN_MODE,
-			exitFullScreenMode: ComposerAppActions.EXIT_FULL_SCREEN_MODE
+			exitFullScreenMode: ComposerAppActions.EXIT_FULL_SCREEN_MODE,
+			showAssets: ComposerAppActions.showAssets,
+			showDescriptor: ComposerAppActions.showDescriptor,
+			getFilelistSuccess: FileManagerActions.getFilelistSuccess,
+			updateFileLocationInput: FileManagerActions.updateFileLocationInput,
+			sendDownloadFileRequst: FileManagerActions.sendDownloadFileRequst,
+			addFileSuccess: FileManagerActions.addFileSuccess,
+			deletePackageFile: FileManagerActions.deletePackageFile,
+			deleteFileSuccess: FileManagerActions.deleteFileSuccess,
+			closeFileManagerSockets: FileManagerActions.closeFileManagerSockets,
+			openFileManagerSockets: FileManagerActions.openFileManagerSockets,
+			openDownloadMonitoringSocketSuccess: FileManagerActions.openDownloadMonitoringSocketSuccess,
+			getFilelistSocketSuccess: FileManagerActions.getFilelistSocketSuccess
 		});
+        this.exportPublicMethods({
+            closeFileManagerSockets: this.closeFileManagerSockets.bind(this)
+        })
 	}
 
 	onResize(e) {
@@ -166,6 +208,7 @@ class ComposerAppStore {
 	}
 
 	editCatalogItem(item) {
+		let self = this;
 		if (item && item.uiState) {
 			item.uiState.isOpenForEdit = true;
 			if (item.uiState.type !== 'nsd') {
@@ -174,8 +217,8 @@ class ComposerAppStore {
 		}
 		SelectionManager.select(item);
 		this.updateItem(item);
+		this.openFileManagerSockets(item)
 	}
-
 	catalogItemMetaDataChanged(item) {
 		this.updateItem(item);
 	}
@@ -193,7 +236,8 @@ class ComposerAppStore {
 	}
 
 	showError(data) {
-		this.setState({message: data.errorMessage, messageType: 'error'});
+        NotificationError.defer({msg: data.errorMessage, type: 'error'})
+        // this.setState({message: data.errorMessage, messageType: 'error'});
 	}
 
 	clearError() {
@@ -396,7 +440,210 @@ class ComposerAppStore {
 		this.setState({fullScreenMode: false});
 
 	}
+	showAssets() {
+		this.setState({
+			panelTabShown: 'assets'
+		});
+	}
+	showDescriptor() {
+		this.setState({
+			panelTabShown: 'descriptor'
+		});
+	}
 
+	//File Manager methods
+	getFilelistSuccess(data) {
+		let self = this;
+		let filesState = null;
+        if (self.fileMonitoringSocketID) {
+			filesState = addInputState( _.cloneDeep(this.filesState),data);
+			// filesState = _.merge(self.filesState, addInputState({},data));
+			let normalizedData = normalizeTree(data);
+			this.setState({
+				files: {
+					data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
+						return _.uniqBy(obj? obj.concat(src) : src, 'name');
+					}),
+					id: self.files.id || normalizedData.id
+				},
+				filesState: filesState
+			});
+        }
+		function normalizeTree(data) {
+			let f = {
+				id:[],
+				data:{}
+			};
+			data.contents.map(getContents);
+			function getContents(d) {
+				if(d.hasOwnProperty('contents')) {
+					let contents = [];
+					d.contents.map(function(c,i) {
+						if (!c.hasOwnProperty('contents')) {
+							contents.push(c);
+						} else {
+							getContents(c);
+						}
+					})
+					f.id.push(d.name);
+					f.data[d.name] = contents;
+				}
+			}
+ 			return f;
+		}
+		function addInputState(obj, d) {
+			d.newFile = '';
+			if(d.hasOwnProperty('contents')) {
+				d.contents.map(addInputState.bind(null, obj))
+			}
+			if(!obj[d.name]) {
+				obj[d.name] = '';
+			}
+			return obj;
+		}
+	}
+	sendDownloadFileRequst(data) {
+		let id = data.id || this.item.id;
+		let type = data.type || this.item.uiState.type;
+		let path = data.path;
+		let url = data.url;
+		this.getInstance().addFile(id, type, path, url);
+	}
+	updateFileLocationInput = (data) => {
+		let name = data.name;
+		let value = data.value;
+		var filesState = _.cloneDeep(this.filesState);
+		filesState[name] = value;
+		this.setState({
+			filesState: filesState
+		});
+	}
+	addFileSuccess = (data) => {
+		let path = data.path;
+		let fileName = data.fileName;
+		let files = _.cloneDeep(this.files);
+		let loadingIndex = files.data[path].push({
+			status: 'DOWNLOADING',
+			name: path + '/' + fileName
+		}) - 1;
+		this.setState({files: files});
+
+	}
+	startWatchingJob = () => {
+		let ws = window.multiplexer.channel(this.jobSocketId);
+		this.setState({
+			jobSocket:null
+		})
+	}
+	openDownloadMonitoringSocketSuccess = (id) => {
+		let self = this;
+		let ws = window.multiplexer.channel(id);
+		let downloadJobs = _.cloneDeep(self.downloadJobs);
+		let newFiles = {};
+		ws.onmessage = (socket) => {
+            if (self.files && self.files.length > 0) {
+                let jobs = [];
+                try {
+                    jobs = JSON.parse(socket.data);
+                } catch(e) {}
+                newFiles = _.cloneDeep(self.files);
+                jobs.map(function(j) {
+                    //check if not in completed state
+                    let fullPath = j['package-path'];
+                    let path = fullPath.split('/');
+                    let fileName = path.pop();
+                    path = path.join('/');
+                    let index = _.findIndex(self.files.data[path], function(o){
+                        return fullPath == o.name
+                    });
+                    if((index > -1) && newFiles.data[path][index]) {
+                        newFiles.data[path][index].status = j.status
+					} else {
+                        if(j.status.toUpperCase() == 'LOADING...' || j.status.toUpperCase() == 'IN_PROGRESS') {
+                            newFiles.data[path].push({
+                                status: j.status,
+                                name: fullPath
+                            })
+                        } else {
+                            // if ()
+                        }
+					}
+                })
+                self.setState({
+                    files: newFiles
+                })
+			// console.log(JSON.parse(socket.data));
+            }
+		}
+		this.setState({
+			jobSocketId: id,
+			jobSocket: ws
+		})
+
+	}
+	getFilelistSocketSuccess = (id) => {
+		let self = this;
+		let ws = window.multiplexer.channel(id);
+		ws.onmessage = (socket) => {
+            if (self.fileMonitoringSocketID) {
+                let data = [];
+                try {
+                    data = JSON.parse(socket.data);
+                } catch(e) {}
+                self.getFilelistSuccess(data)
+            }
+		}
+
+		this.setState({
+			fileMonitoringSocketID: id,
+			fileMonitoringSocket: ws
+		})
+
+	}
+	closeFileManagerSockets() {
+        this.fileMonitoringSocketID = null;
+        this.setState({
+                jobSocketId : null,
+                fileMonitoringSocketID : null
+                // jobSocket : null,
+                // fileMonitoringSocket : null,
+        });
+		this.jobSocket && this.jobSocket.close();
+		this.fileMonitoringSocket && this.fileMonitoringSocket.close();
+        console.log('closing');
+	}
+	openFileManagerSockets(i) {
+		let self = this;
+		let item = i || self.item;
+		this.files = {data:[]};
+        // this.closeFileManagerSockets();
+		this.getInstance().openFileMonitoringSocket(item.id, item.uiState.type).then(function() {
+        // 	// self.getInstance().openDownloadMonitoringSocket(item.id);
+		});
+        this.getInstance().openDownloadMonitoringSocket(item.id);
+	}
+	endWatchingJob(id) {
+
+	}
+	deletePackageFile(name) {
+		let id = this.item.id;
+		let type = this.item.uiState.type;
+		this.getInstance().deleteFile(id, type, name);
+	}
+	deleteFileSuccess = (data) => {
+		let path = data.path.split('/')
+		let files = _.cloneDeep(this.files);
+		path.pop();
+		path = path.join('/');
+		let pathFiles = files.data[path]
+		_.remove(pathFiles, function(c) {
+			return c.name == data.path;
+		});
+
+		this.setState({
+			files: files
+		})
+	}
 }
 
 export default alt.createStore(ComposerAppStore, 'ComposerAppStore');
