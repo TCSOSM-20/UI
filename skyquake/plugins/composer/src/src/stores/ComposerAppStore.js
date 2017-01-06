@@ -209,6 +209,7 @@ class ComposerAppStore {
 
 	editCatalogItem(item) {
 		let self = this;
+		self.closeFileManagerSockets();
 		if (item && item.uiState) {
 			item.uiState.isOpenForEdit = true;
 			if (item.uiState.type !== 'nsd') {
