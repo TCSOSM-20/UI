@@ -49,7 +49,7 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 			if (action === ACTIONS.update) {
 				return getCatalogPackageManagerServerOrigin() + '/api/update';
 			}
-			return getCatalogPackageManagerServerOrigin() + '/composer/upload?api_server=' + Utils.getSearchParams(window.location).api_server + '&upload_server=' + Utils.getSearchParams(window.location).upload_server + '&dev_download_server=' + Utils.getSearchParams(window.location).dev_download_server;
+			return getCatalogPackageManagerServerOrigin() + '/composer/upload?api_server=' + Utils.getSearchParams(window.location).api_server + '&upload_server=' + Utils.getSearchParams(window.location).upload_server + ( dev_download_server ? '&dev_download_server=' + dev_download_server : '');
 		},
 		headers: {
 			'Authorization': Auth
