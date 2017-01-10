@@ -29,6 +29,7 @@ let nsdFields = null;
 let vldFields = null;
 let vnfdFields = null;
 let cvnfdFields = null;
+let configParameterMapFields = null;
 
 
 
@@ -197,6 +198,13 @@ const DescriptorModelSerializer = {
 			const confd = _.omit(copy, ['uiState']);
 			return cleanEmptyTopKeys(confd);
 		}
+    },
+    'config-parameter-map': {
+        serialize(configParameterMap) {
+            //vnfapMapFields
+            if(!configParameterMapFields) configParameterMapFields = DescriptorModelMetaFactory.getModelFieldNamesForType('nsd.config-parameter-map');
+            return _.pick(configParameterMap, configParameterMapFields);
+        }
 	}
 };
 

@@ -34,9 +34,9 @@ import CanvasPanelTray from './CanvasPanelTray'
 import EditForwardingGraphPaths from './EditorForwardingGraph/EditForwardingGraphPaths'
 import SelectionManager from '../libraries/SelectionManager'
 import DescriptorModelIconFactory from '../libraries/model/IconFactory'
-
 import FileManager from './filemanager/FileManager.jsx';
 
+import ConfigPrimitiveParameters from './ConfigPrimitiveParameters/ConfigPrimitiveParameters'
 import '../styles/CanvasPanel.scss'
 
 const CanvasPanel = React.createClass({
@@ -87,6 +87,13 @@ const CanvasPanel = React.createClass({
 					</div>
 				</div>
        		)
+        //CanvasPanelTray panel to display
+        let displayedPanel = null;
+        switch (this.props.displayedPanel) {
+            case 'forwarding' : displayedPanel = (<EditForwardingGraphPaths containers={this.props.containers} />); break;
+            case 'parameter' : displayedPanel = (<ConfigPrimitiveParameters  containers={this.props.containers} />); break;
+            default: displayedPanel = (<div><p className="welcome-message">Please select a tab</p></div>); break;
+        }
 		return (
 			<div id="canvasPanelDiv" className="CanvasPanel" style={style} onDragOver={this.onDragOver} onDrop={this.onDrop}>
 				<div onDoubleClick={this.onDblClickOpenFullScreen}  className="CanvasPanelHeader panel-header" data-resizable="limit_bottom">
@@ -104,8 +111,8 @@ const CanvasPanel = React.createClass({
 						<CanvasZoom zoom={this.props.zoom} style={{bottom: this.props.layout.bottom + 20}}/>
 						: null
 				}
-				<CanvasPanelTray layout={this.props.layout} show={isEditingNSD && isDescriptorView}>
-					<EditForwardingGraphPaths containers={this.props.containers} />
+				<CanvasPanelTray layout={this.props.layout} displayedPanel={this.props.displayedPanel} show={isEditingNSD && isDescriptorView}>
+					{displayedPanel}
 				</CanvasPanelTray>
 			</div>
 		);

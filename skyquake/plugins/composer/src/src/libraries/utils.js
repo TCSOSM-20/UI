@@ -271,11 +271,11 @@ export default {
 
 		// Check if relative path or not
 		// TODO: Below works but
-		// better to convert the pathCopy to absolute/rooted path 
+		// better to convert the pathCopy to absolute/rooted path
 		// and use the absolute module instead
 		if (this.isRelativePath(leafRefPathCopy)) {
 			let i = pathArray.length;
-			while (pathArray[pathArray.length - i] == '..') {
+			while ((pathArray[pathArray.length - i] == '..') && fieldKeyArray.length > 1) {
 				fieldKeyArray.splice(-1, 1);
 				if (!isNaN(Number(fieldKeyArray[fieldKeyArray.length - 1]))) {
 					// found a number, so an index. strip it
@@ -310,7 +310,7 @@ export default {
 						}
 					}
 				}
-			} else {
+			}  else {
 				// not supported - too many levels deep ... maybe some day
 				console.log('The relative path is from a node too many levels deep from root. This is not supported at the time');
 			}

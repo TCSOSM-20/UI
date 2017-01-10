@@ -212,6 +212,7 @@ const ComposerApp = React.createClass({
 										 filesState={self.state.filesState}
 										 item={self.state.item}
 										 type={self.state.filterCatalogByTypeValue}
+										 displayedPanel={self.state.displayedPanel}
 										  />
 						 	{
  						 		(self.state.panelTabShown == 'descriptor') ?

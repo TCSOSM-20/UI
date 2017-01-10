@@ -14,6 +14,7 @@ const assign = Object.assign;
 
 const exportInnerTypesMap = {
 	'constituent-vnfd': 'nsd.constituent-vnfd',
+    'config-parameter-map': 'nsd.config-parameter-map',
 	'vdu': 'vnfd.vdu'
 };
 
