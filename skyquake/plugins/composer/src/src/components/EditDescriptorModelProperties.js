@@ -46,6 +46,8 @@ import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 
 import '../styles/EditDescriptorModelProperties.scss'
 
+
+
 function getDescriptorMetaBasicForType(type) {
 	const basicPropertiesFilter = d => _.includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
 	return DescriptorModelMetaFactory.getModelMetaForType(type, basicPropertiesFilter) || {properties: []};
@@ -70,16 +72,7 @@ function getTitle(model = {}) {
 		return model.id;
 	}
 }
-
-export default function EditDescriptorModelProperties(props) {
-
-	const container = props.container;
-
-	if (!(DescriptorModelFactory.isContainer(container))) {
-		return
-	}
-
-	function startEditing() {
+function startEditing() {
 		DeletionManager.removeEventListeners();
 	}
 
@@ -262,7 +255,7 @@ export default function EditDescriptorModelProperties(props) {
 		});
 	}
 
-	function buildChoice(container, property, path, value, key) {
+    function buildChoice(container, property, path, value, key, props={}) {
 
 		function onFormFieldValueChanged(event) {
 			if (DescriptorModelFactory.isContainer(this)) {
@@ -516,15 +509,15 @@ export default function EditDescriptorModelProperties(props) {
 			if (isMissingDescriptorMeta) {
 				field = <span key={key.concat('warning').join(':')} className="warning">No Descriptor Meta for {property.name}</span>;
 			} else if (property.type === 'choice') {
-				field = buildChoice(container, property, valuePath, value, key.join(':'));
+                field = buildChoice(container, property, valuePath, value, key.join(':'), props);
 			} else if (isSimpleListView) {
-				field = buildSimpleListItem(container, property, valuePath, value, key, index);
+                field = buildSimpleListItem(container, property, valuePath, value, key, index, props);
 			} else if (isLeafList) {
-				field = buildLeafListItem(container, property, valuePath, value, key, index);
+                field = buildLeafListItem(container, property, valuePath, value, key, index, props);
 			} else if (hasProperties) {
-				field = buildElement(container, property, valuePath, value, key.join(':'))
+                field = buildElement(container, property, valuePath, value, key.join(':'), props)
 			} else {
-				field = buildField(container, property, valuePath, value, key.join(':'));
+                field = buildField(container, property, valuePath, value, key.join(':'), props);
 			}
 
 			function onClickLeaf(property, path, value, event) {
@@ -594,8 +587,17 @@ export default function EditDescriptorModelProperties(props) {
 		);
 
 	}
+export default function EditDescriptorModelProperties(props, type) {
 
-	const containerType = container.uiState['qualified-type'] || container.uiState.type;
+    const container = props.container;
+
+    if (!(DescriptorModelFactory.isContainer(container))) {
+        return
+    }
+
+
+
+    const containerType = (_.isEmpty(type) ? false : type)|| container.uiState['qualified-type'] || container.uiState.type;
 	const basicProperties = getDescriptorMetaBasicForType(containerType).properties;
 
 	function buildBasicGroup() {
@@ -633,7 +635,7 @@ export default function EditDescriptorModelProperties(props) {
 					{properties.map(property => {
 						const path = [property.name];
 						const value = container.model[property.name];
-						return build(container, property, path, value, {toggle: true, width: props.width});
+                        return build(container, property, path, value, _.assign({toggle: true, width: props.width}, props));
 					})}
 				</div>
 				<div className="toggle-bottom-spacer" style={{visibility: 'hidden', 'height': '50%', position: 'absolute'}}>We need this so when the user closes the panel it won't shift away and scare the bj out of them!</div>
@@ -665,3 +667,6 @@ export default function EditDescriptorModelProperties(props) {
 	);
 
 }
+export {build}
+// export buildElement;
+// export buildChoice;

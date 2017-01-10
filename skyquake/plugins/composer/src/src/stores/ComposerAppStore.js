@@ -341,13 +341,21 @@ class ComposerAppStore {
 		this.setState({showJSONViewer: false});
 	}
 
-	toggleCanvasPanelTray() {
+	toggleCanvasPanelTray(event) {
 		const layout = this.layout;
-		if (layout.bottom > 25) {
+		const attrMap = event.target.attributes;
+		let panelEvent = null;
+		for(let k in attrMap) {
+			if(attrMap[k].name == 'data-event') {
+				panelEvent = attrMap[k].nodeValue;
+			}
+		}
+		if ((layout.bottom > 25) && ((panelEvent == this.displayedPanel) || panelEvent == 'arrow')) {
 			this.closeCanvasPanelTray();
 		} else {
 			this.openCanvasPanelTray();
 		}
+		this.setState({displayedPanel: panelEvent})
 	}
 
 	openCanvasPanelTray() {
