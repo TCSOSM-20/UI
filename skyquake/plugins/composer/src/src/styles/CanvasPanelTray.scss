@@ -30,7 +30,7 @@ $tray-head-height: 25px;
 	height: 25px;
 	min-width: 300px;
 	/* background-color: white;*/
-	background: #cbd1d1;
+	background: $panel-bg-color;
 	&.-with-transitions {
 		transition: height 300ms cubic-bezier(0.230, 1.000, 0.320, 1.000);
 	}
@@ -65,14 +65,17 @@ $tray-head-height: 25px;
 	&-buttons {
 		display: -ms-flexbox;
 		display: flex;
-		margin-top: 1px;
+		margin-top: 2px;
+		button {
+			padding: 6px 34px;
+		}
 	}
 	.tray-body {
 		top:31px;
 	}
 	.ConfigParameterMap {
 
-		background: #cbd1d1;
+		background: $panel-bg-color;
 
 		.EditDescriptorModelProperties {
 		    margin-left: 8px;
@@ -83,6 +86,8 @@ $tray-head-height: 25px;
 			display:flex;
 			-ms-flex-wrap: wrap;
 			    flex-wrap: wrap;
+		    background: $panel-bg-color-contrast;
+		    margin:8px 0;
 		 	& > .leaf-property {
 			    -ms-flex: 1 0 100%;
 		        flex: 1 0 100%;
