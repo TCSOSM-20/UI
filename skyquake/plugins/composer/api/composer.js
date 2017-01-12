@@ -341,7 +341,7 @@ Composer.upload = function(req) {
 
             // Add a status checker on the transaction and then to delete the file later
             PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id']);
-            
+
             // Return status to composer UI to update the status.
             resolve({
                 statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
@@ -574,7 +574,7 @@ FileManager.job = function(req) {
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
         }, function(error, response, body) {
-            if (utils.validateResponse('restconfAPI.streams', error, response, body, resolve, reject)) {
+            if (utils.validateResponse('FileManager.job', error, response, body, resolve, reject)) {
                 var data = JSON.parse(response.body)['rw-pkg-mgmt:download-jobs'];
                 var returnData = [];
                 data && data.job.map(function(d) {
