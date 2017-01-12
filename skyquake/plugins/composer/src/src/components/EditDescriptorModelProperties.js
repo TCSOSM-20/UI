@@ -178,8 +178,8 @@ export default function EditDescriptorModelProperties(props) {
 		let catalogs = cds.getTransientCatalogs();
 
 		const name = path.join('.');
+		const isEditable = true;
 		const isGuid = Property.isGuid(property);
-		const isEditable = isGuid;
 		const onChange = onFormFieldValueChanged.bind(container);
 		const isEnumeration = Property.isEnumeration(property);
 		const isLeafRef = Property.isLeafRef(property);
