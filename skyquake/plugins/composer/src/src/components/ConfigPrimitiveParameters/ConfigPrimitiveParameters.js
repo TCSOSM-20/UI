@@ -49,7 +49,7 @@ import imgAdd from '../../../../node_modules/open-iconic/svg/plus.svg'
 import imgConnection from '../../../../node_modules/open-iconic/svg/random.svg'
 import imgClassifier from '../../../../node_modules/open-iconic/svg/spreadsheet.svg'
 import imgReorder from '../../../../node_modules/open-iconic/svg/menu.svg'
-import EditDescriptorModelProperties from '../EditDescriptorModelProperties'
+import EditConfigParameterMap from '../EditConfigParameterMap'
 function configParameterMapMap(ap, i) {
 
     const context = this;
@@ -214,7 +214,7 @@ const ConfigPrimitiveParameters = React.createClass({
                     {
                         containers.map(function(c, i) {
                             if(c.className == 'ConfigParameterMap') {
-                                return <EditDescriptorModelProperties key={i} container={c} width={self.props.width} />
+                                return <EditConfigParameterMap key={i} container={c} width={self.props.width} />
                             }
                         })
                     }
