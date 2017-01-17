@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,12 +119,15 @@ class CatalogPackageManagerStore {
 	onUploadCatalogPackageStatusUpdated(response) {
 		const upload = updateStatusInfo(response);
 		this.updatePackage(upload);
+		console.log('updating package upload')
 		// if pending with no transaction id - do nothing
 		// bc DropZone.js will notify upload progress
 		if (upload.pending && upload.transactionId) {
+			console.log('checking status')
 			delayStatusCheck(this.getInstance().requestCatalogPackageUploadStatus, upload);
 		} else if (upload.success) {
 			this.getInstance().loadCatalogs();
+			console.log('finished uploading to node, requesting status from rest')
 		}
 	}
 
@@ -202,7 +205,7 @@ function updateStatusInfo(response) {
 		statusInfo.pending = true;
 		statusInfo.progress = 100;
 		statusInfo.message = 'Upload completed.';
-		statusInfo.transactionId = responseData['transaction-id'] || catalogPackage.transactionId;
+		statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id'] || catalogPackage.transactionId;
 		break;
 	case 'upload-error':
 		statusInfo.error = true;
@@ -211,7 +214,7 @@ function updateStatusInfo(response) {
 	case 'download-requested':
 		statusInfo.pending = true;
 		statusInfo.progress = 25;
-		statusInfo.transactionId = responseData['transaction-id']  || catalogPackage.transactionId;
+		statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id']  || catalogPackage.transactionId;
 		break;
 	case 'pending':
 		statusInfo.pending = true;
