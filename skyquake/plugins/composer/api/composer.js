@@ -272,33 +272,89 @@ Composer.create = function(req) {
         });
     });
 };
+// Composer.update = function(req) {
+//     var api_server = req.query['api_server'];
+//     var catalogType = req.params.catalogType;
+//     var id = req.params.id;
+//     var data = req.body;
+//     console.log('Updating', catalogType, 'id', id, 'on', api_server);
+//     var jsonData = {};
+//     jsonData[catalogType] = {};
+//     jsonData[catalogType] = data;
+//     return new Promise(function(resolve, reject) {
+//         var requestHeaders = {};
+//         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
+//             'Authorization': req.get('Authorization')
+//         });
+//         request({
+//             uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
+//             method: 'PUT',
+//             headers: requestHeaders,
+//             forever: constants.FOREVER_ON,
+//             rejectUnauthorized: false,
+//             json: jsonData
+//         }, function(error, response, body) {
+//             if (utils.validateResponse('Composer.update', error, response, body, resolve, reject)) {
+//                 resolve({
+//                     statusCode: response.statusCode
+//                 });
+//             }
+//         });
+//     });
+//
+
 Composer.update = function(req) {
+    console.log(' Updating file', req.file.originalname, 'as', req.file.filename);
     var api_server = req.query['api_server'];
-    var catalogType = req.params.catalogType;
-    var id = req.params.id;
-    var data = req.body;
-    console.log('Updating', catalogType, 'id', id, 'on', api_server);
-    var jsonData = {};
-    jsonData[catalogType] = {};
-    jsonData[catalogType] = data;
+    // dev_download_server is for testing purposes.
+    // It is the direct IP address of the Node server where the
+    // package will be hosted.
+    var download_host = req.query['dev_download_server'];
+
+    if (!download_host) {
+        download_host = req.protocol + '://' + req.headers.host;
+    }
+    var input = {
+        'external-url': download_host + '/composer/update/' + req.file.filename,
+        'package-type': 'VNFD',
+        'package-id': uuid()
+    }
     return new Promise(function(resolve, reject) {
-        var requestHeaders = {};
-        _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
-        });
-        request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
-            method: 'PUT',
-            headers: requestHeaders,
-            forever: constants.FOREVER_ON,
-            rejectUnauthorized: false,
-            json: jsonData
-        }, function(error, response, body) {
-            if (utils.validateResponse('Composer.update', error, response, body, resolve, reject)) {
-                resolve({
-                    statusCode: response.statusCode
-                });
-            }
+        Promise.all([
+            rp({
+                uri: utils.confdPort(api_server) + '/api/operations/package-update',
+                method: 'POST',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
+                    'Authorization': req.get('Authorization')
+                }),
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true,
+                json: true,
+                body: {
+                    input: input
+                }
+            })
+        ]).then(function(result) {
+            var data = {};
+            data['transaction_id'] = result[0].body['output']['transaction-id'];
+
+            // Add a status checker on the transaction and then to delete the file later
+            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], true);
+
+            // Return status to composer UI to update the status.
+            resolve({
+                statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
+                data: data
+            });
+        }).catch(function(error) {
+            var res = {};
+            console.log('Problem with Composer.upload', error);
+            res.statusCode = error.statusCode || 500;
+            res.errorMessage = {
+                error: 'Failed to upload package ' + req.file.originalname + '. Error: ' + error
+            };
+            reject(res);
         });
     });
 };
@@ -341,7 +397,7 @@ Composer.upload = function(req) {
 
             // Add a status checker on the transaction and then to delete the file later
             PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id']);
-            
+
             // Return status to composer UI to update the status.
             resolve({
                 statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
@@ -358,6 +414,9 @@ Composer.upload = function(req) {
         });
     });
 };
+
+
+
 Composer.addFile = function(req) {
     console.log(' Uploading file', req.file.originalname, 'as', req.file.filename);
     var api_server = req.query['api_server'];
@@ -392,7 +451,7 @@ Composer.addFile = function(req) {
             })
         ]).then(function(result) {
             var data = {};
-            data['transaction_id'] = result[0].body['output']['transaction-id'];
+            data['transaction_id'] = result[0].body['output']['task-id'];
             resolve({
                 statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
                 data: data
