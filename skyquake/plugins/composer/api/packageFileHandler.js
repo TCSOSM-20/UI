@@ -14,15 +14,16 @@ function deleteFile(filename) {
 	}, constants.PACKAGE_FILE_DELETE_DELAY_MILLISECONDS);
 };
 
-function checkStatus(req, transactionId) {
+function checkStatus(req, transactionId, isUpdate) {
 	var upload_server = req.query['upload_server'];
 	var headers = _.extend({},
         {
             'Authorization': req.get('Authorization')
         }
     );
+    var type = isUpdate ? 'update' : 'upload';
 	request({
-		url: upload_server + ':' + constants.PACKAGE_MANAGER_SERVER_PORT + '/api/upload/' + transactionId + '/state',
+		url: upload_server + ':' + constants.PACKAGE_MANAGER_SERVER_PORT + '/api/' + type + '/' + transactionId + '/state',
 		type: 'GET',
 		headers: headers,
 		forever: constants.FOREVER_ON,
@@ -44,15 +45,15 @@ function checkStatus(req, transactionId) {
 				deleteFile(req.file.filename);
 			} else {
 				setTimeout(function() {
-					checkStatus(req, transactionId);
+					checkStatus(req, transactionId, isUpdate);
 				}, constants.PACKAGE_FILE_ONBOARD_TRANSACTION_STATUS_CHECK_DELAY_MILLISECONDS);
 			}
 		}
 	});
 };
 
-PackageFileHandler.checkCreatePackageStatusAndHandleFile = function(req, transactionId) {
-	checkStatus(req, transactionId);
+PackageFileHandler.checkCreatePackageStatusAndHandleFile = function(req, transactionId, isUpdate) {
+	checkStatus(req, transactionId, isUpdate);
 };
 
 
