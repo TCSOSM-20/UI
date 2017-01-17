@@ -45,7 +45,7 @@ import imgAdd from '../../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 
 import '../styles/EditDescriptorModelProperties.scss'
-
+import '../styles/EditConfigParameterMap.scss';
 
 
 function getDescriptorMetaBasicForType(type) {
@@ -160,13 +160,14 @@ function startEditing() {
 		if (DescriptorModelFactory.isContainer(this)) {
 			event.preventDefault();
 			const name = event.target.name;
-			const value = event.target.value;
-			utils.assignPathValue(this.model, name, value);
+			const value = JSON.parse(event.target.value);
+			utils.assignPathValue(this.model, 'config-parameter-source.config-parameter-source-ref', value.value);
+			utils.assignPathValue(this.model, 'config-parameter-source.member-vnf-index-ref', value.index);
 			CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
 		}
 	}
 
-	function buildField(container, property, path, value, fieldKey) {
+	function buildField(container, property, path, value, fieldKey, vnfdIndex) {
 		let cds = CatalogDataStore;
 		let catalogs = cds.getTransientCatalogs();
 
@@ -180,67 +181,53 @@ function startEditing() {
 		const placeholder = changeCase.title(property.name);
 		const className = ClassNames(property.name + '-input', {'-is-guid': isGuid});
 		const fieldValue = value ? (value.constructor.name != "Object") ? value : '' : undefined;
-		if (isEnumeration) {
-			const enumeration = Property.getEnumeration(property, value);
-			const options = enumeration.map((d, i) => {
-				// note yangforge generates values for enums but the system does not use them
-				// so we categorically ignore them
-				// https://trello.com/c/uzEwVx6W/230-bug-enum-should-not-use-index-only-name
-				//return <option key={fieldKey + ':' + i} value={d.value}>{d.name}</option>;
-				return <option key={fieldKey.toString() + ':' + i} value={d.name}>{d.name}</option>;
-			});
-			const isValueSet = enumeration.filter(d => d.isSelected).length > 0;
-			if (!isValueSet || property.cardinality === '0..1') {
-				const noValueDisplayText = changeCase.title(property.name);
-				options.unshift(<option key={'(value-not-in-enum)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
-			}
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
-		}
+		// if (isEnumeration) {
+		// 	const enumeration = Property.getEnumeration(property, value);
+		// 	const options = enumeration.map((d, i) => {
+		// 		// note yangforge generates values for enums but the system does not use them
+		// 		// so we categorically ignore them
+		// 		// https://trello.com/c/uzEwVx6W/230-bug-enum-should-not-use-index-only-name
+		// 		//return <option key={fieldKey + ':' + i} value={d.value}>{d.name}</option>;
+		// 		return <option key={fieldKey.toString() + ':' + i} value={d.name}>{d.name}</option>;
+		// 	});
+		// 	const isValueSet = enumeration.filter(d => d.isSelected).length > 0;
+		// 	if (!isValueSet || property.cardinality === '0..1') {
+		// 		const noValueDisplayText = changeCase.title(property.name);
+		// 		options.unshift(<option key={'(value-not-in-enum)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
+		// 	}
+		// 	return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+		// }
 
-		if (isLeafRef) {
+		if (isLeafRef && (path.indexOf("config-parameter-source-ref") > -1)) {
 			let fullFieldKey = _.isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
 			let containerRef = container;
+			let vnfdName = null;
+			let options = [];
+			let leafRefPathValues = [];
 			while (containerRef.parent) {
 				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
 				containerRef = containerRef.parent;
 			}
-			const leafRefPathValues = Property.getLeafRef(property, path, value, fullFieldKey, catalogs, container);
+			let parentProperty = container.parent.constituentVnfd;
+			parentProperty.map((v, i) => {
+				let somevalues = Property.getConfigParamRef(property, path, value, fullFieldKey, catalogs, container, v.vnfdId);
+				options = somevalues && options.concat(somevalues.map((d, i) => {
+						return <option key={v.vnfdId + ':' + fieldKey.toString() + ':' + i} value={JSON.stringify({value: d.value, index: v.vnfdIndex})}>{`${v['short-name']} (${v.vnfdIndex}) / ${d.value}`}</option>;
+					}))
+				leafRefPathValues = leafRefPathValues.concat(somevalues);
 
-			const options = leafRefPathValues && leafRefPathValues.map((d, i) => {
-				return <option key={fieldKey.toString() + ':' + i} value={d.value}>{d.value}</option>;
 			});
+
 			const isValueSet = leafRefPathValues.filter(d => d.isSelected).length > 0;
-			if (!isValueSet || property.cardinality === '0..1') {
+			if (!isValueSet) {
 				const noValueDisplayText = changeCase.title(property.name);
 				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={JSON.stringify({value:value, index: container.model['config-parameter-source']['member-vnf-index-ref']})} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
 		}
-
-		if (property['preserve-line-breaks']) {
-			return <textarea key={fieldKey.toString()} cols="5" id={fieldKey.toString()} name={name} value={value} placeholder={placeholder} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing} readOnly={!isEditable} />;
-		}
-
-		return <input key={fieldKey.toString()}
-					  id={fieldKey.toString()}
-					  type="text"
-					  name={name}
-					  value={fieldValue}
-					  className={className}
-					  placeholder={placeholder}
-					  onChange={onChange}
-					  onFocus={onFocus}
-					  onBlur={endEditing}
-					  onMouseDown={startEditing}
-					  onMouseOver={startEditing}
-					  onMouseOut={endEditing}
-					  onMouseLeave={endEditing}
-					  readOnly={!isEditable}
-		/>;
-
 	}
 
-	function buildElement(container, property, valuePath, value) {
+	function buildElement(container, property, valuePath, value, vnfdIndex) {
 		return property.properties.map((property, index) => {
 			let childValue;
 			const childPath = valuePath.slice();
@@ -250,169 +237,11 @@ function startEditing() {
 			if(property.type != 'choice'){
 						childPath.push(property.name);
 			}
-			return build(container, property, childPath, childValue);
+			return build(container, property, childPath, childValue, {}, vnfdIndex);
 
 		});
 	}
 
-    function buildChoice(container, property, path, value, key, props={}) {
-
-		function onFormFieldValueChanged(event) {
-			if (DescriptorModelFactory.isContainer(this)) {
-
-				event.preventDefault();
-
-				let name = event.target.name;
-				const value = event.target.value;
-
-
-				/*
-					Transient State is stored for convenience in the uiState field.
-					The choice yang type uses case elements to describe the "options".
-					A choice can only ever have one option selected which allows
-					the system to determine which type is selected by the name of
-					the element contained within the field.
-				 */
-				/*
-					const stateExample = {
-						uiState: {
-							choice: {
-								'conf-config': {
-									selected: 'rest',
-									'case': {
-										rest: {},
-										netconf: {},
-										script: {}
-									}
-								}
-							}
-						}
-					};
-				*/
-				const statePath = ['uiState.choice'].concat(name);
-				const stateObject = utils.resolvePath(this.model, statePath.join('.')) || {};
-				const selected = stateObject.selected ? stateObject.selected.split('.')[1] : undefined;
-				// write state back to the model so the new state objects are captured
-				utils.assignPathValue(this.model, statePath.join('.'), stateObject);
-
-				// write the current choice value into the state
-				let choiceObject = utils.resolvePath(this.model, [name, selected].join('.'));
-				let isTopCase = false;
-				if (!choiceObject) {
-					isTopCase = true;
-					choiceObject = utils.resolvePath(this.model, [selected].join('.'));
-				}
-				utils.assignPathValue(stateObject, [selected].join('.'), _.cloneDeep(choiceObject));
-
-				if(selected) {
-					if(this.model.uiState.choice.hasOwnProperty(name)) {
-						delete this.model[selected];
-						utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
-					} else {
-						// remove the current choice value from the model
-						utils.removePathValue(this.model, [name, selected].join('.'), isTopCase);
-					}
-				}
-
-				// get any state for the new selected choice
-				const newChoiceObject = utils.resolvePath(stateObject, [value].join('.')) || {};
-
-				// assign new choice value to the model
-				if (isTopCase) {
-					utils.assignPathValue(this.model, [name, value].join('.'), newChoiceObject);
-				} else {
-					utils.assignPathValue(this.model, [value].join('.'), newChoiceObject)
-				}
-
-
-				// update the selected name
-				utils.assignPathValue(this.model, statePath.concat('selected').join('.'), value);
-
-				CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
-			}
-		}
-
-		const caseByNameMap = {};
-
-		const onChange = onFormFieldValueChanged.bind(container);
-
-		const cases = property.properties.map(d => {
-			if (d.type === 'case') {
-				caseByNameMap[d.name] = d.properties[0];
-				return {
-					optionName: d.name,
-					optionTitle: d.description,
-					//represents case name and case element name
-					optionValue: [d.name, d.properties[0].name].join('.')
-				};
-			}
-			caseByNameMap[d.name] = d;
-			return {optionName: d.name};
-		});
-
-		const options = [{optionName: '', optionValue: false}].concat(cases).map((d, i) => {
-			return (
-				<option key={i} value={d.optionValue} title={d.optionTitle}>
-					{d.optionName}
-					{i ? null : changeCase.title(property.name)}
-				</option>
-			);
-		});
-
-		const selectName = path.join('.');
-		let selectedOptionPath = ['uiState.choice', selectName, 'selected'].join('.');
-		//Currently selected choice/case statement on UI model
-		let selectedOptionValue = utils.resolvePath(container.model, selectedOptionPath);
-		//If first time loaded, and none is selected, check if there is a value corresponding to a case statement in the container model
-		if(!selectedOptionValue) {
-			//get field properties for choice on container model
-			let fieldProperties = utils.resolvePath(container.model, selectName);
-			if(fieldProperties) {
-				//Check each case statement in model and see if it is present in container model.
-				cases.map(function(c){
-					if(fieldProperties.hasOwnProperty(c.optionValue.split('.')[1])) {
-						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), c.optionValue);
-					}
-				});
-				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
-			} else {
-				property.properties.map(function(p) {
-					let pname = p.properties[0].name;
-					if(container.model.hasOwnProperty(pname)) {
-						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), [p.name, pname].join('.'));
-					}
-				})
-				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
-			}
-		}
-		//If selectedOptionValue is present, take first item in string which represents the case name.
-		const valueProperty = caseByNameMap[selectedOptionValue ? selectedOptionValue.split('.')[0] : undefined] || {properties: []};
-		const isLeaf = Property.isLeaf(valueProperty);
-		const hasProperties = _.isArray(valueProperty.properties) && valueProperty.properties.length;
-		const isMissingDescriptorMeta = !hasProperties && !Property.isLeaf(valueProperty);
-		//Some magic that prevents errors for arising
-		const valueResponse = valueProperty.properties.length ? valueProperty.properties.map((d, i) => {
-			const childPath = path.concat(valueProperty.name, d.name);
-			const childValue = utils.resolvePath(container.model, childPath.join('.'));
-			return (
-				<div key={childPath.concat('info', i).join(':')}>
-					{build(container, d, childPath, childValue, props)}
-				</div>
-			);
-		}) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name]) : null
-		// end magic
-		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
-
-		return (
-			<div key={key} className="choice">
-				<select key={Date.now()} className={ClassNames({'-value-not-set': !selectedOptionValue})} name={selectName} value={selectedOptionValue} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing}>
-					{options}
-				</select>
-				{valueResponse}
-			</div>
-		);
-
-	}
 
 	function buildSimpleListItem(container, property, path, value, key, index) {
 		// todo need to abstract this better
@@ -442,19 +271,18 @@ function startEditing() {
 		);
 	}
 
-	function buildLeafListItem(container, property, valuePath, value, key, index) {
+	function buildLeafListItem(container, property, valuePath, value, key, index, vnfdIndex) {
 		// look at the type to determine how to parse the value
 		return (
 			<div>
 				{buildRemoveListItem(container, property, valuePath, key, index)}
-				{buildField(container, property, valuePath, value, key)}
+				{buildField(container, property, valuePath, value, key, vnfdIndex)}
 			</div>
 
 		);
 	}
 
-	function build(container, property, path, value, props = {}) {
-
+	function build(container, property, path, value, props = {}, vnfdIndex) {
 		const fields = [];
 		const isLeaf = Property.isLeaf(property);
 		const isArray = Property.isArray(property);
@@ -513,11 +341,11 @@ function startEditing() {
 			} else if (isSimpleListView) {
                 field = buildSimpleListItem(container, property, valuePath, value, key, index, props);
 			} else if (isLeafList) {
-                field = buildLeafListItem(container, property, valuePath, value, key, index, props);
+                field = buildLeafListItem(container, property, valuePath, value, key, index, vnfdIndex);
 			} else if (hasProperties) {
-                field = buildElement(container, property, valuePath, value, key.join(':'), props)
+                field = buildElement(container, property, valuePath, value, vnfdIndex)
 			} else {
-                field = buildField(container, property, valuePath, value, key.join(':'), props);
+                field = buildField(container, property, valuePath, value, key.join(':'), vnfdIndex);
 			}
 
 			function onClickLeaf(property, path, value, event) {
@@ -533,16 +361,16 @@ function startEditing() {
 
 			const clickHandler = isLeaf ? onClickLeaf : () => {};
 			const isContainerList = isArray && !(isSimpleListView || isLeafList);
-
-			fields.push(
-				<div key={fieldKey.concat(['property-content', index]).join(':')}
-					 className={ClassNames('property-content', {'simple-list': isSimpleListView})}
-					 onClick={clickHandler.bind(container, property, valuePath, value)}>
-					{isContainerList ? buildRemoveListItem(container, property, valuePath, fieldKey, index) : null}
-					{field}
-				</div>
-			);
-
+			if(valuePath.indexOf("member-vnf-index-ref") == -1) {
+				fields.push(
+					<div key={fieldKey.concat(['property-content', index]).join(':')}
+						 className={ClassNames('property-content', {'simple-list': isSimpleListView})}
+						 onClick={clickHandler.bind(container, property, valuePath, value)}>
+						{isContainerList ? buildRemoveListItem(container, property, valuePath, fieldKey, index) : null}
+						{field}
+					</div>
+				);
+			}
 		});
 
 		classNames['-is-leaf'] = isLeaf;
@@ -566,26 +394,14 @@ function startEditing() {
 
 		const onFocus = isLeaf ? event => event.target.classList.add('-is-focused') : false;
 
-		return (
-			<div key={fieldKey.join(':')} className={ClassNames(property.type + '-property property', classNames)} onFocus={onFocus}>
-				<h3 className="property-label">
-					<label htmlFor={fieldKey.join(':')}>
-						<span className={property.type + '-name name'}>{title}</span>
-						<small>
-							<span className={property.type + '-info info'}>{displayValueInfo}</span>
-							<span className={property.type + '-value value'}>{displayValue}</span>
-						</small>
-						{isArray ? buildAddPropertyAction(container, property, path.concat(valueAsArray.length)) : null}
-					</label>
-				</h3>
-				<span className={property.type + '-description description'}>{property.description}</span>
-				<val className="property-value">
-					{isCVNFD ? <span className={property.type + '-tip tip'}>Drag a VNFD from the Catalog to add more.</span> : null}
-					{fields}
-				</val>
-			</div>
-		);
-
+		//Remove first entry, which is member-vnf-index because I'm tired of trying to figure out how it's being added and feel pressed for time. Come back here if there's ever time and fix correctly.
+		if (fieldKey.indexOf('member-vnf-index-ref') == -1) {
+				return (
+					<div key={fieldKey.join(':')}  onFocus={onFocus}>
+						{fields}
+					</div>
+				);
+		}
 	}
 export default function EditDescriptorModelProperties(props, type) {
 
@@ -609,9 +425,13 @@ export default function EditDescriptorModelProperties(props, type) {
 		const hasBasicFields = basicProperties.length > 0;
 		const closeGroup = basicProperties.length > 0;
 		return (
-			<div className="advanced-properties-group">
-
-				<div className="toggleable">
+			<div className="config-parameter-map">
+					<div className="config-parameter">
+						Request
+					</div>
+					<div className="config-parameter">
+						Source
+					</div>
 					{properties.map((property,i) => {
 						const path = [property.name];
 						const value = container.model[property.name];
@@ -619,40 +439,23 @@ export default function EditDescriptorModelProperties(props, type) {
 							return null
 						}
 						if(path == 'config-parameter-request') {
+							let cds = CatalogDataStore;
+							let catalogs = cds.getTransientCatalogs();
+							let vnfdIndexRef = container.model[path]['member-vnf-index-ref'];
+							let vnfdIdRef = container.parent.model['constituent-vnfd'].filter(function(v){return v['member-vnf-index'] == vnfdIndexRef})[0]['vnfd-id-ref'];
+							let vnfd = catalogs[1].descriptors.filter((v) => v.id == vnfdIdRef)[0];
+							let primitiveName = vnfd['config-parameter']['config-parameter-request'].filter((p) => p.name == value['config-parameter-request-ref'] )[0].parameter[0]['config-primitive-name-ref'];
 							return (
-								<div className="container-property property" key={path + '-' + i}>
-									<h3 className="property-label">
-										<span className="container-name name">{`VNF Index: ${value['member-vnf-index-ref']}`}</span>
-									</h3>
-									<val className="property-value">
-										<div className="property-content">
-											<val className="property-value" style={{width: '100%'}}>
-												<div className="property-content">
-													<div className="leaf-property property -is-leaf">
-														<h3 className="property-label">
-															<label for={path + '-' + i}>
-																<span className="leaf-name name">
-																	Parameter Request
-																</span>
-															</label>
-														</h3>
-														<input value={value['config-parameter-request-ref']} readonly placeholder="Parameter Request" name={path + '-' + i}>
-
-														</input>
-													</div>
-												</div>
-											</val>
-										</div>
-									</val>
-
+								<div className="config-parameter config-parameter-request" key={path + '-' + i}>
+									{`${vnfd['short-name']}(${vnfdIndexRef}) / ${primitiveName} / ${value['config-parameter-request-ref']}`}
 								</div>
 							)
-						} else {
-							return build(container, property, path, value, _.assign({toggle: true, width: props.width}, props));
+						} else if(path == 'config-parameter-source') {
+							//Builds Source
+							return <div className="config-parameter config-parameter-source"> {build(container, property, path, value, _.assign({toggle: true, width: props.width}, props), value['member-vnf-index-ref'])} </div>
 						}
 
 					})}
-				</div>
 				<div className="toggle-bottom-spacer" style={{visibility: 'hidden', 'height': '50%', position: 'absolute'}}>We need this so when the user closes the panel it won't shift away and scare the bj out of them!</div>
 			</div>
 		);
