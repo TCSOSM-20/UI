@@ -425,14 +425,8 @@ export default function EditDescriptorModelProperties(props, type) {
 		const hasBasicFields = basicProperties.length > 0;
 		const closeGroup = basicProperties.length > 0;
 		return (
-			<div className="config-parameter-map">
-					<div className="config-parameter">
-						Request
-					</div>
-					<div className="config-parameter">
-						Source
-					</div>
-					{properties.map((property,i) => {
+
+					properties.map((property,i) => {
 						const path = [property.name];
 						const value = container.model[property.name];
 						if(path == 'id') {
@@ -446,18 +440,16 @@ export default function EditDescriptorModelProperties(props, type) {
 							let vnfd = catalogs[1].descriptors.filter((v) => v.id == vnfdIdRef)[0];
 							let primitiveName = vnfd['config-parameter']['config-parameter-request'].filter((p) => p.name == value['config-parameter-request-ref'] )[0].parameter[0]['config-primitive-name-ref'];
 							return (
-								<div className="config-parameter config-parameter-request" key={path + '-' + i}>
-									{`${vnfd['short-name']}(${vnfdIndexRef}) / ${primitiveName} / ${value['config-parameter-request-ref']}`}
+								<div className="config-parameter-request" key={path + '-' + i}>
+									{`${vnfd['short-name']} (${vnfdIndexRef}) / ${primitiveName} / ${value['config-parameter-request-ref']}`}
 								</div>
 							)
 						} else if(path == 'config-parameter-source') {
 							//Builds Source
-							return <div className="config-parameter config-parameter-source"> {build(container, property, path, value, _.assign({toggle: true, width: props.width}, props), value['member-vnf-index-ref'])} </div>
+							return <div className="config-parameter-source"> {build(container, property, path, value, _.assign({toggle: true, width: props.width}, props), value['member-vnf-index-ref'])} </div>
 						}
 
-					})}
-				<div className="toggle-bottom-spacer" style={{visibility: 'hidden', 'height': '50%', position: 'absolute'}}>We need this so when the user closes the panel it won't shift away and scare the bj out of them!</div>
-			</div>
+					})
 		);
 	}
 
@@ -477,7 +469,7 @@ export default function EditDescriptorModelProperties(props, type) {
 	path.push(container);
 
 	return (
-		<div className="EditDescriptorModelProperties -is-tree-view">
+		<div className="EditDescriptorModelProperties -is-tree-view config-parameter config-parameter-group">
 			{buildAdvancedGroup()}
 		</div>
 	);

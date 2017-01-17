@@ -74,12 +74,8 @@ $tray-head-height: 25px;
 		top:31px;
 	}
 	.ConfigParameterMap {
-
+		padding: 10px 20px;
 		background: $panel-bg-color;
-
-		.EditDescriptorModelProperties {
-		    margin-left: 8px;
-		}
 
 		.toggleable {
 			display:-ms-flexbox;
