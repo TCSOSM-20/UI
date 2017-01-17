@@ -112,6 +112,15 @@ router.post('/upload', cors(), upload.single('package'), function (req, res, nex
 });
 router.use('/upload', cors(), express.static('upload/packages'));
 
+router.post('/update', cors(), upload.single('package'), function (req, res, next) {
+    Composer.update(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.use('/update', cors(), express.static('upload/packages'));
+
 
 
 router.post('/api/file-manager', cors(), upload.single('package'), function (req, res, next) {
