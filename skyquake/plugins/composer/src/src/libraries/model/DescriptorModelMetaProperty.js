@@ -136,6 +136,31 @@ export default {
 
 		return leafRefObjects;
 	},
+
+	getConfigParamRef(property = {}, path, value, fullFieldKey, transientCatalogs, container, vnfdId) {
+		// const leafRefPath = property['data-type']['leafref']['path'];
+		const leafRefPath = "/vnfd:vnfd-catalog/vnfd:vnfd[vnfd:id = " + vnfdId + "]/vnfd:config-parameter/vnfd:config-parameter-source/vnfd:name"
+		const transientCatalogHash = {};
+
+		transientCatalogs.map((catalog) => {
+			transientCatalogHash[catalog.type + '-catalog'] = {};
+			transientCatalogHash[catalog.type + '-catalog'][catalog.type] = catalog['descriptors'];
+		});
+
+		let leafRefPathValues = utils.resolveLeafRefPath(transientCatalogHash, leafRefPath, fullFieldKey, path, container);
+
+		let leafRefObjects = [];
+
+		leafRefPathValues && leafRefPathValues.map((leafRefPathValue) => {
+			leafRefObjects.push({
+				name: leafRefPathValue,
+				value: leafRefPathValue,
+				isSelected: String(leafRefPathValue) === String(value)
+			});
+		});
+
+		return leafRefObjects;
+	},
 	isGuid(property = {}) {
 		const type = property['data-type'];
 		if (typeof type === 'object' && type.leafref && type.leafref.path) {
