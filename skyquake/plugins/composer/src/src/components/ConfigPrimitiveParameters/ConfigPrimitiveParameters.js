@@ -62,87 +62,6 @@ function configParameterMapMap(ap, i) {
 
         </div>
     )
-    /*
-        // const colors = fg.colors;
-        // const stylePrimary = {borderColor: colors.primary};
-        // const styleSecondary = {borderColor: colors.secondary};
-
-        // context.stylePrimary = stylePrimary;
-        // context.styleSecondary = styleSecondary;
-
-        // const rspMap = fg.rsp.reduce((map, rsp) => {
-        //     map[rsp.id] = rsp;
-        //     rsp.classifier = [];
-        //     return map;
-        // }, {});
-
-        // fg.classifier.forEach(classifier => {
-        //     const rsp = rspMap[classifier.model['rsp-id-ref']];
-        //     if (rsp) {
-        //         rsp.classifier.push(classifier);
-        //     }
-        // });
-
-        // function onClickRemoveForwardingGraph(fg, event) {
-        //     event.preventDefault();
-        //     const root = fg.getRoot();
-        //     fg.remove();
-        //     CatalogItemsActions.catalogItemDescriptorChanged(root);
-        // }
-
-        // function onClickAddClassifier(context, fg, event) {
-        //     event.preventDefault();
-        //     fg.createClassifier();
-        //     CatalogItemsActions.catalogItemDescriptorChanged(fg.getRoot());
-        // }
-
-        // function onClickToggleShowAllFGPaths(fg, event) {
-        //     //event.preventDefault();
-        //     event.stopPropagation();
-        //     fg.uiState.showPaths = event.target.checked;
-        //     fg.rsp.forEach(rsp => rsp.uiState.showPath = event.target.checked);
-        //     CatalogItemsActions.catalogItemMetaDataChanged(fg.getRoot().model);
-        // }
-
-        // if (!fg.uiState.hasOwnProperty('showPaths')) {
-        //     fg.uiState.showPaths = true;
-        //     fg.rsp.forEach(d => d.uiState.showPath = true);
-        // }
-
-        // const toggleSelectAllPaths = (
-        //     <input type="checkbox" name={'show-path' + fg.uid} checked={fg.uiState.showPaths} onChange={() => {}} onClick={onClickToggleShowAllFGPaths.bind(null, fg)} />
-        // );
-
-        // const srpFactory = DescriptorModelFactory.newRecordServicePathFactory({}, fg);
-        // srpFactory.uid = fg.uid + i;
-
-        // const hasServiceFunctionVNFDs = context.containers.filter(d => DescriptorModelFactory.isConstituentVnfdWithServiceChain(d, 'SF')).length > 0;
-
-        // return (
-        //     <div key={i} className={fg.className} data-uid={fg.uid} data-offset-width="true" onClick={onClickSelectAndShowInDetailsPanel.bind(null, fg)} onCut={onCutDelegateToRemove.bind(null, fg)}>
-        //         <div key="outline-indicator" data-outline-indicator="true"></div>
-        //         <div className="header-actions">
-        //             <Button className="remove-forwarding-graph" title="Remove" onClick={onClickRemoveForwardingGraph.bind(null, fg)} src={imgRemove}/>
-        //         </div>
-        //         <LayoutRow primaryActionColumn={toggleSelectAllPaths} secondaryActionColumn={<img className="fg-icon" src={imgFG} width="20px" />}>
-        //             <small>{fg.title}</small>
-        //         </LayoutRow>
-        //         <div>
-        //             <h4>Rendered Service Paths</h4>
-        //             {hasServiceFunctionVNFDs ? fg.recordServicePaths.concat(srpFactory).map(mapRecordServicePath.bind(null, context)) : <small className="no-service-function-chain-msg hint">A VNFD with the chain SF is required to build Rendered Service Paths.</small>}
-        //         </div>
-        //         <div>
-        //             <h4>Classifiers</h4>
-        //             {fg.classifier.map(mapClassifier.bind(null, context))}
-        //             <div className="footer-actions">
-        //                 <div className="row-action-column">
-        //                     <Button className="create-new-classifier" src={imgAdd} width="20px" onClick={onClickAddClassifier.bind(null, context, fg)} label="Add Classifier" />
-        //                 </div>
-        //             </div>
-        //         </div>
-        //     </div>
-        // );
-    */
 
 }
 
@@ -211,22 +130,26 @@ const ConfigPrimitiveParameters = React.createClass({
         }
         return (
                 <div className="ConfigParameterMap">
-                    {
-                        containers.map(function(c, i) {
-                            if(c.className == 'ConfigParameterMap') {
-                                return <EditConfigParameterMap key={i} container={c} width={self.props.width} />
-                            }
-                        })
-                    }
+                    <div className="config-parameter-map">
+                        <div className="config-parameter-titles">
+                            <div className="config-parameter">
+                                Request
+                            </div>
+                            <div className="config-parameter">
+                                Source
+                            </div>
+                        </div>
+                        {
+                            containers.map(function(c, i) {
+                                if(c.className == 'ConfigParameterMap') {
+                                    return <EditConfigParameterMap key={i} container={c} width={self.props.width} />
+                                }
+                            })
+                        }
+                        <div className="toggle-bottom-spacer" style={{visibility: 'hidden', 'height': '50%', position: 'absolute'}}>We need this so when the user closes the panel it won't shift away and scare the bj out of them!</div>
+                    </div>
                 </div>
         )
-        // return (
-        //     <div className=" -with-transitions" data-offset-parent="true">
-        //         <div key="outline-indicator" data-outline-indicator="true"></div>
-        //         {containers.filter(d => d.type === 'nsd').map(mapNSD.bind(context))}
-        //     </div>
-        // );
-
     }
 });
 
