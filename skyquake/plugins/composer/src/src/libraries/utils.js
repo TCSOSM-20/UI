@@ -290,7 +290,7 @@ export default {
 					for (let subKey in catalogs[key]) {
 						let found = _.find(catalogs[key][subKey], {id: fieldKeyArray[0]});
 						if (found) {
-							results = this.getResults(found, pathArray.splice(-i, i));
+							results = this.getAbsoluteResults(found, pathArray.splice(-i, i));
 							return results;
 						}
 					}
@@ -303,7 +303,7 @@ export default {
 							for (let foundKey in found) {
 								let topLevel = _.find(found[foundKey], {id: fieldKeyArray[1]});
 								if (topLevel) {
-									results = this.getResults(topLevel, pathArray.splice(-i, i));
+									results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
 									return results;
 								}
 							}
