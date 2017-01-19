@@ -457,18 +457,27 @@ class ComposerAppStore {
 		let self = this;
 		let filesState = null;
         if (self.fileMonitoringSocketID) {
-			filesState = addInputState( _.cloneDeep(this.filesState),data);
-			// filesState = _.merge(self.filesState, addInputState({},data));
-			let normalizedData = normalizeTree(data);
-			this.setState({
-				files: {
-					data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
-						return _.uniqBy(obj? obj.concat(src) : src, 'name');
-					}),
-					id: self.files.id || normalizedData.id
-				},
-				filesState: filesState
-			});
+        	let newState = {};
+        	if(data.hasOwnProperty('contents')) {
+        		filesState = addInputState( _.cloneDeep(this.filesState),data);
+				// filesState = _.merge(self.filesState, addInputState({},data));
+				let normalizedData = normalizeTree(data);
+				newState = {
+					files: {
+						data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
+							return _.uniqBy(obj? obj.concat(src) : src, 'name');
+						}),
+						id: self.files.id || normalizedData.id
+					},
+					filesState: filesState
+				}
+        	} else {
+        		newState = {
+        			files: false
+        		}
+        	}
+
+			this.setState(newState);
         }
 		function normalizeTree(data) {
 			let f = {

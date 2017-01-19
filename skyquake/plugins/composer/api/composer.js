@@ -612,6 +612,9 @@ FileManager.get = function(req) {
                                 data: data.body
                             });
                         }
+                    }).catch(function(err) {
+                        console.log('Failed to retrieve FileManager.list')
+                        resolve(err);
                     })
                 }
             })
