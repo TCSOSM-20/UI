@@ -20,6 +20,7 @@
 
 'use strict';
 
+import _ from 'lodash'
 import d3 from 'd3'
 import React from 'react'
 import Range from '../Range'
@@ -49,7 +50,14 @@ import imgAdd from '../../../../node_modules/open-iconic/svg/plus.svg'
 import imgConnection from '../../../../node_modules/open-iconic/svg/random.svg'
 import imgClassifier from '../../../../node_modules/open-iconic/svg/spreadsheet.svg'
 import imgReorder from '../../../../node_modules/open-iconic/svg/menu.svg'
-import EditConfigParameterMap from '../EditConfigParameterMap'
+import CatalogDataStore from '../../stores/CatalogDataStore'
+import utils from '../../libraries/utils'
+import getEventPath from '../../libraries/getEventPath'
+import guid from '../../libraries/guid'
+
+import '../../styles/EditDescriptorModelProperties.scss'
+import '../../styles/EditConfigParameterMap.scss';
+
 function configParameterMapMap(ap, i) {
 
     const context = this;
@@ -98,6 +106,17 @@ function mapNSD(nsd, i) {
 
 }
 
+
+function startEditing() {
+        event.stopPropagation();
+        DeletionManager.removeEventListeners();
+    }
+
+function endEditing() {
+    DeletionManager.addEventListeners();
+}
+
+
 const ConfigPrimitiveParameters = React.createClass({
     mixins: [PureRenderMixin],
     getInitialState: function () {
@@ -119,6 +138,9 @@ const ConfigPrimitiveParameters = React.createClass({
     render() {
         const self = this;
         const containers = this.props.containers;
+        let NSContainer = containers.filter(function(c) {
+           return c.className == "NetworkService"
+        })[0]
         const context = {
             component: this,
             containers: containers
@@ -128,6 +150,11 @@ const ConfigPrimitiveParameters = React.createClass({
         if (networkService.length === 0) {
             return <p className="welcome-message">No <img src={imgNSD} width="20px" /> NSD open in the canvas. Try opening an NSD.</p>;
         }
+        let MapData = constructRequestSourceData(containers);
+        let mapCounter = 1;
+
+
+
         return (
                 <div className="ConfigParameterMap">
                     <div className="config-parameter-map">
@@ -139,21 +166,188 @@ const ConfigPrimitiveParameters = React.createClass({
                                 Source
                             </div>
                         </div>
-                        {
-                            containers.map(function(c, i) {
-                                if(c.className == 'ConfigParameterMap') {
-                                    return <EditConfigParameterMap key={i} container={c} width={self.props.width} />
-                                }
-                            })
-                        }
-                        <div className="toggle-bottom-spacer" style={{visibility: 'hidden', 'height': '50%', position: 'absolute'}}>We need this so when the user closes the panel it won't shift away and scare the bj out of them!</div>
+                        <div className="config-parameter-map">
+                            {
+                                MapData.Requests.map(function(r, i) {
+                                    let currentValue = {};
+                                    let SourceOptions = [<option value={JSON.stringify({
+                                            requestValue: r.name,
+                                            requestIndex: r.vnfdIndex
+                                        })} key="reset">No Source Selected</option>]
+                                    MapData.Sources.map(function(s, j) {
+                                        let value = {
+                                            value: s.name,
+                                            index: s.vnfdIndex,
+                                            requestValue: r.name,
+                                            requestIndex: r.vnfdIndex
+                                        }
+                                        SourceOptions.push(<option value={JSON.stringify(value)} key={`${j}-${i}`} >{`${s.vnfdName} (${s.vnfdIndex}) / ${s.name}`}</option>)
+                                    })
+                                    //Finds current value
+                                    NSContainer.model['config-parameter-map'] && NSContainer.model['config-parameter-map'].map((c)=>{
+                                        if(
+                                            c['config-parameter-request'] &&
+                                            (c['config-parameter-request']['config-parameter-request-ref'] == r.name)
+                                            && (c['config-parameter-request']['member-vnf-index-ref'] == r.vnfdIndex)
+                                           ) {
+                                            currentValue = {
+                                                value: c['config-parameter-source']['config-parameter-source-ref'],
+                                                index: c['config-parameter-source']['member-vnf-index-ref'],
+                                                requestValue: r.name,
+                                                requestIndex: r.vnfdIndex
+                                            };
+                                        }
+                                    })
+                                    currentValue.hasOwnProperty('value') ? mapCounter++ : mapCounter--;
+                                    let currentMapIndex = (mapCounter > 0) ? (mapCounter) - 1: 0;
+                                    return (
+                                            <div key={i} className="EditDescriptorModelProperties -is-tree-view config-parameter config-parameter-group">
+                                                <div  className="config-parameter-request" >{`${r.vnfdName} (${r.vnfdIndex}) / ${r.parameter && r.parameter[0]['config-primitive-name-ref']} / ${r.parameter && r.parameter[0]['config-primitive-parameter-ref']}`}</div>
+                                                <div className="config-parameter-source">
+                                                    <select
+                                                        onChange={onFormFieldValueChanged.bind(NSContainer, i)}
+                                                        onBlur={endEditing}
+                                                        onMouseDown={startEditing}
+                                                        onMouseOver={startEditing}
+                                                        value={JSON.stringify(currentValue)}
+                                                         >
+                                                        }
+                                                        {SourceOptions}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                    )
+                                })
+                            }
+                        </div>
                     </div>
                 </div>
         )
     }
 });
 
+    function onFormFieldValueChanged(index, event) {
+        if (DescriptorModelFactory.isContainer(this)) {
+            event.preventDefault();
+            const name = event.target.name;
+            const value = JSON.parse(event.target.value);
+
+            let ConfigMap = utils.resolvePath(this.model, 'config-parameter-map');
+            let ConfigMapIndex = false;
+            let id = guid().substring(0, 8);
+            //Check current map, if request is present, assign map index.
+            ConfigMap.map(function(c, i) {
+                let req = c['config-parameter-request'];
+                if((req['config-parameter-request-ref'] == value.requestValue) &&
+                   (req['member-vnf-index-ref'] == value.requestIndex)) {
+                    ConfigMapIndex = i;
+                    id = c.id;
+                }
+            });
+            if(!ConfigMapIndex && _.isBoolean(ConfigMapIndex)) {
+                ConfigMapIndex = ConfigMap.length;
+            }
+            if(value.value) {
+                utils.assignPathValue(this.model, 'config-parameter-map.' + ConfigMapIndex + '.config-parameter-source.config-parameter-source-ref', value.value);
+                utils.assignPathValue(this.model, 'config-parameter-map.' + ConfigMapIndex + '.config-parameter-source.member-vnf-index-ref', value.index);
+                utils.assignPathValue(this.model, 'config-parameter-map.' + ConfigMapIndex + '.config-parameter-request.config-parameter-request-ref', value.requestValue);
+                utils.assignPathValue(this.model, 'config-parameter-map.' + ConfigMapIndex + '.config-parameter-request.member-vnf-index-ref', value.requestIndex);
+                utils.assignPathValue(this.model, 'config-parameter-map.' + ConfigMapIndex + '.id', id);
+                CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
+            } else {
+                utils.removePathValue(this.model, 'config-parameter-map.' + ConfigMapIndex)
+                CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
+
+            }
+        }
+    }
+
+
+//Values from
+//
+
+//To update
+//Container:NSD
+//path
+//["config-parameter", "config-parameter-source"]
+//{config-parameter-source-ref: "service_port", member-vnf-index-ref: 2}
+
+function constructRequestSourceData(containers) {
+    let cds = CatalogDataStore;
+    let catalogs = cds.getTransientCatalogs();
+    let Requests = [];
+    let Sources = [];
+    let vnfdData = {
+        index:[],
+        vnfdIDs:[],
+        indexRefs: {},
+        vnfdRefs:{}
+    };
+
+    //Init VNFD map
+    //{
+    //
+    //  index:[1], //member-vnfd-index-ref
+    //  vnfdIDs:[],
+    //  indexRefs: {
+    //      1: vnfdID
+    //  },
+    //  vnfdRefs: {
+    //      {1.id} : {...}
+    //  }
+    //}
+
+    containers.map(function(c, i) {
+        if(c.className == 'ConstituentVnfd') {
+            vnfdData.index.push(c.vnfdIndex);
+            vnfdData.vnfdIDs.push(c.vnfdId);
+            vnfdData.indexRefs[c.vnfdIndex] = c.vnfdId;
+            vnfdData.vnfdRefs[c.vnfdId] = {
+                id: c.vnfdId,
+                name: c.name,
+                'short-name': c['short-name']
+            };
+        }
+    });
+
+    //Decorate VNFDMap with descriptor data;
+    catalogs[1].descriptors
+        .filter((v) => vnfdData.vnfdIDs.indexOf(v.id) > -1)
+        .map(constructVnfdMap.bind(this, vnfdData));
+
+
+    vnfdData.index.map(function(vnfdIndex) {
+        let vnfdId = vnfdData.indexRefs[vnfdIndex];
+        let vnfd = vnfdData.vnfdRefs[vnfdId];
+        let vnfdShortName = vnfd['short-name'];
+        vnfd.requests && vnfd.requests.map(function(request) {
+            Requests.push(_.merge({
+                            id: vnfdId,
+                            vnfdIndex: vnfdIndex,
+                            vnfdName: vnfdShortName,
+                        }, request))
+        });
+        vnfd.sources && vnfd.sources.map(function(source) {
+            Sources.push(_.merge({
+                            id: vnfdId,
+                            vnfdIndex: vnfdIndex,
+                            vnfdName: vnfdShortName,
+                        }, source));
+        });
+    })
+
+    return {Requests, Sources};
+
+    function constructVnfdMap(vnfdData, vnfd) {
+        let data = {
+            requests: vnfd['config-parameter']['config-parameter-request'],
+            sources: vnfd['config-parameter']['config-parameter-source']
+        };
+        vnfdData.vnfdRefs[vnfd.id] =  _.merge(vnfdData.vnfdRefs[vnfd.id], data);
+    }
+
+}
+
 
 
 export default ConfigPrimitiveParameters;
-//<EditDescriptorModelProperties container={DescriptorModelMetaFactory.createModelInstanceForType('nsd.vnffgd.rsp')} width={this.props.width} />
