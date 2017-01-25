@@ -122,7 +122,7 @@ class ComposerAppStore {
 		this.fullScreenMode = false;
 		this.panelTabShown = 'descriptor';
 		//File manager values
-		this.files = [];
+		this.files = false;
 		this.filesState = {};
 		this.downloadJobs = {};
 		//End File  manager values
@@ -549,7 +549,7 @@ class ComposerAppStore {
 		let self = this;
 		let ws = window.multiplexer.channel(id);
 		let downloadJobs = _.cloneDeep(self.downloadJobs);
-		let newFiles = {};
+		let newFiles = false;
 		ws.onmessage = (socket) => {
             if (self.files && self.files.length > 0) {
                 let jobs = [];
@@ -625,7 +625,6 @@ class ComposerAppStore {
 	openFileManagerSockets(i) {
 		let self = this;
 		let item = i || self.item;
-		this.files = {data:[]};
         // this.closeFileManagerSockets();
 		this.getInstance().openFileMonitoringSocket(item.id, item.uiState.type).then(function() {
         // 	// self.getInstance().openDownloadMonitoringSocket(item.id);
