@@ -81,9 +81,13 @@ const CanvasPanel = React.createClass({
 						<button className={isDescriptorView ? '-selected' : ''} onClick={ComposerAppActions.showDescriptor}>
 							Descriptor
 						</button>
-						<button className={!isDescriptorView ? '-selected' : ''}  onClick={ComposerAppActions.showAssets}>
-							Assets
-						</button>
+						{
+							this.props.files ?
+								<button className={!isDescriptorView ? '-selected' : ''}  onClick={ComposerAppActions.showAssets}>
+									Assets
+								</button>
+							: null
+						}
 					</div>
 				</div>
        		)
