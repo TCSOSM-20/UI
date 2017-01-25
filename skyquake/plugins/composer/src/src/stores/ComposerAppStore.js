@@ -122,7 +122,7 @@ class ComposerAppStore {
 		this.fullScreenMode = false;
 		this.panelTabShown = 'descriptor';
 		//File manager values
-		this.files = [];
+		this.files = false;
 		this.filesState = {};
 		this.downloadJobs = {};
 		//End File  manager values
@@ -465,18 +465,27 @@ class ComposerAppStore {
 		let self = this;
 		let filesState = null;
         if (self.fileMonitoringSocketID) {
-			filesState = addInputState( _.cloneDeep(this.filesState),data);
-			// filesState = _.merge(self.filesState, addInputState({},data));
-			let normalizedData = normalizeTree(data);
-			this.setState({
-				files: {
-					data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
-						return _.uniqBy(obj? obj.concat(src) : src, 'name');
-					}),
-					id: self.files.id || normalizedData.id
-				},
-				filesState: filesState
-			});
+        	let newState = {};
+        	if(data.hasOwnProperty('contents')) {
+        		filesState = addInputState( _.cloneDeep(this.filesState),data);
+				// filesState = _.merge(self.filesState, addInputState({},data));
+				let normalizedData = normalizeTree(data);
+				newState = {
+					files: {
+						data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
+							return _.uniqBy(obj? obj.concat(src) : src, 'name');
+						}),
+						id: self.files.id || normalizedData.id
+					},
+					filesState: filesState
+				}
+        	} else {
+        		newState = {
+        			files: false
+        		}
+        	}
+
+			this.setState(newState);
         }
 		function normalizeTree(data) {
 			let f = {
@@ -548,7 +557,7 @@ class ComposerAppStore {
 		let self = this;
 		let ws = window.multiplexer.channel(id);
 		let downloadJobs = _.cloneDeep(self.downloadJobs);
-		let newFiles = {};
+		let newFiles = false;
 		ws.onmessage = (socket) => {
             if (self.files && self.files.length > 0) {
                 let jobs = [];
@@ -624,7 +633,6 @@ class ComposerAppStore {
 	openFileManagerSockets(i) {
 		let self = this;
 		let item = i || self.item;
-		this.files = {data:[]};
         // this.closeFileManagerSockets();
 		this.getInstance().openFileMonitoringSocket(item.id, item.uiState.type).then(function() {
         // 	// self.getInstance().openDownloadMonitoringSocket(item.id);
