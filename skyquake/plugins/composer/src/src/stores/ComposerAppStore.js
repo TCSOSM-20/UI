@@ -125,6 +125,7 @@ class ComposerAppStore {
 		this.files = false;
 		this.filesState = {};
 		this.downloadJobs = {};
+		this.displayedPanel = 'forwarding' //or parameter
 		//End File  manager values
 		this.bindListeners({
 			onResize: PanelResizeAction.RESIZE,
@@ -355,7 +356,9 @@ class ComposerAppStore {
 		} else {
 			this.openCanvasPanelTray();
 		}
-		this.setState({displayedPanel: panelEvent})
+		if(panelEvent != 'arrow'){
+			this.setState({displayedPanel: panelEvent})
+		}
 	}
 
 	openCanvasPanelTray() {

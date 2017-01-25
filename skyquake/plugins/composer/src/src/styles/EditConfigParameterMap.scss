@@ -26,7 +26,7 @@
 	$field-background-color: white;
 	$child-indent-left-right-margin: 5px;
 
-	font-size: smaller;
+	/* font-size: smaller;*/
 	display:-ms-flexbox;
 	display:flex;
 	-ms-flex-wrap: wrap;
@@ -50,8 +50,8 @@
 	.config-parameter {
 		display:-ms-flexbox;
 		display:flex;
-		-ms-flex: 1 1 50%;
-		    flex: 1 1 50%;
+		-ms-flex: 1 0 50%;
+		    flex: 1 0 50%;
 		    &-source, &-request {
 		    	-ms-flex: 1 1 50%;
 		    	flex: 1 1 50%;

@@ -157,16 +157,16 @@ const ConfigPrimitiveParameters = React.createClass({
 
         return (
                 <div className="ConfigParameterMap">
-                    <div className="config-parameter-map">
-                        <div className="config-parameter-titles">
-                            <div className="config-parameter">
-                                Request
-                            </div>
-                            <div className="config-parameter">
-                                Source
-                            </div>
-                        </div>
+
                         <div className="config-parameter-map">
+                            <div className="config-parameter-titles">
+                                <div className="config-parameter">
+                                    Primitive Parameter Request
+                                </div>
+                                <div className="config-parameter">
+                                    Data Source
+                                </div>
+                            </div>
                             {
                                 MapData.Requests.map(function(r, i) {
                                     let currentValue = {};
@@ -181,7 +181,9 @@ const ConfigPrimitiveParameters = React.createClass({
                                             requestValue: r.name,
                                             requestIndex: r.vnfdIndex
                                         }
-                                        SourceOptions.push(<option value={JSON.stringify(value)} key={`${j}-${i}`} >{`${s.vnfdName} (${s.vnfdIndex}) / ${s.name}`}</option>)
+                                        if (r.vnfdIndex !== s.vnfdIndex) {
+                                            SourceOptions.push(<option value={JSON.stringify(value)} key={`${j}-${i}`} >{`${s.vnfdName} (${s.vnfdIndex}): ${s.name}`}</option>)
+                                        }
                                     })
                                     //Finds current value
                                     NSContainer.model['config-parameter-map'] && NSContainer.model['config-parameter-map'].map((c)=>{
@@ -202,7 +204,7 @@ const ConfigPrimitiveParameters = React.createClass({
                                     let currentMapIndex = (mapCounter > 0) ? (mapCounter) - 1: 0;
                                     return (
                                             <div key={i} className="EditDescriptorModelProperties -is-tree-view config-parameter config-parameter-group">
-                                                <div  className="config-parameter-request" >{`${r.vnfdName} (${r.vnfdIndex}) / ${r.parameter && r.parameter[0]['config-primitive-name-ref']} / ${r.parameter && r.parameter[0]['config-primitive-parameter-ref']}`}</div>
+                                                <div  className="config-parameter-request" >{`${r.vnfdName} (${r.vnfdIndex}): ${r.name}`}</div>
                                                 <div className="config-parameter-source">
                                                     <select
                                                         onChange={onFormFieldValueChanged.bind(NSContainer, i)}
@@ -220,7 +222,6 @@ const ConfigPrimitiveParameters = React.createClass({
                                 })
                             }
                         </div>
-                    </div>
                 </div>
         )
     }
