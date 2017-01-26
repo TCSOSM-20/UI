@@ -163,7 +163,7 @@ const ComposerApp = React.createClass({
 				}
 			}
 
-			let cpNumber = 0;
+
 			let AppHeader = (<div className="AppHeader">
 								<RiftHeader />
 							</div>);
@@ -174,12 +174,7 @@ const ComposerApp = React.createClass({
 			const isModified = self.state.item && self.state.item.uiState.modified;
 			const isEditingNSD = self.state.item && self.state.item.uiState && /nsd/.test(self.state.item.uiState.type);
 			const isEditingVNFD = self.state.item && self.state.item.uiState && /vnfd/.test(self.state.item.uiState.type);
-			const containers = [self.state.item].reduce(DescriptorModelFactory.buildCatalogItemFactory(CatalogDataStore.getState().catalogs), []);
-
-			containers.filter(d => DescriptorModelFactory.isConnectionPoint(d)).forEach(d => {
-				d.cpNumber = ++cpNumber;
-				containers.filter(d => DescriptorModelFactory.isVnfdConnectionPointRef(d)).filter(ref => ref.key === d.key).forEach(ref => ref.cpNumber = d.cpNumber);
-			});
+            const containers = self.state.containers;
 			const canvasTitle = containers.length ? containers[0].model.name : '';
 			const hasNoCatalogs = CatalogDataStore.getState().catalogs.length === 0;
 			const isLoading = self.state.isLoading;
