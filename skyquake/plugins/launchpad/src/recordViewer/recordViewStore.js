@@ -136,7 +136,7 @@ class RecordViewStore {
         let vnfrIndex = data.vnfrIndex;
         let configPrimitiveIndex = data.configPrimitiveIndex;
         let payload = {};
-        let isValid = false;
+        let isValid = true;
         let configPrimitive = vnfrs[vnfrIndex]['vnf-configuration']['service-primitive'][configPrimitiveIndex];
 
         payload['name'] = '';
@@ -144,7 +144,7 @@ class RecordViewStore {
         payload['vnf-list'] = [];
         payload['triggered-by'] = 'vnf-primitive';
         let parameters = [];
-        configPrimitive['parameter'].map((parameter) => {
+        configPrimitive['parameter'] && configPrimitive['parameter'].map((parameter) => {
             if(!isValid) {
                 isValid = validateParameter(parameter);
             }
@@ -157,8 +157,11 @@ class RecordViewStore {
         let vnfPrimitive = [];
         vnfPrimitive[0] = {
             name: configPrimitive['name'],
-            index: configPrimitiveIndex,
-            parameter: parameters
+            index: configPrimitiveIndex
+        };
+
+        if (parameters.length > 0) {
+            vnfPrimitive[0].parameter = parameters;
         }
 
         payload['vnf-list'].push({
