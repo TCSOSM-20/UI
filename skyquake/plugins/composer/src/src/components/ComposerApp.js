@@ -205,6 +205,7 @@ const ComposerApp = React.createClass({
 										 panelTabShown={self.state.panelTabShown}
 										 files={self.state.files}
 										 filesState={self.state.filesState}
+                                         newPathName={self.state.newPathName}
 										 item={self.state.item}
 										 type={self.state.filterCatalogByTypeValue}
 										  />

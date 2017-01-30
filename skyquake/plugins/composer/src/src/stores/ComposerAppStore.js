@@ -41,6 +41,9 @@ import React from 'react';
 //Hack for crouton fix. Should eventually put composer in skyquake alt context
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 let NotificationError = null;
+
+import utils from '../libraries/utils';
+
 class ComponentBridge extends React.Component {
     constructor(props) {
         super(props);
@@ -126,6 +129,7 @@ class ComposerAppStore {
 		this.filesState = {};
 		this.downloadJobs = {};
 		this.containers = [];
+		this.newPathName = '';
 		//End File  manager values
 		this.bindListeners({
 			onResize: PanelResizeAction.RESIZE,
@@ -164,7 +168,9 @@ class ComposerAppStore {
 			closeFileManagerSockets: FileManagerActions.closeFileManagerSockets,
 			openFileManagerSockets: FileManagerActions.openFileManagerSockets,
 			openDownloadMonitoringSocketSuccess: FileManagerActions.openDownloadMonitoringSocketSuccess,
-			getFilelistSocketSuccess: FileManagerActions.getFilelistSocketSuccess
+			getFilelistSocketSuccess: FileManagerActions.getFilelistSocketSuccess,
+			newPathNameUpdated: FileManagerActions.newPathNameUpdated,
+			createDirectory: FileManagerActions.createDirectory
 		});
         this.exportPublicMethods({
             closeFileManagerSockets: this.closeFileManagerSockets.bind(this)
@@ -477,7 +483,7 @@ class ComposerAppStore {
 						data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
 							return _.uniqBy(obj? obj.concat(src) : src, 'name');
 						}),
-						id: self.files.id || normalizedData.id
+						id: normalizedData.id
 					},
 					filesState: filesState
 				}
@@ -527,7 +533,7 @@ class ComposerAppStore {
 		let type = data.type || this.item.uiState.type;
 		let path = data.path;
 		let url = data.url;
-		this.getInstance().addFile(id, type, path, url);
+		this.getInstance().addFile(id, type, path, url, data.refresh);
 	}
 	updateFileLocationInput = (data) => {
 		let name = data.name;
@@ -539,14 +545,16 @@ class ComposerAppStore {
 		});
 	}
 	addFileSuccess = (data) => {
-		let path = data.path;
-		let fileName = data.fileName;
-		let files = _.cloneDeep(this.files);
-		let loadingIndex = files.data[path].push({
-			status: 'DOWNLOADING',
-			name: path + '/' + fileName
-		}) - 1;
-		this.setState({files: files});
+		if(!data.refresh) {
+			let path = data.path;
+			let fileName = data.fileName;
+			let files = _.cloneDeep(this.files);
+			let loadingIndex = files.data[path].push({
+				status: 'DOWNLOADING',
+				name: path + '/' + fileName
+			}) - 1;
+			this.setState({files: files});
+		}
 
 	}
 	startWatchingJob = () => {
@@ -661,6 +669,25 @@ class ComposerAppStore {
 
 		this.setState({
 			files: files
+		})
+	}
+	newPathNameUpdated = (event) => {
+		const value = event.target.value;
+		this.setState({
+			newPathName: value
+		})
+	}
+	createDirectory = () => {
+		console.log(this.newPathName);
+		this.sendDownloadFileRequst({
+			id: this.item.id,
+			type: this.item.uiState.type,
+			path: this.item.name + '/' + this.newPathName,
+			url: utils.getSearchParams(window.location).dev_download_server || window.location.protocol + '//' + window.location.host,
+			refresh: true
+		});
+		this.setState({
+			newPathName: ''
 		})
 	}
 }
