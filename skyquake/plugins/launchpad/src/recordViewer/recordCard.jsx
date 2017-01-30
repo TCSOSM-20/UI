@@ -106,7 +106,7 @@ export default class RecordCard extends React.Component {
                         //That match the currently selected job id
                         if(v.id == cardData.id) {
                           return v.primitive.map(function(p, i) {
-                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={ob['job-id'] + '-' + i} {...p} />
+                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={job['job-id'] + '-' + i} {...p} />
                           })
                         }
                       })
@@ -208,7 +208,7 @@ export default class RecordCard extends React.Component {
                         //That match the currently selected job id
                         if(v.id == cardData.id) {
                           return v.primitive.map(function(p, i) {
-                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={ob['job-id'] + '-' + 'vnfr' + '-' + h} {...p} />
+                            return <JobListCard type="vnfr" job-id={job['job-id']} cardData={cardData} key={job['job-id'] + '-' + 'vnfr' + '-' + h} {...p} />
                           })
                         }
                       })

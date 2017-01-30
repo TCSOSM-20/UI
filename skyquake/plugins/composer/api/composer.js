@@ -272,36 +272,36 @@ Composer.create = function(req) {
         });
     });
 };
-// Composer.update = function(req) {
-//     var api_server = req.query['api_server'];
-//     var catalogType = req.params.catalogType;
-//     var id = req.params.id;
-//     var data = req.body;
-//     console.log('Updating', catalogType, 'id', id, 'on', api_server);
-//     var jsonData = {};
-//     jsonData[catalogType] = {};
-//     jsonData[catalogType] = data;
-//     return new Promise(function(resolve, reject) {
-//         var requestHeaders = {};
-//         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-//             'Authorization': req.get('Authorization')
-//         });
-//         request({
-//             uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
-//             method: 'PUT',
-//             headers: requestHeaders,
-//             forever: constants.FOREVER_ON,
-//             rejectUnauthorized: false,
-//             json: jsonData
-//         }, function(error, response, body) {
-//             if (utils.validateResponse('Composer.update', error, response, body, resolve, reject)) {
-//                 resolve({
-//                     statusCode: response.statusCode
-//                 });
-//             }
-//         });
-//     });
-//
+Composer.updateSave = function(req) {
+    var api_server = req.query['api_server'];
+    var catalogType = req.params.catalogType;
+    var id = req.params.id;
+    var data = req.body;
+    console.log('Updating', catalogType, 'id', id, 'on', api_server);
+    var jsonData = {};
+    jsonData[catalogType] = {};
+    jsonData[catalogType] = data;
+    return new Promise(function(resolve, reject) {
+        var requestHeaders = {};
+        _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
+            'Authorization': req.get('Authorization')
+        });
+        request({
+            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
+            method: 'PUT',
+            headers: requestHeaders,
+            forever: constants.FOREVER_ON,
+            rejectUnauthorized: false,
+            json: jsonData
+        }, function(error, response, body) {
+            if (utils.validateResponse('Composer.update', error, response, body, resolve, reject)) {
+                resolve({
+                    statusCode: response.statusCode
+                });
+            }
+        });
+    });
+}
 
 Composer.update = function(req) {
     console.log(' Updating file', req.file.originalname, 'as', req.file.filename);
@@ -312,7 +312,7 @@ Composer.update = function(req) {
     var download_host = req.query['dev_download_server'];
 
     if (!download_host) {
-        download_host = req.protocol + '://' + req.headers.host;
+        download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
     var input = {
         'external-url': download_host + '/composer/update/' + req.file.filename,
@@ -368,7 +368,7 @@ Composer.upload = function(req) {
     var download_host = req.query['dev_download_server'];
 
     if (!download_host) {
-        download_host = req.protocol + '://' + req.headers.host;
+        download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
 
     return new Promise(function(resolve, reject) {
@@ -425,7 +425,7 @@ Composer.addFile = function(req) {
     var package_type = req.query['package_type'].toUpperCase();
     var package_path = req.query['package_path'];
     if (!download_host) {
-        download_host = req.protocol + '://' + req.headers.host;
+        download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
 
     return new Promise(function(resolve, reject) {

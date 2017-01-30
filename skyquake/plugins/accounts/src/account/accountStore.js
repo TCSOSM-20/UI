@@ -115,14 +115,6 @@ let AccountMeta = {
             }, {
                 label: "Authentication URL",
                 ref: 'auth_url'
-            },{
-                label: "User Domain",
-                ref: 'user-domain',
-                optional: true
-            },{
-                label: "Project Domain",
-                ref: 'project-domain',
-                optional: true
             }, {
                 label: "Tenant",
                 ref: 'tenant'
@@ -133,6 +125,18 @@ let AccountMeta = {
                 label: 'Floating IP Pool',
                 ref: 'floating-ip-pool',
                 optional: true
+            }, {
+                label: "User Domain",
+                ref: 'user-domain',
+                optional: true
+            }, {
+                label: "Project Domain",
+                ref: 'project-domain',
+                optional: true
+            }, {
+              label: "Region",
+              ref: 'region',
+              optional: true
             }],
             "openvim": [{
                 label: "Host",

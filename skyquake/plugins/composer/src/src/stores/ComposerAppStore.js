@@ -122,9 +122,10 @@ class ComposerAppStore {
 		this.fullScreenMode = false;
 		this.panelTabShown = 'descriptor';
 		//File manager values
-		this.files = [];
+		this.files = false;
 		this.filesState = {};
 		this.downloadJobs = {};
+		this.containers = [];
 		//End File  manager values
 		this.bindListeners({
 			onResize: PanelResizeAction.RESIZE,
@@ -201,8 +202,17 @@ class ComposerAppStore {
 	}
 
 	updateItem(item) {
+		const self = this;
+		let containers = [];
+		let cpNumber = 0;
 		if(!document.body.classList.contains('resizing')) {
-			this.setState({item: _.cloneDeep(item)});
+			containers = [item].reduce(DescriptorModelFactory.buildCatalogItemFactory(CatalogDataStore.getState().catalogs), []);
+
+			containers.filter(d => DescriptorModelFactory.isConnectionPoint(d)).forEach(d => {
+				d.cpNumber = ++cpNumber;
+				containers.filter(d => DescriptorModelFactory.isVnfdConnectionPointRef(d)).filter(ref => ref.key === d.key).forEach(ref => ref.cpNumber = d.cpNumber);
+			});
+			this.setState({containers: containers, item: _.cloneDeep(item)});
 		}
 		SelectionManager.refreshOutline();
 	}
@@ -549,7 +559,7 @@ class ComposerAppStore {
 		let self = this;
 		let ws = window.multiplexer.channel(id);
 		let downloadJobs = _.cloneDeep(self.downloadJobs);
-		let newFiles = {};
+		let newFiles = false;
 		ws.onmessage = (socket) => {
             if (self.files && self.files.length > 0) {
                 let jobs = [];
@@ -625,7 +635,6 @@ class ComposerAppStore {
 	openFileManagerSockets(i) {
 		let self = this;
 		let item = i || self.item;
-		this.files = {data:[]};
         // this.closeFileManagerSockets();
 		this.getInstance().openFileMonitoringSocket(item.id, item.uiState.type).then(function() {
         // 	// self.getInstance().openDownloadMonitoringSocket(item.id);

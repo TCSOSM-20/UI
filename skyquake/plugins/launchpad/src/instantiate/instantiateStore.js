@@ -484,6 +484,11 @@ class LaunchNetworkServiceStore {
                     let value = e.target.nodeName == "SELECT" ? JSON.parse(e.target.value) : e.target.value;
                     self.ipProfiles[i]['ip-profile-params'][key] = value;
 
+                    if (value == '') {
+                        // Don't send this key
+                        delete self.ipProfiles[i]['ip-profile-params'][key];
+                    }
+
                     self.setState({ipProfiles:self.ipProfiles});
                 }
             },

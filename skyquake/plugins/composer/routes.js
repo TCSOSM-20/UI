@@ -96,7 +96,7 @@ router.post('/api/catalog/:catalogType', cors(), function(req, res) {
     });
 });
 router.put('/api/catalog/:catalogType/:id', cors(), function(req, res) {
-    Composer.update(req).then(function(data) {
+    Composer.updateSave(req).then(function(data) {
         res.send(data);
     }, function(error) {
         res.status(error.statusCode);
