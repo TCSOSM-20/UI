@@ -137,7 +137,7 @@ class NsVirtualLinks extends React.Component {
 		let nsd = nsr.nsd && nsr.nsd;
 
 		nsr['decorated-vlrs'] && nsr['decorated-vlrs'].map((vlr, vlrIndex) => {
-			let name = vlr.name || 'New virtual link being created';
+			let name = vlr.name || 'Undergoing virtual link operation';
 			let operationalStatus = vlr['operational-status'];
 			let vlrId = vlr['id'];
 			let vldId = vlr['vld-ref'];
@@ -208,7 +208,7 @@ class NsVirtualLinks extends React.Component {
                 	<div className="launchpadCard_title" style={{textAlign:'right'}}><span style={{float:'left'}}>VLD DETAILS</span>
 					</div>
                 	{
-                		<NSVirtualLinkCreate vld={this.state.editingVirtualLink} mode={this.state.mode} nsd={this.state.nsd} nsrId={this.state.nsrId} onCancel={this.handleCancelCreate}/>
+                		<NSVirtualLinkCreate vld={this.state.editingVirtualLink} mode={this.state.mode} nsd={this.state.nsd} nsrId={this.state.nsrId} onSuccess={this.resetState.bind(this)} onCancel={this.handleCancelCreate}/>
                 	}
                 </div>
             );

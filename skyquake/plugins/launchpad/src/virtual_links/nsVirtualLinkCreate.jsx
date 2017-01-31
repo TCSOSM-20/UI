@@ -39,6 +39,7 @@ class NsVirtualLinkCreate extends React.Component {
 	componentWillMount() {
 		(!this.state.nsrId && this.props.nsrId) && this.Store.saveNSRId(this.props.nsrId);
 		this.Store.saveMode(this.props.mode);
+		this.Store.saveOnSuccess(this.props.onSuccess);
 		switch (this.props.mode) {
 			case 'creating':
 				if (!this.state.vld) {
