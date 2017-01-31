@@ -32,6 +32,9 @@ import DescriptorTemplateFactory from './DescriptorTemplateFactory'
 import utils from '../utils'
 
 export default {
+	isBoolean(property = {}) {
+		return (typeof(property['data-type']) == 'string') && (property['data-type'].toLowerCase() == 'boolean')
+	},
 	isLeaf(property = {}) {
 		return /leaf|choice/.test(property.type);
 	},

@@ -180,6 +180,7 @@ export default function EditDescriptorModelProperties(props) {
 		const name = path.join('.');
 		const isEditable = true;
 		const isGuid = Property.isGuid(property);
+		const isBoolean = Property.isBoolean(property);
 		const onChange = onFormFieldValueChanged.bind(container);
 		const isEnumeration = Property.isEnumeration(property);
 		const isLeafRef = Property.isLeafRef(property);
@@ -222,6 +223,31 @@ export default function EditDescriptorModelProperties(props) {
 				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
 			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+		}
+
+		if (isBoolean) {
+			let fullFieldKey = _.isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
+			let containerRef = container;
+			while (containerRef.parent) {
+				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
+				containerRef = containerRef.parent;
+			}
+
+			const options = [
+				<option key={fieldKey.toString() + '-true'} value="TRUE">TRUE</option>,
+				<option key={fieldKey.toString() + '-false'} value="FALSE">FALSE</option>
+			]
+
+			// if (!isValueSet) {
+				const noValueDisplayText = changeCase.title(property.name);
+				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}></option>);
+			// }
+			let val = value;
+			if(typeof(val) == 'number') {
+				val = value ? "TRUE" : "FALSE"
+			}
+			const isValueSet = (val != '' && val)
+			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={val && val.toUpperCase()} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
 		}
 
 		if (property['preserve-line-breaks']) {
