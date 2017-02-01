@@ -427,7 +427,12 @@ Composer.addFile = function(req) {
     if (!download_host) {
         download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
-
+    var input = {
+        'external-url': download_host + '/composer/upload/' + req.query['package_id'] + '/' + req.file.filename,
+        'package-type': package_type,
+        'package-id': package_id,
+        'package-path': package_path + '/' + req.file.filename
+    }
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
@@ -441,12 +446,7 @@ Composer.addFile = function(req) {
                 resolveWithFullResponse: true,
                 json: true,
                 body: {
-                    input: {
-                        'external-url': download_host + '/composer/upload/' + req.query['package_id'] + '/' + req.file.filename,
-                        'package-type': package_type,
-                        'package-id': package_id,
-                        'package-path': package_path + '/' + req.file.filename
-                    }
+                    input: input
                 }
             })
         ]).then(function(result) {
