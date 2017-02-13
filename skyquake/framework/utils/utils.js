@@ -189,7 +189,7 @@ Utils.setAuthentication = function(username, password, cb) {
     window.sessionStorage.setItem("auth", AuthBase64);
     self.detectInactivity();
     $.ajax({
-            url: '//' + window.location.hostname + ':' + NODE_PORT + '/check-auth?api_server=' + API_SERVER,
+            url: '//' + window.location.hostname + ':' + window.location.port + '/check-auth?api_server=' + API_SERVER,
             type: 'GET',
             beforeSend: Utils.addAuthorizationStub,
             success: function(data) {

@@ -83,6 +83,9 @@ if (cluster.isMaster && clusteredLaunch) {
 
 	var sslOptions = null;
 
+	var apiServer = argv['api-server'] ? argv['api-server'] : 'localhost';
+	var uploadServer = argv['upload-server'] ? argv['upload-server'] : null;
+
 	try {
 		if (argv['enable-https']) {
 			var keyFilePath = argv['keyfile-path'];
@@ -194,9 +197,16 @@ if (cluster.isMaster && clusteredLaunch) {
 		app.use(inactivity_routes);
 
 		// Configure global config with ssl enabled/disabled
-		configurationAPI.globalConfiguration.update({
-			ssl_enabled: httpsConfigured
-		});
+		var globalConfig = {
+			ssl_enabled: httpsConfigured,
+			api_server: apiServer
+		};
+
+		if (uploadServer) {
+			globalConfig.upload_server = uploadServer;
+		}
+
+		configurationAPI.globalConfiguration.update(globalConfig);
 
 		// Configure configuration route(s)
 		app.use(configuration_routes);

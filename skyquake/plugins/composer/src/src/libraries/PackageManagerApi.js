@@ -76,7 +76,7 @@ export default class PackageManager {
         }
         new Promise(function(resolve, reject) {
             $.ajax({
-                url: '/socket-polling?api_server=' + API_SERVER ,
+                url: '/socket-polling',
                 type: 'POST',
                 beforeSend: Utils.addAuthorizationStub,
                 data: {
