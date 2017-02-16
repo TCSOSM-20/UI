@@ -94,7 +94,7 @@ export default {
                 return new Promise(function(resolve, reject) {
                     console.log('Getting NSR Socket');
                     $.ajax({
-                        url: '/socket-polling?api_server=' + API_SERVER,
+                        url: '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
@@ -117,7 +117,7 @@ export default {
                 return new Promise(function(resolve, reject) {
                     console.log('Getting Job Socket');
                     $.ajax({
-                        url: '/socket-polling?api_server=' + API_SERVER,
+                        url: '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
@@ -139,7 +139,7 @@ export default {
                 return new Promise(function(resolve, reject) {
                     console.log('Getting VNFR Socket for: ' + state.recordID);
                     $.ajax({
-                        url: '/socket-polling?api_server=' + API_SERVER,
+                        url: '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
