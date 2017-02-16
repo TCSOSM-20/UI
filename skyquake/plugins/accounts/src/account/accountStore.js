@@ -249,7 +249,7 @@ export default class AccountStore {
     }
     getResourceOrchestratorSuccess = (data) => {
         this.alt.actions.global.hideScreenLoader.defer();
-        if(data['account-type'] == 'openmano') {
+        if(data['rw-launchpad:resource-orchestrator'] && (data['rw-launchpad:resource-orchestrator']['account-type'] == 'openmano')) {
             this.setState({
                 showVIM: false
             })
