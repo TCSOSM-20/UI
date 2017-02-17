@@ -191,9 +191,6 @@ const DescriptorModelSerializer = {
 	vdu: {
 		serialize(vduModel) {
 			const copy = _.cloneDeep(vduModel);
-			for (let k in copy) {
-				checkForChoiceAndRemove(k, copy, vduModel)
-			}
 			const confd = _.omit(copy, ['uiState']);
 			return cleanEmptyTopKeys(confd);
 		}
