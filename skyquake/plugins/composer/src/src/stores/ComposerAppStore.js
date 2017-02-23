@@ -130,6 +130,7 @@ class ComposerAppStore {
 		this.downloadJobs = {};
 		this.containers = [];
 		this.newPathName = '';
+		this.displayedPanel = 'forwarding' //or parameter
 		//End File  manager values
 		this.bindListeners({
 			onResize: PanelResizeAction.RESIZE,
@@ -208,17 +209,8 @@ class ComposerAppStore {
 	}
 
 	updateItem(item) {
-		const self = this;
-		let containers = [];
-		let cpNumber = 0;
 		if(!document.body.classList.contains('resizing')) {
-			containers = [item].reduce(DescriptorModelFactory.buildCatalogItemFactory(CatalogDataStore.getState().catalogs), []);
-
-			containers.filter(d => DescriptorModelFactory.isConnectionPoint(d)).forEach(d => {
-				d.cpNumber = ++cpNumber;
-				containers.filter(d => DescriptorModelFactory.isVnfdConnectionPointRef(d)).filter(ref => ref.key === d.key).forEach(ref => ref.cpNumber = d.cpNumber);
-			});
-			this.setState({containers: containers, item: _.cloneDeep(item)});
+			this.setState({item: _.cloneDeep(item)});
 		}
 		SelectionManager.refreshOutline();
 	}
@@ -357,12 +349,22 @@ class ComposerAppStore {
 		this.setState({showJSONViewer: false});
 	}
 
-	toggleCanvasPanelTray() {
+	toggleCanvasPanelTray(event) {
 		const layout = this.layout;
-		if (layout.bottom > 25) {
+		const attrMap = event.target.attributes;
+		let panelEvent = null;
+		for(let k in attrMap) {
+			if(attrMap[k].name == 'data-event') {
+				panelEvent = attrMap[k].nodeValue;
+			}
+		}
+		if ((layout.bottom > 25) && ((panelEvent == this.displayedPanel) || panelEvent == 'arrow')) {
 			this.closeCanvasPanelTray();
 		} else {
 			this.openCanvasPanelTray();
+		}
+		if(panelEvent != 'arrow'){
+			this.setState({displayedPanel: panelEvent})
 		}
 	}
 
