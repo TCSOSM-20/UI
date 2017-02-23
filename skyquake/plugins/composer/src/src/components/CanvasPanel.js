@@ -108,7 +108,7 @@ const CanvasPanel = React.createClass({
 				</div>
 				{viewButtonTabs}
 				<div className="CanvasPanelBody panel-body" style={{marginRight: this.props.layout.right, bottom: this.props.layout.bottom}} >
-					{hasNoCatalogs ? null : viewFiles ? <FileManager files={this.props.files} type={this.props.type} item={this.props.item} filesState={this.props.filesState} /> : bodyComponent}
+					{hasNoCatalogs ? null : viewFiles ? <FileManager files={this.props.files} type={this.props.type} item={this.props.item} filesState={this.props.filesState} newPathName={this.props.newPathName} /> : bodyComponent}
 				</div>
 				{
 					isDescriptorView ?

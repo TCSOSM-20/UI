@@ -23,7 +23,7 @@ class FileManagerActions {
     constructor() {
         this.generateActions('getFilelistSuccess', 'getFilelistError', 'updateFileLocationInput','sendDownloadFileRequst', 'addFileSuccess', 'addFileError','deletePackageFile','deleteFileSuccess','deleteFileError','openDownloadMonitoringSocketSuccess', 'openDownloadMonitoringSocketError',
                              'getFilelistSocketSuccess',
-                             'openFileManagerSockets', 'closeFileManagerSockets');
+                             'openFileManagerSockets', 'closeFileManagerSockets','newPathNameUpdated', 'createDirectory');
     }
 
 }

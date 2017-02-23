@@ -212,9 +212,27 @@ export default {
 						let key = fragment.split('[')[0];
 						let searchObject = {};
 						searchObject[predicateKey] = predicateValue;
-						objectCopy = _.find(objectCopy[key], searchObject);
-						if (!objectCopy) {
-							return [];
+						let found = _.find(objectCopy[key], searchObject);
+						if (found) {
+							objectCopy = found;
+						} else {
+							// check for numerical value
+							if (predicateValue != "" &&
+								predicateValue != null &&
+								predicateValue != NaN &&
+								predicateValue != Infinity &&
+								predicateValue != -Infinity) {
+								let numericalPredicateValue = _.toNumber(predicateValue);
+								if (_.isNumber(numericalPredicateValue)) {
+									searchObject[predicateKey] = numericalPredicateValue;
+									found = _.find(objectCopy[key], searchObject);
+								}
+							}
+							if (found) {
+								objectCopy = found;
+							} else {
+								return [];
+							}
 						}
 					} else {
 						// contains no predicate

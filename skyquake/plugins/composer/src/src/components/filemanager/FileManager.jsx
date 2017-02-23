@@ -105,7 +105,13 @@ class FileManager extends React.Component {
         let html = (
             <div className="FileManager">
                 <PanelWrapper style={{flexDirection: 'column'}}>
-                    {self.props.files && self.props.files.id && buildList(self, self.props.files) }
+                <Panel className="addFileSection" style={{backgroundColor: 'transparent'}} no-corners>
+                    <div className="inputSection">
+                        <TextInput placeholder="some/path" value={this.props.newPathName} label="create a new directory" onChange={FileManagerActions.newPathNameUpdated} />
+                        <Button label="Create" onClick={FileManagerActions.createDirectory} />
+                    </div>
+                </Panel>
+                {self.props.files && self.props.files.id && buildList(self, self.props.files) }
                 </PanelWrapper>
             </div>
         )
@@ -125,7 +131,7 @@ function buildList(self, data) {
 function contentFolder(context, folder, path, key, inputState, updateFn, sendDownloadFileRequst, deleteFn) {
     let type = context.props.type;
     let id = context.props.item.id;
-    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + path.replace('/', '-'), type, id, path);
+    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + path.replace(/\//g, '-'), type, id, path);
     return (
         <Panel title={path} key={key} itemClassName="nested" no-corners>
         <div className="folder">
@@ -167,7 +173,7 @@ class ItemUpload extends React.Component {
             <div className="inputSection">
                 <label className="sqTextInput" style={{flexDirection: 'row', alignItems:'center'}}>
                     <span>Upload File</span>
-                    <Button className={'ComposerAppAddFile ' + path.replace('/', '-')} label="BROWSE"/>
+                    <Button className={'ComposerAppAddFile ' + path.replace(/\//g, '-')} label="BROWSE"/>
                 </label>
             </div>
         )
@@ -177,6 +183,7 @@ function contentFile(context, file, path, key, deleteFn) {
     const name = stripPath(file.name, path);
     const id = context.props.item.id;
     const type = context.props.type;
+    const downloadHost = API_SERVER.match('localhost') || API_SERVER.match('127.0.0.1') ? `${window.location.protocol}//${window.location.hostname}` : API_SERVER;
     //{`${window.location.protocol}//${API_SERVER}:4567/api/package${type}/${id}/${path}/${name}`}
     return (
         <div className="file" key={key}>
@@ -186,7 +193,7 @@ function contentFile(context, file, path, key, deleteFn) {
                         {file.status && (file.status == 'IN_PROGRESS' || file.status == 'DOWNLOADING'  )  ? <LoadingIndicator size={2} /> : file.status }
                     </div>
                     <div className="file-name">
-                        <a target="_blank" href={`${API_SERVER}:4567/api/package/${type}/${id}/${path}/${name}`}>{name}</a>
+                        <a target="_blank" href={`${downloadHost}:4567/api/package/${type}/${id}/${path}/${name}`}>{name}</a>
                     </div>
                 </div>
                 <div className="file-action" style={{display: (!file.status || (file && file.status.toLowerCase() != 'loading...')) ? 'inherit' : 'none', cursor: 'pointer'}} onClick={deleteFn(file.name)}>X</div>

@@ -84,7 +84,8 @@ class NSVirtualLinkCreateStore {
             saveVnfdIdRefs: this.saveVnfdIdRefs,
             saveIpProfileNames: this.saveIpProfileNames,
             removeVirtualLink: this.removeVirtualLink,
-            saveMode: this.saveMode
+            saveMode: this.saveMode,
+            saveOnSuccess: this.saveOnSuccess
         });
 	}
 
@@ -95,6 +96,12 @@ class NSVirtualLinkCreateStore {
 		this.setState({
 
 		});
+	}
+
+	saveOnSuccess = (onSuccess) => {
+		this.setState({
+			onSuccess: onSuccess
+		})
 	}
 
 	saveMode = (mode) => {
@@ -240,22 +247,13 @@ class NSVirtualLinkCreateStore {
 	}
 
 	createVirtualLinkSuccess(data) {
-		this.setState({
-			// vld: this.vld,
-			mode: 'editing',
-			isLoading: false
-		});
+		this.onSuccess();
 	}
 	editVirtualLinkSuccess(data) {
-		this.setState({
-			mode: 'editing',
-			isLoading: false
-		});
+		this.onSuccess();
 	}
 	deleteVirtualLinkSuccess(data) {
-		this.setState({
-			deleteState: 'success'
-		});
+		this.onSuccess();
 	}
 
 	cleanupPayload = (mode, vld) => {

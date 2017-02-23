@@ -55,7 +55,7 @@ export default {
             remote: function(state, recordID) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: '//' + window.location.hostname + ':' + NODE_PORT + '/api/operational/restconf-state/streams?api_server=' + API_SERVER,
+                        url: '//' + window.location.hostname + ':' + window.location.port + '/api/operational/restconf-state/streams?api_server=' + API_SERVER,
                         type: 'GET',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -78,7 +78,7 @@ export default {
             remote: function(state, location, streamSource) {
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: '//' + window.location.hostname + ':' + NODE_PORT + '/socket-polling?api_server=' + API_SERVER,
+                        url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {

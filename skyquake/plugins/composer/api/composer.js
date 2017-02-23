@@ -312,7 +312,7 @@ Composer.update = function(req) {
     var download_host = req.query['dev_download_server'];
 
     if (!download_host) {
-        download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
+        download_host = req.protocol + '://' + req.get('host');//api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
     var input = {
         'external-url': download_host + '/composer/update/' + req.file.filename,
@@ -368,7 +368,7 @@ Composer.upload = function(req) {
     var download_host = req.query['dev_download_server'];
 
     if (!download_host) {
-        download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
+        download_host = req.protocol + '://' + req.get('host');//req.api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
 
     return new Promise(function(resolve, reject) {
@@ -425,9 +425,14 @@ Composer.addFile = function(req) {
     var package_type = req.query['package_type'].toUpperCase();
     var package_path = req.query['package_path'];
     if (!download_host) {
-        download_host = api_server + ':' + utils.getPortForProtocol(req.protocol);
+        download_host = req.protocol + '://' + req.get('host');//api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
-
+    var input = {
+        'external-url': download_host + '/composer/upload/' + req.query['package_id'] + '/' + req.file.filename,
+        'package-type': package_type,
+        'package-id': package_id,
+        'package-path': package_path + '/' + req.file.filename
+    }
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
@@ -441,12 +446,7 @@ Composer.addFile = function(req) {
                 resolveWithFullResponse: true,
                 json: true,
                 body: {
-                    input: {
-                        'external-url': download_host + '/composer/upload/' + req.query['package_id'] + '/' + req.file.filename,
-                        'package-type': package_type,
-                        'package-id': package_id,
-                        'package-path': package_path + '/' + req.file.filename
-                    }
+                    input: input
                 }
             })
         ]).then(function(result) {

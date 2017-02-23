@@ -58,20 +58,22 @@ const FileManagerSource = {
     },
     addFile: function() {
         return {
-            remote: function(state, id, type, path, url) {
+            remote: function(state, id, type, path, url, refresh) {
                 return new Promise(function(resolve, reject) {
                     console.log('Adding file');
                     console.log(id, type, path, url);
                     let splitUrl = url.split('/');
                     let fileName = splitUrl[splitUrl.length -1];
+                    let packagePath = refresh ? path + ((path[path.length - 1] == '/') ? '' : '/') : path + '/' + fileName;
                     $.ajax({
                         beforeSend: Utils.addAuthorizationStub,
-                        url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&package_path=' + path + '/' + fileName + '&url=' + url,
+                        url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&package_path=' + packagePath + '&url=' + url,
                         success: function(data) {
                             resolve({
                                 data:data,
                                 path: path,
-                                fileName: fileName
+                                fileName: fileName,
+                                refresh: refresh
                             });
                         },
                         error: function(error) {
@@ -144,7 +146,7 @@ const FileManagerSource = {
                 return new Promise(function(resolve, reject) {
                     //api/operational/download-jobs/job/
                    $.ajax({
-                    url: '/socket-polling?api_server=' + API_SERVER ,
+                    url: '/socket-polling',
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
@@ -169,7 +171,7 @@ const FileManagerSource = {
                 return new Promise(function(resolve, reject) {
                     //api/operational/download-jobs/job/
                    $.ajax({
-                    url: '/socket-polling?api_server=' + API_SERVER ,
+                    url: '/socket-polling',
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {

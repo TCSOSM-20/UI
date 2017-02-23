@@ -813,7 +813,7 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
             vdur['console-url'] = 'api/vnfr/' + vnfr.id + '/vdur/' + vdur.id + '/console-url';
             nsr['console-urls'].push({
                 id: vdur.id,
-                name: vdur.name,
+                name: vnfr.name,
                 'console-url': vdur['console-url']
             });
         });
