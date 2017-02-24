@@ -266,7 +266,7 @@ export default class RecordCard extends React.Component {
       if(this.props.isLoading) {
         html = <DashboardCard className="loading" showHeader={true} title={cardData["short-name"]}><LoadingIndicator size={10} show={true} /></DashboardCard>
       } else {
-        let glyphValue = (this.props.mmmrecordDetailsToggleValue) ? "chevron-left" : "chevron-right";
+        let glyphValue = (!this.props.recordDetailsToggleValue) ? "chevron-left" : "chevron-right";
 
         if (this.props.type == 'nsr') {
           tabList.push(
