@@ -341,8 +341,8 @@ function constructRequestSourceData(containers) {
 
     function constructVnfdMap(vnfdData, vnfd) {
         let data = {
-            requests: vnfd['config-parameter']['config-parameter-request'],
-            sources: vnfd['config-parameter']['config-parameter-source']
+            requests: vnfd['config-parameter'] && vnfd['config-parameter']['config-parameter-request'],
+            sources: vnfd['config-parameter'] && vnfd['config-parameter']['config-parameter-source']
         };
         vnfdData.vnfdRefs[vnfd.id] =  _.merge(vnfdData.vnfdRefs[vnfd.id], data);
     }
