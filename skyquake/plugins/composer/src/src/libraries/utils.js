@@ -237,6 +237,10 @@ export default {
 					} else {
 						// contains no predicate
 						objectCopy = objectCopy[fragment];
+						if (!objectCopy) {
+							// contains no value
+							break;
+						}
 					}
 				}
 			}
@@ -319,9 +323,9 @@ export default {
 						let found = _.find(catalogs[key][subKey], {id: fieldKeyArray[0]});
 						if (found) {
 							for (let foundKey in found) {
-								let topLevel = _.find(found[foundKey], {id: fieldKeyArray[1]});
-								if (topLevel) {
-									results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
+								// let topLevel = _.find(found[foundKey], {id: fieldKeyArray[1]});
+								if (foundKey == fieldKeyArray[1]) {
+									results = this.getAbsoluteResults(found[foundKey], pathArray.splice(-i, i));
 									return results;
 								}
 							}
