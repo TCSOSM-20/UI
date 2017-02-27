@@ -137,7 +137,7 @@ class RecordViewStore {
         let configPrimitiveIndex = data.configPrimitiveIndex;
         let payload = {};
         let isValid = true;
-        let configPrimitive = vnfrs[vnfrIndex]['vnf-configuration']['service-primitive'][configPrimitiveIndex];
+        let configPrimitive = vnfrs[vnfrIndex]['vnf-configuration']['config-primitive'][configPrimitiveIndex];
 
         payload['name'] = '';
         payload['nsr_id_ref'] = vnfrs[vnfrIndex]['nsr-id-ref'];
