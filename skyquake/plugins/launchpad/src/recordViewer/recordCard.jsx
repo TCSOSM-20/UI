@@ -329,7 +329,7 @@ export default class RecordCard extends React.Component {
           if (this.props.type == 'nsr') {
             primitivesTabTitle = 'Service Primitive';
           } else if (this.props.type == 'vnfr') {
-            primitivesTabTitle = 'Config Primitive'
+            primitivesTabTitle = 'Service Primitive'
           }
 
           tabList.push(
