@@ -144,10 +144,10 @@ export default class RecordCard extends React.Component {
                   let p = [];
                     _.forEach(obj, function(v, k) {
                     p.push(
-                      <div style={{margin: '0.5rem 0.5rem'}} key={k + vi}>
+                      <div style={{margin: '0.5rem 0.5rem'}} key={k + '-' + vi}>
                         <div style={{margin: '0 0.5rem',
     fontWeight: 'bold', textTransform: 'uppercase', color: '#5b5b5b'}}>{k}</div>
-                        <div style={{margin: '0 0.5rem'}}>{v.constructor.name != 'Object' ? v : buildProperties(v)}</div>
+                        <div style={{margin: '0 0.5rem'}}>{v.constructor.name == 'String' ? v : buildProperties(v)}</div>
                       </div>
                     )
                   });

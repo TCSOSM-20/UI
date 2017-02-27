@@ -187,7 +187,7 @@ export default function EditDescriptorModelProperties(props) {
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 		const placeholder = changeCase.title(property.name);
 		const className = ClassNames(property.name + '-input', {'-is-guid': isGuid});
-		const fieldValue = value ? (value.constructor.name != "Object") ? value : '' : undefined;
+		const fieldValue = value ? (value.constructor.name != "Object") ? value : '' : (isNaN(value) ? undefined : value);
 		if (isEnumeration) {
 			const enumeration = Property.getEnumeration(property, value);
 			const options = enumeration.map((d, i) => {
@@ -371,7 +371,8 @@ export default function EditDescriptorModelProperties(props) {
 
 		const cases = property.properties.map(d => {
 			if (d.type === 'case') {
-				caseByNameMap[d.name] = d.properties[0];
+				//Previous it was assumed that a case choice would have only one property. Now we pass on either the only item or the
+				caseByNameMap[d.name] = d.properties && (d.properties.length == 1 ? d.properties[0] : d.properties);
 				return {
 					optionName: d.name,
 					optionTitle: d.description,
@@ -424,7 +425,9 @@ export default function EditDescriptorModelProperties(props) {
 		const hasProperties = _.isArray(valueProperty.properties) && valueProperty.properties.length;
 		const isMissingDescriptorMeta = !hasProperties && !Property.isLeaf(valueProperty);
 		//Some magic that prevents errors for arising
-		const valueResponse = valueProperty.properties.length ? valueProperty.properties.map((d, i) => {
+		const valueResponse = valueProperty.properties && valueProperty.properties.length ? valueProperty.properties.map(valuePropertyFn) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name]) :
+		valueProperty.map && valueProperty.map(valuePropertyFn);
+		function valuePropertyFn(d, i) {
 			const childPath = path.concat(valueProperty.name, d.name);
 			const childValue = utils.resolvePath(container.model, childPath.join('.'));
 			return (
@@ -432,7 +435,7 @@ export default function EditDescriptorModelProperties(props) {
 					{build(container, d, childPath, childValue, props)}
 				</div>
 			);
-		}) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name]) : null
+		}
 		// end magic
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 
