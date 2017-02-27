@@ -838,7 +838,7 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
             }
         }
         var vnfrNfviMetrics = buildNfviGraphs(vnfr.vdur, vnfrName);
-        if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['config-primitive'] && vnfr['vnf-configuration']['config-primitive'].length > 0) {
+        if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) {
             vnfrObj['service-primitives-present'] = true;
         } else {
             vnfrObj['service-primitives-present'] = false;
@@ -1276,7 +1276,7 @@ VNFR.get = function(req) {
                 returnData.forEach(function(vnfr) {
                     vnfr['nfvi-metrics'] = buildNfviGraphs(vnfr.vdur);
                     vnfr['epa-params'] = epa_aggregator(vnfr.vdur);
-                    vnfr['service-primitives-present'] = (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['config-primitive'] && vnfr['vnf-configuration']['config-primitive'].length > 0) ? true : false;
+                    vnfr['service-primitives-present'] = (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) ? true : false;
                     vnfr['vdur'] && vnfr['vdur'].map(function(vdur, vdurIndex) {
                         // This console-url is what front-end will hit to generate a real console-url
                         vdur['console-url'] = 'api/vnfr/' + vnfr.id + '/vdur/' + vdur.id + '/console-url';
