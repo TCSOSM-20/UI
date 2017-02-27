@@ -187,7 +187,7 @@ export default function EditDescriptorModelProperties(props) {
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 		const placeholder = changeCase.title(property.name);
 		const className = ClassNames(property.name + '-input', {'-is-guid': isGuid});
-		const fieldValue = value ? (value.constructor.name != "Object") ? value : '' : undefined;
+		const fieldValue = value ? (value.constructor.name != "Object") ? value : '' : (isNaN(value) ? undefined : value);
 		if (isEnumeration) {
 			const enumeration = Property.getEnumeration(property, value);
 			const options = enumeration.map((d, i) => {
