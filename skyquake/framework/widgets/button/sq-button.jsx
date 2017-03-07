@@ -36,17 +36,35 @@ export default class SqButton extends React.Component {
             Class += " is-disabled";
         }
         return (
-                <div style={{display: 'flex'}}>
+        <div style={{display: 'flex'}} onClick={this.props.onClick}>
             <div className={Class} tabIndex="0">
-            {svgHTML}
-              <div className="SqButton-content">{label}</div>
+                {svgHTML}
+                <div className="SqButton-content">{label}</div>
             </div>
+        </div>
+        )
+    }
+}
+
+export class ButtonGroup extends React.Component {
+    render() {
+        let className = "sqButtonGroup";
+        if (this.props.className) {
+            className = `${className} ${this.props.className}`
+        }
+        return (
+            <div className={className} style={this.props.style}>
+                {this.props.children}
             </div>
         )
     }
 }
 
+
 SqButton.defaultProps = {
+    onClick: function(e) {
+        console.log('Clicked')
+    },
     icon: false,
     primary: false,
     disabled: false,

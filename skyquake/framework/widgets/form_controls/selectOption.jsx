@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,14 +29,23 @@ export default class SelectOption extends React.Component {
     let html;
     let defaultValue = this.props.defaultValue;
     let options =  this.props.options.map(function(op, i) {
-      let value = JSON.stringify(op.value);
-      return <option key={i} value={JSON.stringify(op.value)}>{op.label}</option>
+    let value;
+    let label;
+    if(typeof(op) == 'object') {
+      value = JSON.stringify(op.value);
+      label = op.label;
+    } else {
+      value = op;
+      label = op;
+    }
+
+      return <option key={i} value={JSON.stringify(value)}>{label}</option>
     });
     if (this.props.initial) {
       options.unshift(<option key='blank' value={JSON.stringify(this.props.defaultValue)}></option>);
     }
     html = (
-        <label>
+        <label key={this.props.key}>
             {this.props.label}
             <select className={this.props.className} onChange={this.handleOnChange} defaultValue={JSON.stringify(defaultValue)} >
                 {
@@ -49,11 +58,25 @@ export default class SelectOption extends React.Component {
   }
 }
 SelectOption.defaultProps = {
+  /**
+   * [options description]
+   * @type {Array} - Expects items to contain objects with the properties 'label' and 'value' which are both string types. Hint: JSON.stringify()
+   */
   options: [],
   onChange: function(e) {
+    console.log(e.target.value)
     console.dir(e)
   },
-  defaultValue: false,
+  /**
+   *  Selected or default value
+​
+   * @type {[type]}
+   */
+  defaultValue: null,
+  /**
+   * True if first entry in dropdown should be blank
+   * @type {Boolean}
+   */
   initial: false,
   label: null
 }

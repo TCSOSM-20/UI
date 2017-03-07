@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,4 +57,25 @@
         border:0px;
         height: 100%;
     }
+    &.checkbox {
+        -ms-flex-direction:row;
+            flex-direction:row;
+            -ms-flex-align:center;
+                align-items:center;
+        margin-bottom:0;
+            >span {
+                -ms-flex-order: 1;
+                    order: 1;
+                    padding-left:1rem;
+            }
+            >input {
+                -ms-flex-order: 0;
+                    order: 0;
+
+                    box-shadow:none;
+                    height:25px;
+            }
+    }
 }
+
+

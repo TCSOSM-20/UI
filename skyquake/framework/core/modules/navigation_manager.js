@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,6 @@ function addNavigation(plugin_name, routes) {
 	if (!NAVIGATION[plugin_name]) {
 		NAVIGATION[plugin_name] = {};
 	}
-
 	if (!NAVIGATION[plugin_name].routes) {
 		NAVIGATION[plugin_name].routes = routes;
 	} else {

@@ -1,0 +1,193 @@
+/*
+ * STANDARD_RIFT_IO_COPYRIGHT
+ */
+
+/* If there's time this really needs to be rewritten. Ideally with smooth animations.*/
+@import "style/_colors.scss";
+
+.userManagement {
+    .skyquakePanel-wrapper {
+        overflow-x: hidden;
+    }
+    .userList {
+
+        -ms-flex: 0 1 200px;
+        flex: 0 1 200px;
+
+        .activeUser {
+            font-weight:bold;
+        }
+
+        /* transition: all 2s;*/
+        &.expanded {
+            -ms-flex: 1 1 100%;
+            flex: 1 1 100%;
+            /* transition: all 300ms;*/
+            .tableRow>div:not(.userName) {
+                opacity: 1;
+                /* width:auto;*/
+                /* transition: width 600ms;*/
+                /* transition: opacity 300ms;*/
+            }
+            &.collapsed {
+                -ms-flex: 0 1 200px;
+                flex: 0 1 200px;
+                /* transition: all 2s;*/
+                .tableRow>div:not(.userName) {
+                    /* opacity: 0;*/
+                    /* width:0px;*/
+                    display:none;
+                    overflow:hidden;
+                    /* transition: all 600ms;*/
+                }
+            }
+        }
+        &.hideColumns {
+            overflow:hidden;
+            >div {
+                overflow:hidden;
+            }
+            .tableRow>div:not(.userName) {
+                width: 0px;
+                /* transition: all 600ms;*/
+            }
+            .userName {
+                &--header {
+                    /* display:none;*/
+             }
+            }
+        }
+        .userName {
+            cursor:pointer;
+        }
+
+    }
+
+    .userAdmin {
+            -ms-flex: 0 1 450px;
+            flex: 0 1 450px;
+            width:auto;
+            opacity:1;
+    }
+    &.userList-open {
+        .userAdmin {
+            -ms-flex: 0 1 0px;
+                flex: 0 1 0px;
+            opacity:0;
+            /* width: 0px;*/
+            display:none;
+            /* transition: opacity 300ms;*/
+            /* transition: width 600ms;*/
+
+        }
+    }
+    .buttonGroup {
+        margin: 0 0.5rem 0.5rem;
+        background: #ddd;
+        padding-bottom: 0.5rem;
+        padding: 0.5rem 0;
+        border-top: #d3d3d3 1px solid;
+    }
+}
+
+
+
+.FormSection {
+    &-title {
+        color: #000;
+        background: lightgray;
+        padding: 0.5rem;
+        border-top: 1px solid #f1f1f1;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    &-body {
+        padding: 0.5rem 0.75rem;
+    }
+    label {
+        -ms-flex: 1 0;
+            flex: 1 0;
+    }
+    /* label {*/
+    /*     display: -ms-flexbox;*/
+    /*     display: flex;*/
+    /*     -ms-flex-direction: column;*/
+    /*     flex-direction: column;*/
+    /*     width: 100%;*/
+    /*     margin: 0.5rem 0;*/
+    /*     -ms-flex-align: start;*/
+    /*     align-items: flex-start;*/
+    /*     -ms-flex-pack: start;*/
+    /*     justify-content: flex-start;*/
+    /* }*/
+    select {
+        font-size: 1rem;
+        min-width: 75%;
+        height: 35px;
+    }
+}
+
+
+.InputCollection {
+    display:-ms-flexbox;
+    display:flex;
+    -ms-flex-wrap: nowrap;
+        flex-wrap: nowrap;
+    -ms-flex-align: center;
+        align-items: center;
+    button {
+        padding: 0.25rem;
+        height: 1.5rem;
+        font-size: 0.75rem;
+    }
+    select {
+        min-width: 100%;
+    }
+    margin-bottom:0.5rem;
+    &-wrapper {
+
+    }
+}
+.tableRow {
+    display:-ms-flexbox;
+    display:flex;
+    -ms-flex-wrap: nowrap;
+        flex-wrap: nowrap;
+    >div {
+        padding:0.25rem 1rem 0.25rem 0;
+        -ms-flex: 1 1 33%;
+            flex: 1 1 33%;
+    }
+    &--header {
+        font-weight:bold;
+    }
+    &--data {
+        &:hover, .activeUser{
+            cursor:pointer;
+            background:$neutral-dark-3;
+            color:white;
+        }
+    }
+}
+
+.addInput, .removeInput {
+    display:-ms-flexbox;
+    display:flex;
+    -ms-flex-align:center;
+    align-items:center;
+    margin-left: 1rem;
+
+    font-size:0.75rem;
+    text-transform:uppercase;
+    font-weight:bold;
+
+    cursor:pointer;
+    img {
+        height:0.75rem;
+        margin-right:0.5rem;
+        width:auto;
+    }
+    span {
+        color: #5b5b5b;
+        text-transform: uppercase;
+    }
+}

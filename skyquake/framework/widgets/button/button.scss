@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,15 +62,18 @@ button{
 ############################################################################ */
 
 .SqButton {
-  align-items: center;
+  -ms-flex-align: center;
+      align-items: center;
   border-style: solid;
   border-radius: 3px;
   border-width: 0px;
   cursor: pointer;
+  display: -ms-inline-flexbox;
   display: inline-flex;
   font-size: 1rem;
   height: 50px;
-  justify-content: center;
+  -ms-flex-pack: center;
+      justify-content: center;
   margin: 0 10px;
   outline: none;
   padding: 0 15px;
@@ -107,7 +110,7 @@ button{
 
   /* Focus */
   &:focus {
-    // box-shadow: $focus-shadow;
+    /* box-shadow: $focus-shadow;*/
     border: 1px solid red;
   }
 
@@ -256,11 +259,14 @@ button{
       fill: $primaryForeground;
     }
   }
-
-
 }
 
-
+.sqButtonGroup {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: center;
+      justify-content: center;
+}
 
 
 

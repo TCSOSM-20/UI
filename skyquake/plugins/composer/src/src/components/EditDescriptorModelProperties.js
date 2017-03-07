@@ -331,7 +331,7 @@ export default function EditDescriptorModelProperties(props) {
 				// write the current choice value into the state
 				let choiceObject = utils.resolvePath(this.model, [name, selected].join('.'));
 				let isTopCase = false;
-				if (!choiceObject) {
+				if (choiceObject) {
 					isTopCase = true;
 					choiceObject = utils.resolvePath(this.model, [selected].join('.'));
 				}

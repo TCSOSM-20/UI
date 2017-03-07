@@ -135,6 +135,7 @@ if (cluster.isMaster && clusteredLaunch) {
 	var descriptor_routes = require('./framework/core/modules/routes/descriptorModel');
 	var configuration_routes = require('./framework/core/modules/routes/configuration');
 	var configurationAPI = require('./framework/core/modules/api/configuration');
+	var userManagement_routes = require('./framework/core/modules/routes/userManagement');
 	/**
 	 * Processing when a plugin is added or modified
 	 * @param {string} plugin_name - Name of the plugin
@@ -213,6 +214,9 @@ if (cluster.isMaster && clusteredLaunch) {
 
 		//Configure descriptor route(s)
 		app.use(descriptor_routes);
+
+		//Configure user management route(s)
+		app.use(userManagement_routes);
 
 		// app.get('/testme', function(req, res) {
 		// 	res.sendFile(__dirname + '/index.html');

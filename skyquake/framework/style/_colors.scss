@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ $body-color:$lightest-gray;
 
 $error-red:#FF5F5F;
 
-//PC
+/*PC*/
 
 $black: #000;
 $gray-lightest: #f1f1f1;
@@ -42,9 +42,9 @@ $gray-dark: #999;
 $gray-darker: #666;
 $gray-darkest: #333;
 $white: #FFF;
-//
-// Brand Colors
-//
+/**/
+/* Brand Colors*/
+/**/
 $brand-blue-light: #30baef;
 $brand-blue: #00acee;
 $brand-blue-dark: #147ca3;
@@ -68,9 +68,9 @@ $neutral-light-5: hsl(360, 100%, 50%);
 
 $neutral-dark-1: hsl(360, 100%, 50%);
 $neutral-dark-2: hsl(360, 100%, 50%);
-$neutral-dark-3: hsl(360, 100%, 50%);
-$neutral-dark-4: hsl(360, 100%, 50%);
-$neutral-dark-5: hsl(360, 100%, 50%);
+$neutral-dark-3: hsl(0, 0%, 49.7%);
+$neutral-dark-4: hsl(0, 0%, 42.7%);
+$neutral-dark-5: hsl(0, 0%, 35.7%);
 $netral-black: hsl(0, 100%, 0%);
 
 

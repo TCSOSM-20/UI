@@ -1,0 +1,14 @@
+{
+    "root": "public",
+    "name": "User Management",
+    "dashboard": "./dashboard/dashboard.jsx",
+    "order": 1,
+    "priority":1,
+    "routes": [
+    {
+        "label": "User Management Dashboard",
+        "route": "user-management",
+        "component": "./dashboard/dashboard.jsx",
+        "type": "internal"
+    }]
+}
