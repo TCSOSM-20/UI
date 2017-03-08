@@ -29,8 +29,12 @@ class UserManagementDashboard extends React.Component {
         this.actions = this.state.actions;
     }
     componentDidUpdate() {
-
-      ReactDOM.findDOMNode(this.UserList).addEventListener('transitionend', this.onTransitionEnd, false);
+        let self = this;
+        ReactDOM.findDOMNode(this.UserList).addEventListener('transitionend', this.onTransitionEnd, false);
+        setTimeout(function() {
+            let element = self[`user-ref-${self.state.activeIndex}`]
+            element && !isElementInView(element) && element.scrollIntoView({block: 'end', behavior: 'smooth'});
+        })
     }
     componentWillMount() {
         this.Store.listen(this.updateState);
@@ -66,7 +70,6 @@ class UserManagementDashboard extends React.Component {
         this.actions.handleAddUser();
     }
     viewUser = (un, index) => {
-        console.log(un)
         this.actions.viewUser(un, index);
     }
     closePanel = () => {
@@ -138,7 +141,7 @@ class UserManagementDashboard extends React.Component {
                                 platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
                             }
                             return (
-                                <div className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
+                                <div ref={(el) => this[`user-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
                                     <div
                                         className={`userName userName-header ${((self.state.activeIndex == k) && self.state.userOpen) ? 'activeUser' : ''}`}
                                         onClick={self.viewUser.bind(null, u, k)}>
@@ -241,6 +244,16 @@ UserManagementDashboard.defaultProps = {
 export default SkyquakeComponent(UserManagementDashboard);
 
 
+function isElementInView(el) {
+    var rect = el && el.getBoundingClientRect() || {};
+
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+    );
+}
 
 
 /**
