@@ -164,7 +164,7 @@ export default class UserManagementStore {
     }
     updateUserSuccess() {
         this.alt.actions.global.hideScreenLoader.defer();
-        let users = this.users;
+        let users = this.users || [];
         users[this.activeIndex] = {
             'user-name': this['user-name'],
             'user-domain': this['user-domain'],
@@ -182,7 +182,7 @@ export default class UserManagementStore {
     }
     createUserSuccess() {
         this.alt.actions.global.hideScreenLoader.defer();
-        let users = this.users;
+        let users = this.users || [];
         users.push({
             'user-name': this['user-name'],
             'user-domain': this['user-domain'],

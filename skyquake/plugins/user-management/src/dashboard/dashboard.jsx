@@ -100,7 +100,17 @@ class UserManagementDashboard extends React.Component {
             });
         }
     }
-
+     evaluateSubmit = (e) => {
+        if (e.keyCode == 13) {
+            if (this.props.isEdit) {
+                this.updateUser(e);
+            } else {
+                this.createUser(e);
+            }
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
     onTransitionEnd = (e) => {
         this.actions.handleHideColumns(e);
         console.log('transition end')
@@ -122,13 +132,13 @@ class UserManagementDashboard extends React.Component {
                                 Domain
                             </div>
                         </div>
-                        {state.users.map((u, k) => {
+                        {state.users && state.users.map((u, k) => {
                             let platformRoles = [];
                             for(let role in u.platformRoles) {
                                 platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
                             }
                             return (
-                                <div className={`tableRow tableRow--data ${((self.state.activeIndex == k) && !self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
+                                <div className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
                                     <div
                                         className={`userName userName-header ${((self.state.activeIndex == k) && self.state.userOpen) ? 'activeUser' : ''}`}
                                         onClick={self.viewUser.bind(null, u, k)}>
@@ -147,7 +157,7 @@ class UserManagementDashboard extends React.Component {
                         <Button label="Add User" onClick={this.addUser} />
                     </ButtonGroup>
                 </PanelWrapper>
-                <PanelWrapper
+                <PanelWrapper onKeyUp={this.evaluateSubmit}
                     className={`userAdmin column`}>
                     <Panel
                         title={state.isEdit ? state['user-name'] : 'Create User'}
@@ -201,17 +211,16 @@ class UserManagementDashboard extends React.Component {
                             state.isEdit ?
                             (
                                 <ButtonGroup className="buttonGroup">
-                                    <Button label="Update" onClick={this.updateUser} />
+                                    <Button label="Update" type="submit" onClick={this.updateUser} />
                                     <Button label="Delete" onClick={this.deleteUser} />
                                 </ButtonGroup>
                             )
                             : (
                                 <ButtonGroup className="buttonGroup">
-                                    <Button label="Create" onClick={this.createUser}  />
+                                    <Button label="Create" type="submit" onClick={this.createUser}  />
                                 </ButtonGroup>
                             )
                         }
-
                 </PanelWrapper>
 
             </PanelWrapper>

@@ -151,7 +151,9 @@
     display:-ms-flexbox;
     display:flex;
     -ms-flex-wrap: nowrap;
-        flex-wrap: nowrap;
+    flex-wrap: nowrap;
+    padding: 0.25rem;
+    margin: .125rem 0;
     >div {
         padding:0.25rem 1rem 0.25rem 0;
         -ms-flex: 1 1 33%;
@@ -161,11 +163,12 @@
         font-weight:bold;
     }
     &--data {
-        &:hover, .activeUser{
+        &:hover, .activeUser, &-active{
             cursor:pointer;
-            background:$neutral-dark-3;
+            background:$neutral-dark-1;
             color:white;
         }
+
     }
 }
 

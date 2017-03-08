@@ -59,8 +59,13 @@ Panel.defaultProps = {
 
 export class PanelWrapper extends Component {
     render() {
+        let wrapperClass = 'skyquakePanelWrapper';
+        let {className, ...props} = this.props;
+        if(className) {
+            wrapperClass = `${wrapperClass} ${className}`
+        }
         return (
-        <div className={'skyquakePanelWrapper ' + this.props.className} style={this.props.style}>
+        <div className={wrapperClass} {...props}>
             {this.props.children}
         </div>)
     }
