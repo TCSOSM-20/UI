@@ -149,7 +149,7 @@ export default class UserManagementStore {
         }
     }
     handleAddUser() {
-        this.setState(_.merge( this.resetUser() ,{ isEdit: false, userOpen: true }))
+        this.setState(_.merge( this.resetUser() ,{ isEdit: false, userOpen: true, activeIndex: null }))
     }
     handleCreateUser() {
 
@@ -190,7 +190,7 @@ export default class UserManagementStore {
             disabled: this.disabled,
             projectRoles: this.projectRoles
          });
-        let newState = {users, isEdit: true};
+        let newState = {users, isEdit: true, activeIndex: users.length - 1};
         _.merge(newState, this.resetPassword())
         this.setState(newState);
     }
