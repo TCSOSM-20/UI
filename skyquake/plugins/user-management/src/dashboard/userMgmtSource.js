@@ -47,9 +47,18 @@ module.exports = function(Alt) {
         updateUser: {
           remote: function(state, user) {
             return new Promise(function(resolve, reject) {
-              setTimeout(function() {
-                  resolve(true);
-              }, 1000)
+              $.ajax({
+                  url: `/user?api_server=${API_SERVER}`,
+                  type: 'PUT',
+                  data: user,
+                  beforeSend: Utils.addAuthorizationStub,
+                  success: function(data, textStatus, jqXHR) {
+                    resolve(data);
+                  }
+                }).fail(function(xhr){
+                  //Authentication and the handling of fail states should be wrapped up into a connection class.
+                  Utils.checkAuthentication(xhr.status);
+                });
             });
           },
           interceptResponse: interceptResponse({

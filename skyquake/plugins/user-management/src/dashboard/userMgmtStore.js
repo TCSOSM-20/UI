@@ -187,7 +187,11 @@ export default class UserManagementStore {
             disabled: this.disabled,
             projectRoles: this.projectRoles
         }
-        this.setState({users})
+        this.setState({
+            users,
+            isEdit: true,
+            isReadOnly: true
+        })
     }
     deleteUserSuccess() {
         this.alt.actions.global.hideScreenLoader.defer();

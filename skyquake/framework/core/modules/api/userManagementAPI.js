@@ -102,6 +102,71 @@ UserManagement.create = function(req) {
         });
     });
 };
+UserManagement.update = function(req) {
+    var self = this;
+    var api_server = req.query['api_server'];
+    var bodyData = req.body;
+    data = {
+        "users":[bodyData]
+    }
+    var updateTasks = [];
+    if(bodyData.hasOwnProperty('old-password')) {
+        var changePW = rp({
+            uri: utils.confdPort(api_server) + '/api/operations/change-password',
+            method: 'POST',
+            headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
+                'Authorization': req.get('Authorization')
+            }),
+            forever: constants.FOREVER_ON,
+            json: {
+                "input": {
+                    'user-name' : bodyData['user-name'],
+                    'user-domain' : bodyData['user-domain'],
+                    'old-password' : bodyData['old-password'],
+                    'new-password' : bodyData['new-password'],
+                    'confirm-password' : bodyData['confirm-password'],
+                }
+            },
+            rejectUnauthorized: false,
+            resolveWithFullResponse: true
+        });
+        updateTasks.push(changePW);
+    };
+    var updateUser = rp({
+                uri: utils.confdPort(api_server) + '/api/config/user-config',
+                method: 'PUT',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
+                    'Authorization': req.get('Authorization')
+                }),
+                forever: constants.FOREVER_ON,
+                json: data,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true
+            });
+    updateTasks.push(updateUser)
+    return new Promise(function(resolve, reject) {
+        Promise.all([
+            updateTasks
+        ]).then(function(result) {
+            var response = {};
+            response['data'] = {};
+            if (result[0].body) {
+                response['data'] = result[0].body;
+            }
+            response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
+
+            resolve(response);
+        }).catch(function(error) {
+            var response = {};
+            console.log('Problem with UserManagement.passwordChange', error);
+            response.statusCode = error.statusCode || 500;
+            response.errorMessage = {
+                error: 'Failed to passwordChange user' + error
+            };
+            reject(response);
+        });
+    });
+};
 
 UserManagement.delete = function(req) {
     var self = this;

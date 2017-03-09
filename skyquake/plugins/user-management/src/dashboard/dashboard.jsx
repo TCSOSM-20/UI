@@ -81,12 +81,12 @@ class UserManagementDashboard extends React.Component {
     closePanel = () => {
         this.actions.handleCloseUserPanel();
     }
-    updateUser = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    // updateUser = (e) => {
+    //     e.preventDefault();
+    //     e.stopPropagation();
 
-        this.Store.updateUser();
-    }
+    //     this.Store.updateUser();
+    // }
     deleteUser = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -107,6 +107,41 @@ class UserManagementDashboard extends React.Component {
                 'password': this.state['new-password']
                 // 'confirm-password': this.state['confirm-password']
             });
+        }
+    }
+    updateUser = (e) => {
+        let self = this;
+        e.preventDefault();
+        e.stopPropagation();
+        let validatedPasswords = validatePasswordFields(this.state);
+        if(validatedPasswords) {
+            this.Store.updateUser(_.merge({
+                            'user-name': this.state['user-name'],
+                            'user-domain': this.state['user-domain'],
+                            'password': this.state['new-password']
+                        }));
+        }
+        function validatePasswordFields(state) {
+            let oldOne = state['old-password'];
+            let newOne = state['new-password'];
+            let confirmOne = state['confirm-password'];
+            if(true) {
+                if(oldOne == newOne) {
+                    self.props.actions.showNotification('Your new password must not match your old one');
+                    return false;
+                }
+                if(newOne != confirmOne) {
+                    self.props.actions.showNotification('Passwords do not match');
+                    return false;
+                }
+                return {
+                    // 'old-password': oldOne,
+                    'new-password': newOne,
+                    'confirm-password': confirmOne
+                }
+            } else {
+                return {};
+            }
         }
     }
      evaluateSubmit = (e) => {
@@ -149,7 +184,6 @@ class UserManagementDashboard extends React.Component {
             passwordSectionHTML = ( this.state.isEdit ?
                                         (
                                             <FormSection title="PASSWORD CHANGE">
-                                                <Input label="OLD PASSWORD" type="password" value={state['old-password']} onChange={this.updateInput.bind(null, 'old-password')} />
                                                 <Input label="NEW PASSWORD" type="password" value={state['new-password']}  onChange={this.updateInput.bind(null, 'new-password')}/>
                                                 <Input label="REPEAT NEW PASSWORD" type="password"  value={state['confirm-password']}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
                                             </FormSection>

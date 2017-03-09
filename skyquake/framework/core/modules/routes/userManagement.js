@@ -50,6 +50,13 @@ Router.post('/user', cors(), function(req, res) {
         utils.sendErrorResponse(error, res);
     });
 });
+Router.put('/user', cors(), function(req, res) {
+    UserManagementAPI.update(req).then(function(response) {
+        utils.sendSuccessResponse(response, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
 Router.delete('/user/:username/:domain', cors(), function(req, res) {
     UserManagementAPI.delete(req).then(function(response) {
         utils.sendSuccessResponse(response, res);
