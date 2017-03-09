@@ -32,7 +32,7 @@
         color:$darker-gray;
         text-transform:uppercase;
     }
-    input, .readonly, textarea {
+    input, textarea {
         height: 35px;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.39), 0 -1px 1px #ffffff, 0 1px 0 #ffffff;
         font-size: 1rem;
@@ -49,6 +49,7 @@
     .readonly {
         line-height: 35px;
         box-shadow:none;
+        background:none !important;
     }
     textarea {
         -ms-flex-align: stretch;
@@ -78,4 +79,19 @@
     }
 }
 
+.sqCheckBox {
+    display:-ms-flexbox;
+    display:flex;
+    label {
+        display:-ms-flexbox;
+        display:flex;
+        -ms-flex-align: center;
+        align-items: center;
+        input {
+            box-shadow: none;
+            height: auto;
+            margin: 0 0.25rem;
+        }
+    }
+}
 

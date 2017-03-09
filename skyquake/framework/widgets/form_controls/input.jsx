@@ -59,14 +59,23 @@ export default class Input extends Component {
                                 onChange={props.onChange}
                             />
                 break;
+            case 'radiogroup':
+                inputType = buildRadioButtons(this.props);
+                break;
             default:
                 inputType = <input key={props.key} type={props.type} {...inputProperties} onChange={props.onChange} placeholder={props.placeholder}/>;
+        }
+        let displayedValue;
+        if(value === null) {
+            displayedValue = null;
+        } else {
+            displayedValue = value.toString();
         }
         let html = (
             <label className={className} style={props.style}>
               <span> { label } {isRequired}</span>
               {
-                !props.readonly ? inputType : <div className="readonly">{value}</div>
+                !props.readonly ? inputType : <div className="readonly">{displayedValue}</div>
               }
 
             </label>
@@ -76,8 +85,26 @@ export default class Input extends Component {
 }
 
 
-function buildDropDown() {
+function buildRadioButtons(props) {
+    let className = 'sqCheckBox';
+    if (props.className) {
+        className = `${className} ${props.className}`;
+    }
+    return(
+       <div className={className}>
+            {
+                props.options.map((o,i) => {
+                    return (
+                        <label key={i}>
+                            {o.label}
+                            <input type="radio" checked={props.value == o.value} value={o.value} onChange={props.onChange} />
+                        </label>
+                    )
+                })
+            }
+       </div>
 
+    )
 }
 
 Input.defaultProps = {

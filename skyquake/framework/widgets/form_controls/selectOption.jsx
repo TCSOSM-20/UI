@@ -47,11 +47,19 @@ export default class SelectOption extends React.Component {
     html = (
         <label key={this.props.key}>
             {this.props.label}
-            <select className={this.props.className} onChange={this.handleOnChange} defaultValue={JSON.stringify(defaultValue)} >
-                {
-                 options
-                }
-            </select>
+            {
+              this.props.readonly ? defaultValue
+              : (
+                  <select
+                    className={this.props.className}
+                    onChange={this.handleOnChange}
+                    defaultValue={JSON.stringify(defaultValue)}>
+                      {
+                       options
+                      }
+                  </select>
+                )
+            }
         </label>
     );
     return html;
@@ -67,6 +75,7 @@ SelectOption.defaultProps = {
     console.log(e.target.value)
     console.dir(e)
   },
+  readonly: false,
   /**
    *  Selected or default value
 ​

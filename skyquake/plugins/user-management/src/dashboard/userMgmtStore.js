@@ -11,7 +11,7 @@ export default class UserManagementStore {
         this.registerAsync(UserManagementSource);
         this.users = [];
         this['user-name'] = '';
-        this['user-domain'] = '';
+        this['user-domain'] = 'system';
         this.disabled = false;
         this.platformRoles = {
             super_admin: false,
@@ -26,6 +26,7 @@ export default class UserManagementStore {
         this['confirm-password'] = '';
 
         this.activeIndex = null;
+        this.isReadOnly = true;
         this.userOpen = false;
         this.hideColumns = false;
         this.isEdit = false;
@@ -75,14 +76,21 @@ export default class UserManagementStore {
         let state = _.merge({
             activeIndex: userIndex,
             userOpen: true,
-            isEdit: true
+            isEdit: true,
+            isReadOnly: true
         }, ActiveUser);
         this.setState(state)
+    }
+    editUser(isEdit) {
+        this.setState({
+            isReadOnly: isEdit
+        })
     }
     handleCloseUserPanel() {
         this.setState({
             userOpen: false,
-            isEdit: false
+            isEdit: false,
+            isReadOnly: true
         })
     }
     handleHideColumns(e) {
@@ -112,7 +120,7 @@ export default class UserManagementStore {
     }
     resetUser() {
         let username = '';
-        let domain = '';
+        let domain = 'system';
         let disabled = false;
         let platformRoles = {
             super_admin: false,
@@ -149,7 +157,14 @@ export default class UserManagementStore {
         }
     }
     handleAddUser() {
-        this.setState(_.merge( this.resetUser() ,{ isEdit: false, userOpen: true, activeIndex: null }))
+        this.setState(_.merge( this.resetUser() ,
+                              {
+                                isEdit: false,
+                                userOpen: true,
+                                activeIndex: null,
+                                isReadOnly: false
+                            }
+        ))
     }
     handleCreateUser() {
 
@@ -188,9 +203,14 @@ export default class UserManagementStore {
             'user-domain': this['user-domain'],
             platformRoles: this.platformRoles,
             disabled: this.disabled,
-            projectRoles: this.projectRoles
+            projectRoles: this.projectRoles,
          });
-        let newState = {users, isEdit: true, activeIndex: users.length - 1};
+        let newState = {
+            users,
+            isEdit: true,
+            isReadOnly: true,
+            activeIndex: users.length - 1
+        };
         _.merge(newState, this.resetPassword())
         this.setState(newState);
     }

@@ -6,6 +6,11 @@
 @import "style/_colors.scss";
 
 .userManagement {
+        max-width: 900px;
+        -ms-flex-item-align:center;
+            -ms-grid-row-align:center;
+            align-self:center;
+
     .skyquakePanel-wrapper {
         overflow-x: hidden;
     }
@@ -64,8 +69,8 @@
     }
 
     .userAdmin {
-            -ms-flex: 0 1 450px;
-            flex: 0 1 450px;
+            -ms-flex: 1 1;
+            flex: 1 1;
             width:auto;
             opacity:1;
     }
@@ -163,12 +168,16 @@
         font-weight:bold;
     }
     &--data {
+        &:hover:not(&-active) {
+            background:$neutral-dark-1;
+        }
         &:hover, .activeUser, &-active{
             cursor:pointer;
-            background:$neutral-dark-1;
             color:white;
         }
-
+        .activeUser, &-active{
+            background: #00acee;
+        }
     }
 }
 

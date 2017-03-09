@@ -72,6 +72,12 @@ class UserManagementDashboard extends React.Component {
     viewUser = (un, index) => {
         this.actions.viewUser(un, index);
     }
+    editUser = () => {
+        this.actions.editUser(false);
+    }
+    cancelEditUser = () => {
+        this.actions.editUser(true)
+    }
     closePanel = () => {
         this.actions.handleCloseUserPanel();
     }
@@ -118,11 +124,60 @@ class UserManagementDashboard extends React.Component {
         this.actions.handleHideColumns(e);
         console.log('transition end')
     }
+    disableChange = (e) => {
+        let value = e.target.value;
+        value = value.toUpperCase();
+        if (value=="TRUE") {
+            value = true;
+        } else {
+            value = false;
+        }
+        console.log(value)
+    }
     render() {
         let self = this;
         let html;
         let props = this.props;
         let state = this.state;
+        let passwordSectionHTML = null;
+        let formButtonsHTML = (
+            <ButtonGroup className="buttonGroup">
+                <Button label="EDIT" type="submit" onClick={this.editUser} />
+            </ButtonGroup>
+        );
+        if(!this.state.isReadOnly) {
+            passwordSectionHTML = ( this.state.isEdit ?
+                                        (
+                                            <FormSection title="PASSWORD CHANGE">
+                                                <Input label="OLD PASSWORD" type="password" value={state['old-password']} onChange={this.updateInput.bind(null, 'old-password')} />
+                                                <Input label="NEW PASSWORD" type="password" value={state['new-password']}  onChange={this.updateInput.bind(null, 'new-password')}/>
+                                                <Input label="REPEAT NEW PASSWORD" type="password"  value={state['confirm-password']}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
+                                            </FormSection>
+                                        ) :
+                                        (
+                                            <FormSection title="CREATE PASSWORD">
+                                                <Input label="CREATE PASSWORD" type="password" value={state.newPassword}  onChange={this.updateInput.bind(null, 'new-password')}/>
+                                                <Input label="REPEAT PASSWORD" type="password"  value={state.repeatNewPassword}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
+                                            </FormSection>
+                                        )
+                                    );
+            formButtonsHTML = (
+                                state.isEdit ?
+                                (
+                                    <ButtonGroup className="buttonGroup">
+                                        <Button label="Update" type="submit" onClick={this.updateUser} />
+                                        <Button label="Delete" onClick={this.deleteUser} />
+                                        <Button label="Cancel" onClick={this.cancelEditUser} />
+                                    </ButtonGroup>
+                                )
+                                : (
+                                    <ButtonGroup className="buttonGroup">
+                                        <Button label="Create" type="submit" onClick={this.createUser}  />
+                                    </ButtonGroup>
+                                )
+                            )
+        }
+
         html = (
             <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'alignContent': 'center', 'flexDirection': 'row'}} >
                 <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded ${this.state.userOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
@@ -171,20 +226,22 @@ class UserManagementDashboard extends React.Component {
                         {
                             this.state.isEdit ?
                                 null
-                                : <Input label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
+                                : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
                         }
-                            <Input label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
-                            <Input label="Disabled" onChange={this.disabledChange} checked={state.disabled} type="checkbox" />
+                            <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
+
+                            <Input type="radiogroup" readonly={state.isReadOnly} label="Disabled" value={state.disabled} options={[{value: true, label: 'YES'}, {value: false, label: 'NO'}]}  onChange={this.disableChange} />
                         </FormSection>
-                        <FormSection title="PLATFORM ROLES">
+                        <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
                             <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />
                             <Input label="Platform Admin" onChange={this.platformChange.bind(null, 'platform_admin')}  checked={state.platformRoles.platform_admin} type="checkbox" />
                             <Input label="Platform Oper" onChange={this.platformChange.bind(null, 'platform_oper')}  checked={state.platformRoles.platform_oper} type="checkbox" />
                         </FormSection>
-                        <FormSection title="PROJECT ROLES">
+                        <FormSection title="PROJECT ROLES" style={{display:'none'}}>
                             <InputCollection
                                 inital={true}
                                 type='select'
+                                readonly={state.isReadOnly}
                                 options={state.projectRolesOptions}
                                 collection={state.projectRoles}
                                 onChange={this.updateProjectRole}
@@ -192,39 +249,13 @@ class UserManagementDashboard extends React.Component {
                                 RemoveItemFn={this.removeProjectRole}
                                 />
                         </FormSection>
-                        { this.state.isEdit ?
-                            (
-                                <FormSection title="PASSWORD CHANGE">
-                                    <Input label="OLD PASSWORD" type="password" value={state['old-password']} onChange={this.updateInput.bind(null, 'old-password')} />
-                                    <Input label="NEW PASSWORD" type="password" value={state['new-password']}  onChange={this.updateInput.bind(null, 'new-password')}/>
-                                    <Input label="REPEAT NEW PASSWORD" type="password"  value={state['confirm-password']}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
-                                </FormSection>
-                            ) :
-                            (
-                                <FormSection title="CREATE PASSWORD">
-                                    <Input label="CREATE PASSWORD" type="password" value={state.newPassword}  onChange={this.updateInput.bind(null, 'new-password')}/>
-                                    <Input label="REPEAT PASSWORD" type="password"  value={state.repeatNewPassword}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
-                                </FormSection>
-                            )
-                        }
+                        {passwordSectionHTML}
 
                     </Panel>
+                        {formButtonsHTML}
 
-                        {
-                            state.isEdit ?
-                            (
-                                <ButtonGroup className="buttonGroup">
-                                    <Button label="Update" type="submit" onClick={this.updateUser} />
-                                    <Button label="Delete" onClick={this.deleteUser} />
-                                </ButtonGroup>
-                            )
-                            : (
-                                <ButtonGroup className="buttonGroup">
-                                    <Button label="Create" type="submit" onClick={this.createUser}  />
-                                </ButtonGroup>
-                            )
-                        }
                 </PanelWrapper>
+
 
             </PanelWrapper>
         );
@@ -256,6 +287,18 @@ function isElementInView(el) {
 }
 
 
+// isReadOnly={state.isReadOnly} disabled={state.disabled} onChange={this.disableChange}
+
+class isDisabled extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        let props = this.props;
+        return (<div/>)
+    }
+}
+
 /**
  * AddItemFn:
  */
@@ -267,6 +310,7 @@ class InputCollection extends React.Component {
     buildTextInput(onChange, v, i) {
         return (
             <Input
+                readonly={this.props.readonly}
                 style={{flex: '1 1'}}
                 key={i}
                 value={v}
@@ -277,6 +321,7 @@ class InputCollection extends React.Component {
     buildSelectOption(initial, options, onChange, v, i) {
         return (
             <SelectOption
+                readonly={this.props.readonly}
                 key={`${i}-${v.replace(' ', '_')}`}
                 intial={initial}
                 defaultValue={v}
@@ -306,11 +351,12 @@ class InputCollection extends React.Component {
                     return (
                         <div key={i} className={className} >
                             {inputType(v, i)}
-                            <span onClick={props.RemoveItemFn.bind(null, i)} className="removeInput"><img src={imgRemove} />Remove</span>
+                            {
+                                props.readonly ? null : <span onClick={props.RemoveItemFn.bind(null, i)} className="removeInput"><img src={imgRemove} />Remove</span>}
                         </div>
                     )
                 })}
-                <span onClick={props.AddItemFn} className="addInput"><img src={imgAdd} />Add</span>
+                { props.readonly ? null : <span onClick={props.AddItemFn} className="addInput"><img src={imgAdd} />Add</span>}
             </div>
         );
         return html;

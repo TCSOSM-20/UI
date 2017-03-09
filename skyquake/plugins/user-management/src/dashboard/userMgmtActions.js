@@ -8,6 +8,7 @@ module.exports = function(Alt) {
                                        'handleRemoveProjectItem',
                                        'handleUpdateProjectRole',
                                        'viewUser',
+                                       'editUser',
                                        'handleCloseUserPanel',
                                        'handleHideColumns',
                                        'getUsersSuccess',
