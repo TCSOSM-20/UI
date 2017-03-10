@@ -150,7 +150,7 @@ const FileManagerSource = {
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
-                      url: 'http://localhost:8000/composer/api/file-manager/jobs/' + packageID + '?api_server=' + API_SERVER,
+                      url: 'composer/api/file-manager/jobs/' + packageID + '?api_server=' + API_SERVER,
                     },
                     success: function(data, textStatus, jqXHR) {
                         Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -175,7 +175,7 @@ const FileManagerSource = {
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
-                      url: 'http://localhost:8000/composer/api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id
+                      url: 'composer/api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id
                     },
                     success: function(data, textStatus, jqXHR) {
                         Utils.checkAndResolveSocketRequest(data, resolve, reject);
