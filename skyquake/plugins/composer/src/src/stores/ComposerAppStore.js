@@ -492,8 +492,10 @@ class ComposerAppStore {
         			files: false
         		}
         	}
+        	if(!_.isEqual(newState.files, this.files) || ! _.isEqual(newState.fileState, this.fileState)) {
+        		this.setState(newState);
+        	}
 
-			this.setState(newState);
         }
 		function normalizeTree(data) {
 			let f = {
