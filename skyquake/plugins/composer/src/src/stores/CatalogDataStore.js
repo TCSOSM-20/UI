@@ -49,6 +49,18 @@ const areCatalogItemsMetaDataEqual = function (a, b) {
 	return _.isEqual(aMetaData, bMetaData);
 };
 
+function createItem (type) {
+	let newItem = DescriptorModelMetaFactory.createModelInstanceForType(type);
+	if (newItem){
+		newItem.id = guid();
+		UID.assignUniqueId(newItem.uiState);
+		newItem.uiState.isNew = true;
+		newItem.uiState.modified = true;
+		newItem.uiState['instance-ref-count'] = 0;
+	}
+	return newItem;
+}
+
 class CatalogDataStore {
 
 	constructor() {
@@ -133,16 +145,13 @@ class CatalogDataStore {
 	}
 
 	addNewItemToCatalog(newItem) {
-		const id = guid();
 		const type = newItem.uiState.type;
-		newItem.id = id;
-		UID.assignUniqueId(newItem.uiState);
 		this.getCatalogs().filter(d => d.type === type).forEach(catalog => {
 			catalog.descriptors.push(newItem);
 		});
 		// update indexes and integrate new model into catalog
 		this.updateCatalogIndexes(this.getCatalogs());
-		return this.getCatalogItemById(id);
+		return this.getCatalogItemById(newItem.id);
 	}
 
 	updateCatalogIndexes(catalogs) {
@@ -445,18 +454,8 @@ class CatalogDataStore {
 	}
 
 	createCatalogItem(type = 'nsd') {
-		const model = DescriptorModelMetaFactory.createModelInstanceForType(type);
-		if (model) {
-			const newItem = this.addNewItemToCatalog(model);
-			newItem.uiState.isNew = true;
-			newItem.uiState.modified = true;
-			newItem.uiState['instance-ref-count'] = 0;
-			// open the new model for editing in the canvas/details panels
-			setTimeout(() => {
-				this.selectCatalogItem(newItem);
-				CatalogItemsActions.editCatalogItem.defer(newItem);
-			}, 200);
-		}
+		const newItem = createItem(type);
+		this.saveItem(newItem)
 	}
 
 	duplicateSelectedCatalogItem() {
@@ -464,6 +463,8 @@ class CatalogDataStore {
 		if (item) {
 			const newItem = _.cloneDeep(item);
 			newItem.name = newItem.name + ' Copy';
+			newItem.id = guid();
+			UID.assignUniqueId(newItem.uiState);
 			const nsd = this.addNewItemToCatalog(newItem);
 			this.selectCatalogItem(nsd);
 			nsd.uiState.isNew = true;
@@ -537,7 +538,13 @@ class CatalogDataStore {
 	saveCatalogItem() {
 		const activeItem = ComposerAppStore.getState().item;
 		if (activeItem) {
-			if (activeItem.uiState['instance-ref-count'] > 0) {
+			this.saveItem(activeItem);
+		}
+	}
+
+	saveItem(item) {
+		if (item) {
+			if (item.uiState['instance-ref-count'] > 0) {
 				console.log('cannot save NSD/VNFD with references to instantiated Network Services');
 				ComposerAppActions.showError.defer({
 					errorMessage: 'Cannot save NSD/VNFD with references to instantiated Network Services'
@@ -545,25 +552,29 @@ class CatalogDataStore {
 				return;
 			}
 			const success = () => {
-				delete activeItem.uiState.isNew;
-				delete activeItem.uiState.modified;
-				this.updateCatalogItem(activeItem);
+				delete item.uiState.modified;
+				if (item.uiState.isNew) {
+					this.addNewItemToCatalog(item);
+					delete item.uiState.isNew;
+				} else {
+					this.updateCatalogItem(item);
+				}
 				// TODO should the save action clear the undo/redo stack back to the beginning?
-				this.resetSnapshots(activeItem);
+				this.resetSnapshots(item);
 				ModalOverlayActions.hideModalOverlay.defer();
-				CatalogItemsActions.editCatalogItem.defer(activeItem);
+				CatalogItemsActions.editCatalogItem.defer(item);
 			};
 			const failure = () => {
 				ModalOverlayActions.hideModalOverlay.defer();
-				CatalogItemsActions.editCatalogItem.defer(activeItem);
+				CatalogItemsActions.editCatalogItem.defer(item);
 			};
 			const exception = () => {
-				console.warn('unable to save catalog item', activeItem);
+				console.warn('unable to save catalog item', item);
 				ModalOverlayActions.hideModalOverlay.defer();
-				CatalogItemsActions.editCatalogItem.defer(activeItem);
+				CatalogItemsActions.editCatalogItem.defer(item);
 			};
 			ModalOverlayActions.showModalOverlay.defer();
-			this.getInstance().saveCatalogItem(activeItem).then(success, failure).catch(exception);
+			this.getInstance().saveCatalogItem(item).then(success, failure).catch(exception);
 		}
 	}
 

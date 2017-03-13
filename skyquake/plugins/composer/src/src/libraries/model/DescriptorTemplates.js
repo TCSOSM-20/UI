@@ -26,11 +26,10 @@
 import guid from './../guid'
 import InstanceCounter from './../InstanceCounter'
 
+const generateName = (prefix, counter) => prefix + '-' + InstanceCounter.count(counter);
+
 export default {
 	'vnfd': {
-		'id': '5b9af24e-2c8f-4792-9d6e-ff9eabb97f15',
-		'name': 'vnfd-1',
-		'short-name': 'vnfd-1',
 		'description': 'A simple VNF descriptor w/ one VDU',
 		'version': '1.0',
 		'connection-point': [
@@ -41,8 +40,11 @@ export default {
 		],
 		'vdu': [
 			{
-				'id': 'abd6831e-f811-4580-9aad-1de9c6424180',
-				'name': 'vdu-1',
+				'uiState': {
+					'type': 'vdu'
+				},
+				'id': () => guid(5),
+				'name': () => generateName('vdu', 'vnfd.vdu'),
 				'vm-flavor': {
 					'vcpu-count': 4,
 					'memory-mb': 16384,
@@ -63,7 +65,7 @@ export default {
 	},
 	'vnfd.internal-vld': {
 		'id': () => guid(),
-		'name': () => 'vld-' + InstanceCounter.count('new.vnfd.internal-vld'),
+		'name': () => generateName('vld', 'new.vnfd.internal-vld'),
 		'description': 'Virtual link for internal fabric',
 		'type': 'ELAN'
 	}
