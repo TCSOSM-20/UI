@@ -136,6 +136,7 @@ if (cluster.isMaster && clusteredLaunch) {
 	var configuration_routes = require('./framework/core/modules/routes/configuration');
 	var configurationAPI = require('./framework/core/modules/api/configuration');
 	var userManagement_routes = require('./framework/core/modules/routes/userManagement');
+	var projectManagement_routes = require('./framework/core/modules/routes/projectManagement');
 	/**
 	 * Processing when a plugin is added or modified
 	 * @param {string} plugin_name - Name of the plugin
@@ -217,6 +218,9 @@ if (cluster.isMaster && clusteredLaunch) {
 
 		//Configure user management route(s)
 		app.use(userManagement_routes);
+
+		//Configure project management route(s)
+		app.use(projectManagement_routes);
 
 		// app.get('/testme', function(req, res) {
 		// 	res.sendFile(__dirname + '/index.html');

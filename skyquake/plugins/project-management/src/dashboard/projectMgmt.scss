@@ -5,13 +5,13 @@
 /* If there's time this really needs to be rewritten. Ideally with smooth animations.*/
 @import "style/_colors.scss";
 
-.userManagement {
+.projectManagement {
         max-width: 900px;
 
     .skyquakePanel-wrapper {
         overflow-x: hidden;
     }
-    .userList {
+    .projectList {
 
         -ms-flex: 0 1 200px;
         flex: 0 1 200px;
@@ -25,7 +25,7 @@
             -ms-flex: 1 1 100%;
             flex: 1 1 100%;
             /* transition: all 300ms;*/
-            .tableRow>div:not(.userName) {
+            .tableRow>div:not(.projectName) {
                 opacity: 1;
                 /* width:auto;*/
                 /* transition: width 600ms;*/
@@ -35,7 +35,7 @@
                 -ms-flex: 0 1 200px;
                 flex: 0 1 200px;
                 /* transition: all 2s;*/
-                .tableRow>div:not(.userName) {
+                .tableRow>div:not(.projectName) {
                     /* opacity: 0;*/
                     /* width:0px;*/
                     display:none;
@@ -49,30 +49,35 @@
             >div {
                 overflow:hidden;
             }
-            .tableRow>div:not(.userName) {
+            .tableRow>div:not(.projectName) {
                 width: 0px;
                 /* transition: all 600ms;*/
             }
-            .userName {
+            .projectName {
                 &--header {
                     /* display:none;*/
              }
             }
         }
-        .userName {
+        .projectName {
             cursor:pointer;
         }
 
+
     }
 
-    .userAdmin {
+    .projectAdmin {
             -ms-flex: 1 1;
             flex: 1 1;
             width:auto;
             opacity:1;
+
+        textarea{
+            height: 100px;
+        }
     }
-    &.userList-open {
-        .userAdmin {
+    &.projectList-open {
+        .projectAdmin {
             -ms-flex: 0 1 0px;
                 flex: 0 1 0px;
             opacity:0;
@@ -90,6 +95,42 @@
         padding: 0.5rem 0;
         border-top: #d3d3d3 1px solid;
     }
+    .addUser {
+        display:-ms-flexbox;
+        display:flex;
+        -ms-flex-direction:row;
+            flex-direction:row;
+        label {
+            -ms-flex: 0 1;
+                flex: 0 1;
+                width:150px;
+            select {
+                width:150px;
+            }
+        }
+    }
+    .projectUsers {
+        .userName {
+            -ms-flex-pack: start;
+            justify-content: flex-start;
+            padding-top: 0.75rem;
+        }
+        select {
+            margin-bottom:0.5rem;
+        }
+        .addRole {
+            margin:.25rem 0;
+        }
+        .buttonGroup {
+            display:-ms-flexbox;
+            display:flex;
+        }
+
+    }
+    .projectUsers.tableRow--data:hover {
+            background:none;
+            color: black;
+        }
 }
 
 
@@ -160,6 +201,12 @@
         padding:0.25rem 1rem 0.25rem 0;
         -ms-flex: 1 1 33%;
             flex: 1 1 33%;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+            flex-direction: column;
+        -ms-flex-pack: center;
+            justify-content: center;
     }
     &--header {
         font-weight:bold;

@@ -1,0 +1,14 @@
+{
+    "root": "public",
+    "name": "Project Management",
+    "dashboard": "./dashboard/dashboard.jsx",
+    "order": 1,
+    "priority":1,
+    "routes": [
+    {
+        "label": "Project Management Dashboard",
+        "route": "project-management",
+        "component": "./dashboard/dashboard.jsx",
+        "type": "internal"
+    }]
+}

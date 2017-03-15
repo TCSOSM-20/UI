@@ -213,7 +213,7 @@ class UserManagementDashboard extends React.Component {
         }
 
         html = (
-            <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'alignContent': 'center', 'flexDirection': 'row'}} >
+            <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'flexDirection': 'row'}} >
                 <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded ${this.state.userOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
                     <Panel title="User List" style={{marginBottom: 0}} no-corners>
                         <div className="tableRow tableRow--header">
