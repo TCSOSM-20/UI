@@ -236,4 +236,4 @@ function getCurrentPlugin() {
     }
 }
 
-export default Alt.createStore(SkyquakeContainerStore);
+export default Alt.createStore(SkyquakeContainerStore, 'SkyquakeContainerStore');

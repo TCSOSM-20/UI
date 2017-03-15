@@ -31,7 +31,8 @@ import SelectOption from 'widgets/form_controls/selectOption.jsx';
 class NsVirtualLinkCreate extends React.Component {
 	constructor(props) {
 		super(props);
-	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore);
+	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? 
+				this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore, 'NSVirtualLinkCreateStore');
 		this.state = this.Store.getState();
 		this.Store.listen(this.handleUpdate);
 	}

@@ -851,5 +851,4 @@ function getMockData() {
         pnfd: data.pnfd
     });
 }
-// export default Alt.createStore(LaunchNetworkServiceStore);
 export default LaunchNetworkServiceStore;

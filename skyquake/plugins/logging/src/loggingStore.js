@@ -216,4 +216,4 @@ class LoggingStore {
   }
 }
 
-export default alt.createStore(LoggingStore);
+export default alt.createStore(LoggingStore, 'LoggingStore');
