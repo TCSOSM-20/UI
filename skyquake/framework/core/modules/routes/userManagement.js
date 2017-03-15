@@ -28,7 +28,7 @@ var cors = require('cors');
 var bodyParser = require('body-parser');
 var Router = require('express').Router();
 var utils = require('../../api_utils/utils');
-var UserManagementAPI = require('../api/UserManagementAPI.js');
+var UserManagementAPI = require('../api/userManagementAPI.js');
 
 Router.use(bodyParser.json());
 Router.use(cors());
