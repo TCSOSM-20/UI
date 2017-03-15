@@ -472,4 +472,4 @@ function connectionManager(type, connection) {
     };
 }
 
-export default Alt.createStore(RecordViewStore);
+export default Alt.createStore(RecordViewStore, 'RecordViewStore');

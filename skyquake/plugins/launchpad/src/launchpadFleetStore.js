@@ -279,5 +279,5 @@ FleetStoreConstructor.prototype.getVDUConsoleLinkSuccess = function(data) {
   data['console-url'] && window.open(data['console-url']);
 }
 
-FleetStore = Alt.createStore(FleetStoreConstructor);
+FleetStore = Alt.createStore(FleetStoreConstructor, 'FleetStore');
 module.exports = FleetStore;

@@ -29,7 +29,8 @@ import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx'
 class NsVirtualLinks extends React.Component {
 	constructor(props) {
 		super(props);
-	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore);
+	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? 
+				this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore, 'NSVirtualLinkCreateStore');
 		this.state = {};
 		this.state.mode = 'viewing';	// Can be 'viewing'/'creating'/'editing'/'deleting'. Default is 'viewing'
 		this.selectedVirtualLink = null;

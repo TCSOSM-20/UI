@@ -35,5 +35,5 @@ crashStore.prototype.getCrashDetailsFailure = function(info) {
   console.log('Failed to retrieve crash/debug details', info)
 };
 
-module.exports = Alt.createStore(crashStore);;
+module.exports = Alt.createStore(crashStore, 'crashStore');;
 
