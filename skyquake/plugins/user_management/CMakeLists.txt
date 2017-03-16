@@ -21,15 +21,15 @@ cmake_minimum_required(VERSION 2.8)
 ##
 
 rift_externalproject_add(
-  config
+  user_management
   DEPENDS skyquake
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
   CONFIGURE_COMMAND echo
   BUILD_COMMAND
-    ${CMAKE_CURRENT_BINARY_DIR}/config/config-build/scripts/build.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/user_management/user_management-build/scripts/build.sh
   INSTALL_COMMAND
     ${CMAKE_CURRENT_SOURCE_DIR}/scripts/install.sh
-    ${CMAKE_CURRENT_BINARY_DIR}/config/config-build
+    ${CMAKE_CURRENT_BINARY_DIR}/user_management/user_management-build
     ${CMAKE_INSTALL_PREFIX}/usr/share/rw.ui/skyquake
     ${RIFT_SUBMODULE_INSTALL_PREFIX}/skyquake/${CMAKE_INSTALL_PREFIX}/usr/share/rw.ui/skyquake
 

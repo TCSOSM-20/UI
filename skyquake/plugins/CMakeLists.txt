@@ -1,4 +1,4 @@
-# 
+#
 #   Copyright 2016 RIFT.IO Inc
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
 #
 # Author(s): Kiran Kashalkar
 # Creation Date: 08/18/2015
-# 
+#
 
 ##
 # DEPENDENCY ALERT
@@ -44,6 +44,8 @@ set(
     composer
     config
     debug
+    project_management
+    user_management
 #    goodbyworld
 #    helloworld
     launchpad
