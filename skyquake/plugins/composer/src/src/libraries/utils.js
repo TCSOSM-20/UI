@@ -332,6 +332,21 @@ export default {
 						}
 					}
 				}
+			} else if (fieldKeyArray.length == 3) {
+				for (let key in catalogs) {
+					for (let subKey in catalogs[key]) {
+						let found = _.find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						if (found) {
+							for (let foundKey in found) {
+								let topLevel = _.find(found[foundKey], {id: fieldKeyArray[1]});
+								if (topLevel) {
+									results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
+									return results;
+								}
+							}
+						}
+					}
+				}
 			} else {
 				// not supported - too many levels deep ... maybe some day
 				console.log('The relative path is from a node too many levels deep from root. This is not supported at the time');
