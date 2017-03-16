@@ -230,7 +230,7 @@ class ProjectManagementDashboard extends React.Component {
                     <Panel title="Project List" style={{marginBottom: 0}} no-corners>
                         <div className="tableRow tableRow--header">
                             <div className="projectName">
-                                projectName
+                                Project Name
                             </div>
                             <div>
                                 Description
