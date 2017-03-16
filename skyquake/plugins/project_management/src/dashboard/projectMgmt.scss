@@ -131,6 +131,23 @@
             background:none;
             color: black;
         }
+
+    table {
+        thead {
+            border-bottom:1px solid #d3d3d3;
+            td{
+                font-weight:bold;
+            }
+        }
+        td{
+            padding:0.25rem 0.5rem;
+            vertical-align: middle;
+            .checkbox {
+                -ms-flex-pack:center;
+                    justify-content:center;
+            }
+        }
+    }
 }
 
 
@@ -198,7 +215,7 @@
     padding: 0.25rem;
     margin: .125rem 0;
     >div {
-        padding:0.25rem 1rem 0.25rem 0;
+        padding: 0.25rem;
         -ms-flex: 1 1 33%;
             flex: 1 1 33%;
         display: -ms-flexbox;

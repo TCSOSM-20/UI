@@ -15,7 +15,9 @@ export default class ProjectManagementStore {
         this.projectUsers = [];
         this.selectedUser = null;
         this.selectedRole = null;
-        this.roles = ['Assign a role', 'super_admin'];
+        this.roles = ['super_admin', 'operator_role'
+        // 'some_other_role', 'yet_another_role', 'operator_role', 'some_other_role', 'yet_another_role'
+        ];
         this.users = [];
         this.activeIndex = null;
         this.isReadOnly = true;
@@ -158,7 +160,25 @@ export default class ProjectManagementStore {
             }
           ]
         })
-        this.setState({projectUsers})
+        this.setState({projectUsers, selectedUser: null})
+    }
+    handleToggleUserRoleInProject(data) {
+        let self = this;
+        let {userIndex, roleIndex, checked} = data;
+        let projectUsers = this.projectUsers;
+        let selectedRole = self.roles[roleIndex];
+        if(checked) {
+            projectUsers[userIndex].role.push({
+                role: self.roles[roleIndex],
+                keys: self.roles[roleIndex]
+            })
+        } else {
+            let role = projectUsers[userIndex].role;
+            let roleIndex = _.findIndex(role, {role:selectedRole, keys: selectedRole})
+            projectUsers[userIndex].role.splice(roleIndex, 1)
+        }
+       self.setState({projectUsers});
+
     }
     handleUpdateUserRoleInProject(data) {
         let {userIndex, roleIndex, value} = data;

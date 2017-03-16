@@ -25,6 +25,7 @@ module.exports = function(Alt) {
                                        'handleUpdateProject',
                                        'handleUpdateSelectedUser',
                                        'handleUpdateUserRoleInProject',
+                                       'handleToggleUserRoleInProject',
                                        'addRoleToUserInProject',
                                        'handleRemoveRoleFromUserInProject',
                                        'updateProjectSuccess',

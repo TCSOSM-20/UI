@@ -172,6 +172,13 @@ class ProjectManagementDashboard extends React.Component {
             value: JSON.parse(e.target.value)
         })
     }
+    toggleUserRoleInProject = (userIndex, roleIndex, e) => {
+        this.actions.handleToggleUserRoleInProject({
+            userIndex,
+            roleIndex,
+            checked: JSON.parse(e.currentTarget.checked)
+        })
+    }
     removeRoleFromUserInProject = (userIndex, roleIndex, e) => {
         this.actions.handleRemoveRoleFromUserInProject({
             userIndex,
@@ -206,6 +213,11 @@ class ProjectManagementDashboard extends React.Component {
                 <Button label="EDIT" type="submit" onClick={this.editProject} />
             </ButtonGroup>
         );
+        let projectUsers = [];
+        self.state.projectUsers.map((u) => {
+            projectUsers.push(u['user-name']);
+        });
+
         if(!this.state.isReadOnly) {
             formButtonsHTML = (
                                 state.isEdit ?
@@ -277,70 +289,119 @@ class ProjectManagementDashboard extends React.Component {
                             <Input readonly={state.isReadOnly} type="textarea" label="Description" value={state['description']}  onChange={this.updateInput.bind(null, 'description')}></Input>
                         </FormSection>
                         <FormSection title="USER ROLES">
-                        <div className="tableRow tableRow--header">
-                            <div className="projectName">
-                                User Name
-                            </div>
-                            <div>
-                                Role
-                            </div>
-                        </div>
-                            {
-                                state.projectUsers && state.projectUsers.map((u, k) => {
-                                    return (
-                                        <div ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data projectUsers`} key={k}>
-                                            <div className="userName" style={state.isReadOnly ? {paddingTop: '0.25rem'} : {} }>{u['user-name']}</div>
-                                            <div>
-                                                {
-                                                    u.role && u.role.map((r, l) => {
-                                                        return (
-                                                            <div key={l}>
-                                                                <div style={{display: 'flex'}} className="selectRole">
-                                                                    <SelectOption
-                                                                        readonly={state.isReadOnly}
-                                                                        defaultValue={r.role}
-                                                                        options={state.roles}
-                                                                        onChange={self.updateUserRoleInProject.bind(self, k, l)}
-                                                                    />
-                                                                    {!state.isReadOnly ?
-                                                                        <span
-                                                                        className="removeInput"
-                                                                        onClick={self.removeRoleFromUserInProject.bind(self, k, l)}
-                                                                        >
-                                                                            <img src={imgRemove} />
-                                                                            Remove Role
-                                                                        </span>
-                                                                        : null
-                                                                    }
 
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    })
-                                                }
-                                                {!state.isReadOnly ?
-                                                    <div className="buttonGroup">
-                                                        <span className="addInput addRole" onClick={self.addRoleToUserInProject.bind(self, k)}><img src={imgAdd} />
-                                                            Add Role
-                                                        </span>
-                                                        {
-                                                            (!(u.role && u.role.length)) ?
-                                                                <span
+                        <table>
+                            <thead>
+                                <tr>
+                                    {!state.isReadOnly ? <td></td> : null}
+                                    <td>User Name</td>
+                                    {
+                                        state.roles.map((r,i) => {
+                                            return <td key={i}>{r}</td>
+                                        })
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                            state.projectUsers.map((u,i)=> {
+                                let userRoles = u.role.map((r) => {
+                                    return r.role;
+                                })
+                                return (
+                                    <tr key={i}>
+                                        {!state.isReadOnly ? <td><span
                                                                     className="removeInput"
-                                                                    onClick={self.removeUserFromProject.bind(self, k)}
+                                                                    onClick={self.removeUserFromProject.bind(self, u)}
                                                                 >
                                                                     <img src={imgRemove} />
-                                                                    Remove User
-                                                                </span> : null
-                                                        }
-                                                    </div>
-                                                    : null
-                                                }
+
+                                                                </span></td> : null}
+                                        <td>
+                                            {u['user-name']}
+                                        </td>
+                                        {
+                                            state.roles.map((r,j) => {
+                                                return <td key={j}><Input type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} checked={(userRoles.indexOf(r) > -1)} /></td>
+                                            })
+                                        }
+                                    </tr>
+                                )
+                            })
+                        }
+                            </tbody>
+                        </table>
+
+
+                        { false ?
+                            <div>
+                                <div className="tableRow tableRow--header">
+                                    <div className="projectName">
+                                        User Name
+                                    </div>
+                                    <div>
+                                        Role
+                                    </div>
+                                </div>
+                                {
+                                    state.projectUsers && state.projectUsers.map((u, k) => {
+                                        return (
+                                            <div ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data projectUsers`} key={k}>
+                                                <div className="userName" style={state.isReadOnly ? {paddingTop: '0.25rem'} : {} }>{u['user-name']}</div>
+                                                <div>
+                                                    {
+                                                        u.role && u.role.map((r, l) => {
+                                                            return (
+                                                                <div key={l}>
+                                                                    <div style={{display: 'flex'}} className="selectRole">
+                                                                        <SelectOption
+                                                                            readonly={state.isReadOnly}
+                                                                            defaultValue={r.role}
+                                                                            options={state.roles}
+                                                                            onChange={self.updateUserRoleInProject.bind(self, k, l)}
+                                                                        />
+                                                                        {!state.isReadOnly ?
+                                                                            <span
+                                                                            className="removeInput"
+                                                                            onClick={self.removeRoleFromUserInProject.bind(self, k, l)}
+                                                                            >
+                                                                                <img src={imgRemove} />
+                                                                                Remove Role
+                                                                            </span>
+                                                                            : null
+                                                                        }
+
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })
+                                                    }
+                                                    {!state.isReadOnly ?
+                                                        <div className="buttonGroup">
+                                                            <span className="addInput addRole" onClick={self.addRoleToUserInProject.bind(self, k)}><img src={imgAdd} />
+                                                                Add Role
+                                                            </span>
+                                                            {
+                                                                (!(u.role && u.role.length)) ?
+                                                                    <span
+                                                                        className="removeInput"
+                                                                        onClick={self.removeUserFromProject.bind(self, k)}
+                                                                    >
+                                                                        <img src={imgRemove} />
+                                                                        Remove User
+                                                                    </span> : null
+                                                            }
+                                                        </div>
+                                                        : null
+                                                    }
+                                                </div>
                                             </div>
-                                        </div>
-                                    )
-                                })
-                            }
+                                        )
+                                    })
+                                }
+                                </div>
+                                 : null
+                             }
                             {
                                 !state.isReadOnly ?
                                     <div className="tableRow tableRow--header">
@@ -350,7 +411,9 @@ class ProjectManagementDashboard extends React.Component {
                                                     onChange={this.actions.handleSelectedUser}
                                                     defaultValue={state.selectedUser}
                                                     initial={true}
-                                                    options={state.users && state.users.map((u) => {
+                                                    options={state.users && state.users.filter((u) => {
+                                                        return projectUsers.indexOf(u['user-name']) == -1
+                                                    }).map((u) => {
                                                         return {
                                                             label: u['user-name'],
                                                             value: u
