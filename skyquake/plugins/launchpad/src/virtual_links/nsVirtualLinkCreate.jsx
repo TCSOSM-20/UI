@@ -17,7 +17,6 @@
  */
 import React from 'react';
 import Utils from 'utils/utils.js';
-import _ from 'lodash';
 import './nsVirtualLinks.scss';
 import NSVirtualLinkCreateStore from './nsVirtualLinkCreateStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';

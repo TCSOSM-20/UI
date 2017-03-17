@@ -20,7 +20,9 @@ import RecordViewSource from './recordViewSource.js';
 // import source
 // import AppHeaderActions from 'widgets/header/headerActions.js';
 import Alt from '../alt';
-import _ from 'underscore';
+import _find from 'lodash/find';
+import _indexOf from 'lodash/indexOf';
+import _extend from 'lodash/extend';
 
 class RecordViewStore {
     constructor() {
@@ -429,7 +431,7 @@ function connectionManager(type, connection) {
 
                     sgInstance['vnfrs'] && sgInstance['vnfrs'].map((vnfr, vnfrIndex) => {
                         scaledVnfrs.push(vnfr);
-                        let vnfrObj = _.findWhere(nsrs.vnfrs, {id: vnfr});
+                        let vnfrObj = _find(nsrs.vnfrs, {id: vnfr});
                         scaledVnfNav.vnfr.push({
                             name: vnfrObj['short-name'],
                             id: vnfr,
@@ -444,7 +446,7 @@ function connectionManager(type, connection) {
 
             // Non-scaled VNFRs
             nsrs.vnfrs.map(function(vnfr, vnfrIndex) {
-                if (_.indexOf(scaledVnfrs, vnfr.id) == -1) {
+                if (_indexOf(scaledVnfrs, vnfr.id) == -1) {
                     nav.push({
                         name: vnfr["short-name"],
                         id: vnfr.id,
@@ -461,7 +463,7 @@ function connectionManager(type, connection) {
             };
         }
 
-        navigatorState = _.extend(navigatorState, {
+        navigatorState = _extend(navigatorState, {
             recordData: recordData,
             recordType: type,
             cardLoading: false,

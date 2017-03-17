@@ -18,7 +18,9 @@
  */
 'use strict';
 
-import _ from 'lodash'
+import _pick from 'lodash/pick'
+import _isEqual from 'lodash/isEqual'
+import _cloneDeep from 'lodash/cloneDeep'
 import cc from 'change-case'
 import alt from '../alt'
 import UID from '../libraries/UniqueId'
@@ -44,9 +46,9 @@ const defaults = {
 
 const areCatalogItemsMetaDataEqual = function (a, b) {
 	const metaProps = ['id', 'name', 'short-name', 'description', 'vendor', 'version'];
-	const aMetaData = _.pick(a, metaProps);
-	const bMetaData = _.pick(b, metaProps);
-	return _.isEqual(aMetaData, bMetaData);
+	const aMetaData = _pick(a, metaProps);
+	const bMetaData = _pick(b, metaProps);
+	return _isEqual(aMetaData, bMetaData);
 };
 
 function createItem (type) {
@@ -201,7 +203,7 @@ class CatalogDataStore {
 							vnfd.uiState['instance-ref-count'] = instanceRefCount;
 						}
 						// create an instance of this vnfd to carry transient ui state properties
-						const instance = _.cloneDeep(vnfd);
+						const instance = _cloneDeep(vnfd);
 						instance.uiState['member-vnf-index'] = d['member-vnf-index'];
 						instance['vnf-configuration'] = d['vnf-configuration'];
 						instance['start-by-default'] = d['start-by-default'];
@@ -323,7 +325,7 @@ class CatalogDataStore {
 								ComposerAppActions.showError.defer({
 									errorMessage: 'Cannot edit NSD/VNFD with references to instantiated Network Services'
 								});
-								return _.cloneDeep(d);
+								return _cloneDeep(d);
 							} else {
 								item.uiState.modified = modified;
 								requiresSave = true;
@@ -357,7 +359,7 @@ class CatalogDataStore {
 							ComposerAppActions.showError.defer({
 								errorMessage: 'Cannot edit NSD/VNFD with references to instantiated Network Services'
 							});
-							return _.cloneDeep(d);
+							return _cloneDeep(d);
 						} else {
 							itemDescriptor.model.uiState.modified = true;
 							this.addSnapshot(itemDescriptor.model);
@@ -461,7 +463,7 @@ class CatalogDataStore {
 	duplicateSelectedCatalogItem() {
 		const item = this.getFirstSelectedCatalogItem();
 		if (item) {
-			const newItem = _.cloneDeep(item);
+			const newItem = _cloneDeep(item);
 			newItem.name = newItem.name + ' Copy';
 			newItem.id = guid();
 			UID.assignUniqueId(newItem.uiState);

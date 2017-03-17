@@ -19,7 +19,6 @@ import React from 'react';
 import RecordViewStore from '../recordViewer/recordViewStore.js';
 import Button from 'widgets/button/rw.button.js';
 import Utils from 'utils/utils.js';
-import _ from 'underscore';
 import UpTime from 'widgets/uptime/uptime.jsx';
 import './nsrScalingGroups.scss';
 

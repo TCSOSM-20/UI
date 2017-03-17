@@ -18,7 +18,7 @@
  */
 'use strict';
 
-import _ from 'lodash'
+import _includes from 'lodash/includes'
 import cc from 'change-case'
 import React from 'react'
 import PureRenderMixin from 'react-addons-pure-render-mixin'
@@ -115,7 +115,7 @@ const CanvasPanel = React.createClass({
 		);
 	},
 	onDragOver(event) {
-		const isDraggingFiles = _.includes(event.dataTransfer.types, 'Files');
+		const isDraggingFiles = _includes(event.dataTransfer.types, 'Files');
 		if (!isDraggingFiles) {
 			event.preventDefault();
 			event.dataTransfer.dropEffect = 'copy';

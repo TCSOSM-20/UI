@@ -32,7 +32,7 @@ import PlacementGroupsInfo from './placementGroupsInfo.jsx';
 import JobListCard from '../launchpad_card/jobListCard.jsx';
 import NSVirtualLinks from '../virtual_links/nsVirtualLinks.jsx';
 import LaunchpadFleetStore from '../launchpadFleetStore.js';
-
+import _forEach from 'lodash/forEach';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
 
@@ -142,7 +142,7 @@ export default class RecordCard extends React.Component {
                 //     </pre>
                 function buildProperties(obj) {
                   let p = [];
-                    _.forEach(obj, function(v, k) {
+                    _forEach(obj, function(v, k) {
                     p.push(
                       <div style={{margin: '0.5rem 0.5rem'}} key={k + '-' + vi}>
                         <div style={{margin: '0 0.5rem',

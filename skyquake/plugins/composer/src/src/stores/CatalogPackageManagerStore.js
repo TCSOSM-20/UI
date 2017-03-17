@@ -18,7 +18,8 @@
  */
 'use strict';
 
-import _ from 'lodash'
+import _delay from 'lodash/delay'
+import _pick from 'lodash/pick'
 import alt from '../alt'
 import guid from '../libraries/guid'
 import numeral from 'numeral'
@@ -65,7 +66,7 @@ function delayStatusCheck(statusCheckFunction, catalogPackage) {
 			delete catalogPackage.checkStatusTimeoutId;
 			statusCheckFunction(catalogPackage).catch(exception);
 		};
-		catalogPackage.checkStatusTimeoutId = _.delay(delayCallback, defaults.checkStatusDelayInSeconds * 1000);
+		catalogPackage.checkStatusTimeoutId = _delay(delayCallback, defaults.checkStatusDelayInSeconds * 1000);
 	}
 }
 
@@ -109,7 +110,7 @@ class CatalogPackageManagerStore {
 
 	uploadCatalogPackage(file) {
 		file.id = file.id || guid();
-		const catalogPackage = _.pick(file, packagePropertyNames);
+		const catalogPackage = _pick(file, packagePropertyNames);
 		catalogPackage.icon = file.riftAction === 'onboard' ? imgOnboard : imgUpdate;
 		catalogPackage.type = 'upload';
 		this.addPackage(catalogPackage);
