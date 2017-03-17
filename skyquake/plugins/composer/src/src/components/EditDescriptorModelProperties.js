@@ -22,7 +22,9 @@
  */
 'use strict';
 
-import _ from 'lodash'
+import _includes from 'lodash/includes'
+import _isArray from 'lodash/isArray'
+import _cloneDeep from 'lodash/cloneDeep'
 import utils from '../libraries/utils'
 import React from 'react'
 import ClassNames from 'classnames'
@@ -47,12 +49,12 @@ import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 import '../styles/EditDescriptorModelProperties.scss'
 
 function getDescriptorMetaBasicForType(type) {
-	const basicPropertiesFilter = d => _.includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
+	const basicPropertiesFilter = d => _includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
 	return DescriptorModelMetaFactory.getModelMetaForType(type, basicPropertiesFilter) || {properties: []};
 }
 
 function getDescriptorMetaAdvancedForType(type) {
-	const advPropertiesFilter = d => !_.includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
+	const advPropertiesFilter = d => !_includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
 	return DescriptorModelMetaFactory.getModelMetaForType(type, advPropertiesFilter) || {properties: []};
 }
 
@@ -206,7 +208,7 @@ export default function EditDescriptorModelProperties(props) {
 		}
 
 		if (isLeafRef) {
-			let fullFieldKey = _.isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
+			let fullFieldKey = _isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
 			let containerRef = container;
 			while (containerRef.parent) {
 				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
@@ -226,7 +228,7 @@ export default function EditDescriptorModelProperties(props) {
 		}
 
 		if (isBoolean) {
-			let fullFieldKey = _.isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
+			let fullFieldKey = _isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
 			let containerRef = container;
 			while (containerRef.parent) {
 				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
@@ -335,7 +337,7 @@ export default function EditDescriptorModelProperties(props) {
 					isTopCase = true;
 					choiceObject = utils.resolvePath(this.model, [selected].join('.'));
 				}
-				utils.assignPathValue(stateObject, [selected].join('.'), _.cloneDeep(choiceObject));
+				utils.assignPathValue(stateObject, [selected].join('.'), _cloneDeep(choiceObject));
 
 				if(selected) {
 					if(this.model.uiState.choice.hasOwnProperty(name)) {
@@ -422,7 +424,7 @@ export default function EditDescriptorModelProperties(props) {
 		//If selectedOptionValue is present, take first item in string which represents the case name.
 		const valueProperty = caseByNameMap[selectedOptionValue ? selectedOptionValue.split('.')[0] : undefined] || {properties: []};
 		const isLeaf = Property.isLeaf(valueProperty);
-		const hasProperties = _.isArray(valueProperty.properties) && valueProperty.properties.length;
+		const hasProperties = _isArray(valueProperty.properties) && valueProperty.properties.length;
 		const isMissingDescriptorMeta = !hasProperties && !Property.isLeaf(valueProperty);
 		//Some magic that prevents errors for arising
 		const valueResponse = valueProperty.properties && valueProperty.properties.length ? valueProperty.properties.map(valuePropertyFn) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name]) :
@@ -508,7 +510,7 @@ export default function EditDescriptorModelProperties(props) {
 			property.properties = uiState.properties;
 		}
 
-		const hasProperties = _.isArray(property.properties) && property.properties.length;
+		const hasProperties = _isArray(property.properties) && property.properties.length;
 		const isMissingDescriptorMeta = !hasProperties && !Property.isLeaf(property);
 
 		// ensure value is not undefined for non-leaf property types
@@ -517,7 +519,7 @@ export default function EditDescriptorModelProperties(props) {
 				value = isArray ? [] : {};
 			}
 		}
-		const valueAsArray = _.isArray(value) ? value : isLeafList && typeof value === 'undefined' ? [] : [value];
+		const valueAsArray = _isArray(value) ? value : isLeafList && typeof value === 'undefined' ? [] : [value];
 
 		const isMetaField = property.name === 'meta';
 		const isCVNFD = property.name === 'constituent-vnfd';

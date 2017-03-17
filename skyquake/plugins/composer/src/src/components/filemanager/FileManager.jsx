@@ -18,7 +18,8 @@
 
 
 //https://raw.githubusercontent.com/RIFTIO/RIFT.ware/master/rift-shell
-import _ from 'lodash'
+import _cloneDeep from 'lodash/cloneDeep'
+import _findIndex from 'lodash/findIndex'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TreeView from 'react-treeview';
@@ -83,11 +84,11 @@ class FileManager extends React.Component {
             let splitUrl = url.split('/');
             let fileName = splitUrl[splitUrl.length - 1];
             folder.pop;
-            let fullPath = _.cloneDeep(folder);
+            let fullPath = _cloneDeep(folder);
             fullPath.push(fileName);
             fullPath = fullPath.join('/');
             folder = folder.join('/');
-            let fileIndex = _.findIndex(files[folder], function(f) {
+            let fileIndex = _findIndex(files[folder], function(f) {
                 return f.name == fullPath;
             })
             if (fileIndex == -1) {

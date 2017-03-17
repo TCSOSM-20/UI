@@ -21,7 +21,6 @@
 
 'use strict';
 
-import _ from 'lodash'
 import Classifier from './Classifier'
 import DescriptorModel from '../DescriptorModel'
 import RecordServicePath from './RecordServicePath'

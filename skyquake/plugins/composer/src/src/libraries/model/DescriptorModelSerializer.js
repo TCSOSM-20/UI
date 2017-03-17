@@ -20,7 +20,11 @@
  * Created by onvelocity on 10/20/15.
  */
 
-import _ from 'lodash'
+import _isNumber from 'lodash/isNumber'
+import _cloneDeep from 'lodash/cloneDeep'
+import _isEmpty from 'lodash/isEmpty'
+import _omit from 'lodash/omit'
+import _pick from 'lodash/pick'
 import utils from './../utils'
 import DescriptorModelFields from './DescriptorModelFields'
 import DescriptorModelMetaFactory from './DescriptorModelMetaFactory'
@@ -54,7 +58,7 @@ const DescriptorModelSerializer = {
 		// remove empty / blank value fields
 		function clean(m) {
 			Object.keys(m).forEach(k => {
-				const isEmptyObject = typeof m[k] === 'object' && _.isEmpty(m[k]);
+				const isEmptyObject = typeof m[k] === 'object' && _isEmpty(m[k]);
 				if (typeof m[k] === 'undefined' || isEmptyObject || m[k] === '') {
 					delete m[k];
 				}
@@ -62,8 +66,8 @@ const DescriptorModelSerializer = {
 				if (k === 'uiState') {
 					if (isMetaAllowed) {
 						// remove any transient ui state properties
-						const uiState = _.pick(m.uiState, DescriptorModelFields.meta);
-						if (!_.isEmpty(uiState)) {
+						const uiState = _pick(m.uiState, DescriptorModelFields.meta);
+						if (!_isEmpty(uiState)) {
 							// uiState field must be a string
 							m['meta'] = JSON.stringify(uiState);
 						}
@@ -81,7 +85,7 @@ const DescriptorModelSerializer = {
 	nsd: {
 		serialize(nsdModel) {
 			if(!nsdFields) nsdFields = DescriptorModelMetaFactory.getModelFieldNamesForType('nsd').concat('uiState');
-			const confd = _.pick(nsdModel, nsdFields);
+			const confd = _pick(nsdModel, nsdFields);
 
 			// vnfd is defined in the ETSI etsi_gs reference manual but RIFT does not use it
 			delete confd.vnfd;
@@ -95,13 +99,13 @@ const DescriptorModelSerializer = {
 				};
 
 				if (d['vnf-configuration']) {
-					const vnfConfig = _.cloneDeep(d['vnf-configuration']);
+					const vnfConfig = _cloneDeep(d['vnf-configuration']);
 					const configType = vnfConfig['config-type'] || 'none';
 					// make sure we send the correct values based on config type
 					if (configType === 'none') {
 						constituentVNFD['vnf-configuration'] = {'config-type': 'none'};
 						const configPriority = utils.resolvePath(vnfConfig, 'input-params.config-priority');
-						const configPriorityValue = _.isNumber(configPriority) ? configPriority : d.uiState['member-vnf-index'];
+						const configPriorityValue = _isNumber(configPriority) ? configPriority : d.uiState['member-vnf-index'];
 						utils.assignPathValue(constituentVNFD['vnf-configuration'], 'input-params.config-priority', configPriorityValue);
 					} else {
 						// remove any unused configuration options
@@ -136,7 +140,7 @@ const DescriptorModelSerializer = {
 	vld: {
 		serialize(vldModel) {
 			if(!vldFields) vldFields = DescriptorModelMetaFactory.getModelFieldNamesForType('nsd.vld');
-			const confd = _.pick(vldModel, vldFields);
+			const confd = _pick(vldModel, vldFields);
 			const property = 'vnfd-connection-point-ref';
 
 			// TODO: There is a bug in RIFT-REST that is not accepting empty
@@ -166,35 +170,35 @@ const DescriptorModelSerializer = {
 	},
 	'vnfd-connection-point-ref': {
 		serialize(ref) {
-			return _.pick(ref, ['member-vnf-index-ref', 'vnfd-id-ref', 'vnfd-connection-point-ref']);
+			return _pick(ref, ['member-vnf-index-ref', 'vnfd-id-ref', 'vnfd-connection-point-ref']);
 		}
 	},
 	'internal-connection-point': {
 		serialize(ref) {
-			return _.pick(ref, ['id-ref']);
+			return _pick(ref, ['id-ref']);
 		}
 	},
 	'constituent-vnfd': {
 		serialize(cvnfdModel) {
 			if(!cvnfdFields) cvnfdFields = DescriptorModelMetaFactory.getModelFieldNamesForType('nsd.constituent-vnfd');
-			return _.pick(cvnfdModel, cvnfdFields);
+			return _pick(cvnfdModel, cvnfdFields);
 		}
 	},
 	vnfd: {
 		serialize(vnfdModel) {
 			if(!vnfdFields) vnfdFields = DescriptorModelMetaFactory.getModelFieldNamesForType('vnfd').concat('uiState');
-			const confd = _.pick(vnfdModel, vnfdFields);
+			const confd = _pick(vnfdModel, vnfdFields);
 			confd.vdu = confd.vdu.map(d => DescriptorModelSerializer.serialize(d));
 			return cleanEmptyTopKeys(confd);
 		}
 	},
 	vdu: {
 		serialize(vduModel) {
-			const copy = _.cloneDeep(vduModel);
+			const copy = _cloneDeep(vduModel);
 			for (let k in copy) {
 				checkForChoiceAndRemove(k, copy, vduModel)
 			}
-			const confd = _.omit(copy, ['uiState']);
+			const confd = _omit(copy, ['uiState']);
 			return cleanEmptyTopKeys(confd);
 		}
 	}
@@ -231,7 +235,7 @@ function checkForChoiceAndRemove(k, confd, model) {
 
 function cleanEmptyTopKeys(m){
     Object.keys(m).forEach(k => {
-        const isEmptyObject = typeof m[k] === 'object' && _.isEmpty(m[k]);
+        const isEmptyObject = typeof m[k] === 'object' && _isEmpty(m[k]);
         if (typeof m[k] === 'undefined' || isEmptyObject || m[k] === '') {
             delete m[k];
         }

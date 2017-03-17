@@ -23,7 +23,8 @@
 
 'use strict';
 
-import _ from 'lodash'
+import _includes from 'lodash/includes'
+import _isArray from 'lodash/isArray'
 import guid from './../guid'
 import changeCase from 'change-case'
 import InstanceCounter from './../InstanceCounter'
@@ -69,7 +70,7 @@ export default {
         return !/^(leaf|leaf_list)$/.test(property.type);
 	},
 	isSimpleList(property = {}) {
-		return _.includes(DescriptorModelFields.simpleList, property.name);
+		return _includes(DescriptorModelFields.simpleList, property.name);
 	},
 	isPrimativeDataType(property = {}) {
 		const Property = this;
@@ -155,7 +156,7 @@ export default {
 				if (uiState.name === 'name') {
 					return changeCase.param(parentMeta.name) + '-' + InstanceCounter.count(parentMeta[':qualified-type']);
 				}
-				if (_.isArray(parentMeta.key) && _.includes(parentMeta.key, uiState.name)) {
+				if (_isArray(parentMeta.key) && _includes(parentMeta.key, uiState.name)) {
 					if (/uuid/.test(uiState['data-type'])) {
 						return guid();
 					}

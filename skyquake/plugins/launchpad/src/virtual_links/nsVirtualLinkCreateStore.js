@@ -18,7 +18,9 @@
 import NSVirtualLinkCreateActions from './nsVirtualLinkCreateActions.js';
 import NSVirtualLinkCreateSource from './nsVirtualLinkCreateSource.js';
 import Alt from '../alt';
-import _ from 'lodash';
+import _cloneDeep from 'lodash/cloneDeep';
+import _pickBy from 'lodash/pickBy';
+import _identity from 'lodash/identity';
 
 class NSVirtualLinkCreateStore {
 	constructor() {
@@ -141,7 +143,7 @@ class NSVirtualLinkCreateStore {
 	}
 
 	updateFirstLevelKey = (key, e) => {
-		let vld = _.cloneDeep(this.vld);
+		let vld = _cloneDeep(this.vld);
 		let value = e.target.nodeName == "SELECT" ? JSON.parse(e.target.value) : e.target.value;
 		vld[key] = value;
 		this.setState({
@@ -150,7 +152,7 @@ class NSVirtualLinkCreateStore {
 	}
 
 	updateSecondLevelKey = (firstLevelKey, secondLevelKey, e) => {
-		let vld = _.cloneDeep(this.vld);
+		let vld = _cloneDeep(this.vld);
 		if (!vld[firstLevelKey]) {
 			vld[firstLevelKey] = {};
 		}
@@ -176,7 +178,7 @@ class NSVirtualLinkCreateStore {
 	}
 
 	updateVLDInitParamsValue = (currentVLDInitParamsType, e) => {
-		let vld = _.cloneDeep(this.vld);
+		let vld = _cloneDeep(this.vld);
 		this.vldInitParamsTypes.map((vldInitParamType) => {
 			if (currentVLDInitParamsType == vldInitParamType) {
 				let value = e.target.nodeName == "SELECT" ? JSON.parse(e.target.value) : e.target.value;
@@ -192,7 +194,7 @@ class NSVirtualLinkCreateStore {
 	}
 
 	updateFirstLevelListKeyChange = (listName, index, keyName, e) => {
-		let vld = _.cloneDeep(this.vld);
+		let vld = _cloneDeep(this.vld);
 		
 
 		!vld[listName] && (vld[listName] = []);
@@ -207,7 +209,7 @@ class NSVirtualLinkCreateStore {
 	addConnectionPointRef = () => {
 		let vld = {};
 		if (this.vld) {
-			vld = _.cloneDeep(this.vld);
+			vld = _cloneDeep(this.vld);
 			if (!vld['vnfd-connection-point-ref']) {
 				vld['vnfd-connection-point-ref'] = [];
 			}
@@ -224,7 +226,7 @@ class NSVirtualLinkCreateStore {
 	}
 
 	removeConnectionPointRef = (vnfdConnectionPointRefIndex) => {
-		let vld = _.cloneDeep(this.vld);
+		let vld = _cloneDeep(this.vld);
 		vld['vnfd-connection-point-ref'].splice(vnfdConnectionPointRefIndex, 1);
 		this.setState({
 			vld: vld
@@ -258,7 +260,7 @@ class NSVirtualLinkCreateStore {
 
 	cleanupPayload = (mode, vld) => {
 		// Do necessary cleanup here
-		let cleanVld = _.pickBy(vld, _.identity);
+		let cleanVld = _pickBy(vld, _identity);
 		return cleanVld;
 	}
 

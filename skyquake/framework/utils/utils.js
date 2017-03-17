@@ -18,9 +18,9 @@
 //Login needs to be refactored. Too many cross dependencies
 var AuthActions = require('../widgets/login/loginAuthActions.js');
 var $ = require('jquery');
-var rw = require('utils/rw.js');
+import rw from './rw.js';
 var API_SERVER = rw.getSearchParams(window.location).api_server;
-let NODE_PORT = require('utils/rw.js').getSearchParams(window.location).api_port || ((window.location.protocol == 'https:') ? 8443 : 8000);
+let NODE_PORT = rw.getSearchParams(window.location).api_port || ((window.location.protocol == 'https:') ? 8443 : 8000);
 var SockJS = require('sockjs-client');
 
 var Utils = {};

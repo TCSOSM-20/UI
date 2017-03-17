@@ -6,7 +6,7 @@
 
 'use strict';
 
-import _ from 'lodash'
+import _cloneDeep from 'lodash/cloneDeep'
 import utils from './../utils'
 import DescriptorModelMetaProperty from './DescriptorModelMetaProperty'
 import CommonUtils from 'utils/utils';
@@ -72,7 +72,7 @@ export default {
 		// resolve paths like 'nsd' or 'vnfd.vdu' or 'nsd.constituent-vnfd'
 		const found = utils.resolvePath(modelMetaByPropertyNameMap, getPathForType(typeOrPath));
 		if (found) {
-			const uiState = _.cloneDeep(found[':meta']);
+			const uiState = _cloneDeep(found[':meta']);
 			uiState.properties = uiState.properties.filter(filterProperties);
 			return uiState;
 		}

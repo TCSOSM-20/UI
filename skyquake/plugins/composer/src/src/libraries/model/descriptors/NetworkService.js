@@ -21,7 +21,6 @@
 
 'use strict';
 
-import _ from 'lodash'
 import ColorGroups from '../../ColorGroups'
 import DescriptorModel from '../DescriptorModel'
 import ForwardingGraph from './ForwardingGraph'
