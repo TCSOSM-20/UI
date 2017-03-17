@@ -196,51 +196,57 @@ function updateStatusInfo(response) {
 	};
 	const responseData = (response.data.output) ? response.data.output :  response.data;
 	const catalogPackage = response.state;
-	switch(response.data.status) {
-	case 'upload-progress':
-		statusInfo.pending = true;
-		statusInfo.progress = parseFloat(responseData.progress) || 0;
-		statusInfo.message = calculateUploadProgressMessage(catalogPackage.size, responseData.progress, responseData.bytesSent);
-		break;
-	case 'upload-success':
-		statusInfo.pending = true;
-		statusInfo.progress = 100;
-		statusInfo.message = 'Upload completed.';
-		statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id'] || catalogPackage.transactionId;
-		break;
-	case 'upload-error':
-		statusInfo.error = true;
-		statusInfo.message = responseData.message;
-		break;
-	case 'download-requested':
-		statusInfo.pending = true;
-		statusInfo.progress = 25;
-		statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id']  || catalogPackage.transactionId;
-		break;
-	case 'pending':
-		statusInfo.pending = true;
-		statusInfo.progress = 50;
-		statusInfo.message = responseData.events[responseData.events.length - 1].text;
-		break;
-	case 'success':
-		statusInfo.success = true;
-		statusInfo.progress = 100;
-		statusInfo.message = responseData.events[responseData.events.length - 1].text;
-		if (catalogPackage.type === 'download') {
-			statusInfo.urlValidUntil = moment().add(defaults.downloadUrlTimeToLiveInMinutes, 'minutes').toISOString();
-			if (responseData.filename) {
-				statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + responseData.filename;
-			} else {
-				statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + catalogPackage.transactionId + '.tar.gz';
+	if ( typeof response.data.status !== "number" ) {
+		switch(response.data.status) {
+		case 'upload-progress':
+			statusInfo.pending = true;
+			statusInfo.progress = parseFloat(responseData.progress) || 0;
+			statusInfo.message = calculateUploadProgressMessage(catalogPackage.size, responseData.progress, responseData.bytesSent);
+			break;
+		case 'upload-success':
+			statusInfo.pending = true;
+			statusInfo.progress = 100;
+			statusInfo.message = 'Upload completed.';
+			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id'] || catalogPackage.transactionId;
+			break;
+		case 'upload-error':
+			statusInfo.error = true;
+			statusInfo.message = responseData.message;
+			break;
+		case 'download-requested':
+			statusInfo.pending = true;
+			statusInfo.progress = 25;
+			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id']  || catalogPackage.transactionId;
+			break;
+		case 'pending':
+			statusInfo.pending = true;
+			statusInfo.progress = 50;
+			statusInfo.message = responseData.events[responseData.events.length - 1].text;
+			break;
+		case 'success':
+			statusInfo.success = true;
+			statusInfo.progress = 100;
+			statusInfo.message = responseData.events[responseData.events.length - 1].text;
+			if (catalogPackage.type === 'download') {
+				statusInfo.urlValidUntil = moment().add(defaults.downloadUrlTimeToLiveInMinutes, 'minutes').toISOString();
+				if (responseData.filename) {
+					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + responseData.filename;
+				} else {
+					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + catalogPackage.transactionId + '.tar.gz';
+				}
 			}
+			break;
+		case 'failure':
+			statusInfo.error = true;
+			statusInfo.message = responseData.errors[0].value;
+			break;
+		default:
+			throw new ReferenceError('a status of "request", "success", "failure", "pending", "upload-completed", "upload-error", "download-requested", "upload-progress", "upload-action" is required');
 		}
-		break;
-	case 'failure':
+	} else {
+		// typically get here due to unexpected development errors (backend exceptions, down/up load server access issues)
 		statusInfo.error = true;
-		statusInfo.message = responseData.errors[0].value;
-		break;
-	default:
-		throw new ReferenceError('a status of "request", "success", "failure", "pending", "upload-completed", "upload-error", "download-requested", "upload-progress", "upload-action" is required');
+		statusInfo.message = responseData.statusText || 'Error';
 	}
 	return Object.assign({}, catalogPackage, statusInfo);
 }
