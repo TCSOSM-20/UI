@@ -1,22 +1,22 @@
 /*
  * STANDARD_RIFT_IO_COPYRIGHT
  */
-import ProjectManagementActions from './projectMgmtActions.js';
-import ProjectManagementSource from './projectMgmtSource.js';
+import PlatformRoleManagementActions from './platformRoleManagementActions.js';
+import PlatformRoleManagementSource from './platformRoleManagementSource.js';
 import _ from 'lodash';
-export default class ProjectManagementStore {
+export default class PlatformRoleManagementStore {
     constructor() {
-        this.actions = ProjectManagementActions(this.alt);
+        this.actions = PlatformRoleManagementActions(this.alt);
         this.bindActions(this.actions);
-        this.registerAsync(ProjectManagementSource);
+        this.registerAsync(PlatformRoleManagementSource);
         this.projects = [];
         this['name'] = '';
         this['description'] = 'Some Description';
         this.projectUsers = [];
         this.selectedUser = null;
         this.selectedRole = null;
-        this.roles = ['rw-rbac-platform:platform-admin', 'rw-rbac-platform:platform-oper', 'rw-rbac-platform:super-admin'
-        // ,'some_other_role', 'yet_another_role', 'operator_role', 'some_other_role', 'yet_another_role'
+        this.roles = ['super_admin', 'operator_role'
+        // 'some_other_role', 'yet_another_role', 'operator_role', 'some_other_role', 'yet_another_role'
         ];
         this.users = [];
         this.activeIndex = null;
@@ -146,37 +146,35 @@ export default class ProjectManagementStore {
             selectedUser: JSON.parse(user)
         });
     }
-    handleAddUser(e) {
+    handleAddUser() {
         let u = JSON.parse(this.selectedUser);
         let r = this.selectedRole;
         let projectUsers = this.projectUsers;
-        let keys = ',';
         console.log('adding user')
         projectUsers.push({
           'user-name': u['user-name'],
           'user-domain': u['user-domain'],
           "role":[{
                       "role": r,
-                      "keys": keys
+                      "keys": r
             }
           ]
         })
-        this.setState({projectUsers, selectedUser: JSON.stringify(null)})
+        this.setState({projectUsers, selectedUser: null})
     }
     handleToggleUserRoleInProject(data) {
         let self = this;
         let {userIndex, roleIndex, checked} = data;
         let projectUsers = this.projectUsers;
         let selectedRole = self.roles[roleIndex];
-        let keys = ',';
         if(checked) {
             projectUsers[userIndex].role.push({
                 role: self.roles[roleIndex],
-                keys: keys
+                keys: self.roles[roleIndex]
             })
         } else {
             let role = projectUsers[userIndex].role;
-            let roleIndex = _.findIndex(role, {role:selectedRole, keys: keys})
+            let roleIndex = _.findIndex(role, {role:selectedRole, keys: selectedRole})
             projectUsers[userIndex].role.splice(roleIndex, 1)
         }
        self.setState({projectUsers});
@@ -185,9 +183,8 @@ export default class ProjectManagementStore {
     handleUpdateUserRoleInProject(data) {
         let {userIndex, roleIndex, value} = data;
         let projectUsers = this.projectUsers;
-        let keys = ',';
         projectUsers[userIndex].role[roleIndex].role = value;
-        projectUsers[userIndex].role[roleIndex]['keys'] = keys;
+        projectUsers[userIndex].role[roleIndex]['keys'] = value;
 
     }
     addRoleToUserInProject(userIndex) {
@@ -195,11 +192,10 @@ export default class ProjectManagementStore {
         if(!projectUsers[userIndex].role) {
             projectUsers[userIndex].role = [];
         }
-        let keys = ',';
         projectUsers[userIndex].role.push({
               'role': null,
               //temp until we get actual keys
-              'keys' : keys
+              'keys' : 'some key'
             });
         this.setState({
             projectUsers
@@ -231,14 +227,10 @@ export default class ProjectManagementStore {
     }
     updateProjectSuccess() {
         this.alt.actions.global.hideScreenLoader.defer();
-        let self = this;
         let projects = this.projects || [];
         projects[this.activeIndex] = {
             'name': this['name'],
-            'description': this['description'],
-            'project-config': {
-                'user': self.projectUsers
-            }
+            'description': this['description']
         }
         this.setState({
             projects,

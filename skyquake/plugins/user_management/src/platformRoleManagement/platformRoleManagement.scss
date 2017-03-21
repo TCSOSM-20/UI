@@ -133,7 +133,6 @@
         }
 
     table {
-        font-size: 0.8rem;
         thead {
             border-bottom:1px solid #d3d3d3;
             td{
@@ -147,12 +146,6 @@
                 -ms-flex-pack:center;
                     justify-content:center;
             }
-        }
-    }
-    .userTable {
-        .FormSection-body {
-            max-width: 652px;
-            overflow-x: scroll;
         }
     }
 }

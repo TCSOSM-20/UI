@@ -5,10 +5,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AppHeader from 'widgets/header/header.jsx';
-import ProjectManagementStore from './projectMgmtStore.js';
+import ProjectManagementStore from './platformRoleManagementStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import 'style/layout.scss';
-import './projectMgmt.scss';
+import './platformRoleManagement.scss';
 import {Panel, PanelWrapper} from 'widgets/panel/panel';
 import {InputCollection, FormSection} from 'widgets/form_controls/formControls.jsx';
 
@@ -20,7 +20,7 @@ import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../node_modules/open-iconic/svg/trash.svg'
 
-class ProjectManagementDashboard extends React.Component {
+class PlatformRoleManagement extends React.Component {
     constructor(props) {
         super(props);
         this.Store = this.props.flux.stores.hasOwnProperty('ProjectManagementStore') ? this.props.flux.stores.ProjectManagementStore : this.props.flux.createStore(ProjectManagementStore);
@@ -32,10 +32,6 @@ class ProjectManagementDashboard extends React.Component {
     componentDidUpdate() {
         let self = this;
         ReactDOM.findDOMNode(this.projectList).addEventListener('transitionend', this.onTransitionEnd, false);
-        setTimeout(function() {
-            let element = self[`project-ref-${self.state.activeIndex}`]
-            element && !isElementInView(element) && element.scrollIntoView({block: 'end', behavior: 'smooth'});
-        })
     }
     componentWillMount() {
         this.Store.listen(this.updateState);
@@ -95,13 +91,24 @@ class ProjectManagementDashboard extends React.Component {
         e.preventDefault();
         e.stopPropagation();
         let projectUsers = self.state.projectUsers;
-        let cleanUsers = this.cleanUsers(projectUsers);
-
+        let selectedUsers = [];
+        //Remove null values from role
+        projectUsers.map((u) => {
+           u.role && u.role.map((r,i) => {
+             let role = {};
+             //you may add a user without a role or a keys, but if one is present then the other must be as well.
+            if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
+                projectUsers.splice(i, 1);
+            } else {
+                return u;
+            }
+           })
+        })
         this.Store.createProject({
             'name': self.state['name'],
             'description': self.state.description,
             'project-config' : {
-                'user': cleanUsers
+                'user': projectUsers
             }
         });
     }
@@ -110,33 +117,27 @@ class ProjectManagementDashboard extends React.Component {
         e.preventDefault();
         e.stopPropagation();
         let projectUsers = self.state.projectUsers;
-        let cleanUsers = this.cleanUsers(projectUsers);
+
+        //Remove null values from role
+        projectUsers.map((u) => {
+           u.role && u.role.map((r,i) => {
+             let role = {};
+             //you may add a user without a role or a keys, but if one is present then the other must be as well.
+            if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
+                projectUsers.splice(i, 1);
+            } else {
+                return u;
+            }
+           })
+        })
 
         this.Store.updateProject(_.merge({
             'name': self.state['name'],
             'description': self.state.description,
             'project-config' : {
-                'user': cleanUsers
+                'user': projectUsers
             }
         }));
-    }
-    cleanUsers(projectUsers) {
-        let cleanUsers = [];
-        //Remove null values from role
-        projectUsers.map((u) => {
-            let cleanRoles = [];
-           u.role && u.role.map((r,i) => {
-             let role = {};
-             //you may add a user without a role or a keys, but if one is present then the other must be as well.
-            if(!r.role || ( !r || ((r.role || r['keys']) && (!r.role || !r['keys'])))) {
-            } else {
-                    cleanRoles.push(r)
-            }
-           });
-           u.role = cleanRoles;
-           cleanUsers.push(u);
-        });
-        return cleanUsers;
     }
      evaluateSubmit = (e) => {
         if (e.keyCode == 13) {
@@ -155,9 +156,7 @@ class ProjectManagementDashboard extends React.Component {
         })
     }
     addUserToProject = (e) => {
-        let selectUserList = this.selectUserList;
-        console.log(ReactDOM.findDOMNode(selectUserList))
-        this.actions.handleAddUser(e);
+        this.actions.handleAddUser();
     }
     removeUserFromProject = (userIndex, e) => {
         this.actions.handleRemoveUserFromProject(userIndex);
@@ -214,14 +213,6 @@ class ProjectManagementDashboard extends React.Component {
         self.state.projectUsers.map((u) => {
             projectUsers.push(u['user-name']);
         });
-        let availableUsers = state.users && state.users.filter((u) => {
-            return projectUsers.indexOf(u['user-name']) == -1
-        }).map((u) => {
-            return {
-                label: u['user-name'],
-                value: u
-            }
-        });
 
         if(!this.state.isReadOnly) {
             formButtonsHTML = (
@@ -242,42 +233,7 @@ class ProjectManagementDashboard extends React.Component {
         }
 
         html = (
-            <PanelWrapper className={`row projectManagement ${!this.state.projectOpen ? 'projectList-open' : ''}`} style={{'alignContent': 'center', 'flexDirection': 'row'}} >
-                <PanelWrapper ref={(div) => { this.projectList = div}} className={`column projectList expanded ${this.state.projectOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
-                    <Panel title="Project List" style={{marginBottom: 0}} no-corners>
-                        <div className="tableRow tableRow--header">
-                            <div className="projectName">
-                                Project Name
-                            </div>
-                            <div>
-                                Description
-                            </div>
-                        </div>
-                        {state.projects && state.projects.map((u, k) => {
-                            let platformRoles = [];
-                            for(let role in u.platformRoles) {
-                                platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
-                            }
-                            return (
-                                <div ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.projectOpen) ? 'tableRow--data-active' : ''}`} key={k}>
-                                    <div
-                                        className={`projectName projectName-header ${((self.state.activeIndex == k) && self.state.projectOpen) ? 'activeProject' : ''}`}
-                                        onClick={self.viewProject.bind(null, u, k)}>
-                                        {u['name']}
-                                    </div>
-                                    <div>
-                                        {u['description']}
-                                    </div>
-
-
-                                </div>
-                            )
-                        })}
-                    </Panel>
-                    <ButtonGroup  className="buttonGroup" style={{margin: '0 0.5rem 0.5rem', background: '#ddd', paddingBottom: '0.5rem'}}>
-                        <Button label="Add Project" onClick={this.addProject} />
-                    </ButtonGroup>
-                </PanelWrapper>
+            <PanelWrapper className={`row projectManagement ${false ? 'projectList-open' : ''}`} style={{'alignContent': 'center', 'flexDirection': 'row'}} >
                 <PanelWrapper onKeyUp={this.evaluateSubmit}
                     className={`ProjectAdmin column`}>
                     <Panel
@@ -285,15 +241,7 @@ class ProjectManagementDashboard extends React.Component {
                         style={{marginBottom: 0}}
                         hasCloseButton={this.closePanel}
                         no-corners>
-                        <FormSection title="PROJECT INFO">
-                        {
-                            this.state.isEdit ?
-                                null
-                                : <Input  readonly={state.isReadOnly}  label="Name" value={state['name']} onChange={this.updateInput.bind(null, 'name')} />
-                        }
-                            <Input readonly={state.isReadOnly} type="textarea" label="Description" value={state['description']}  onChange={this.updateInput.bind(null, 'description')}></Input>
-                        </FormSection>
-                        <FormSection title="USER ROLES"  className="userTable">
+                        <FormSection title="USER ROLES">
 
                         <table>
                             <thead>
@@ -317,7 +265,7 @@ class ProjectManagementDashboard extends React.Component {
                                     <tr key={i}>
                                         {!state.isReadOnly ? <td><span
                                                                     className="removeInput"
-                                                                    onClick={self.removeUserFromProject.bind(self, i)}
+                                                                    onClick={self.removeUserFromProject.bind(self, u)}
                                                                 >
                                                                     <img src={imgRemove} />
 
@@ -327,7 +275,7 @@ class ProjectManagementDashboard extends React.Component {
                                         </td>
                                         {
                                             state.roles.map((r,j) => {
-                                                return <td key={j}><Input readonly={state.isReadOnly} type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} value={(userRoles.indexOf(r) > -1)} checked={(userRoles.indexOf(r) > -1)} /></td>
+                                                return <td key={j}><Input type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} checked={(userRoles.indexOf(r) > -1)} /></td>
                                             })
                                         }
                                     </tr>
@@ -337,6 +285,76 @@ class ProjectManagementDashboard extends React.Component {
                             </tbody>
                         </table>
 
+
+                        { false ?
+                            <div>
+                                <div className="tableRow tableRow--header">
+                                    <div className="projectName">
+                                        User Name
+                                    </div>
+                                    <div>
+                                        Role
+                                    </div>
+                                </div>
+                                {
+                                    state.projectUsers && state.projectUsers.map((u, k) => {
+                                        return (
+                                            <div ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data projectUsers`} key={k}>
+                                                <div className="userName" style={state.isReadOnly ? {paddingTop: '0.25rem'} : {} }>{u['user-name']}</div>
+                                                <div>
+                                                    {
+                                                        u.role && u.role.map((r, l) => {
+                                                            return (
+                                                                <div key={l}>
+                                                                    <div style={{display: 'flex'}} className="selectRole">
+                                                                        <SelectOption
+                                                                            readonly={state.isReadOnly}
+                                                                            defaultValue={r.role}
+                                                                            options={state.roles}
+                                                                            onChange={self.updateUserRoleInProject.bind(self, k, l)}
+                                                                        />
+                                                                        {!state.isReadOnly ?
+                                                                            <span
+                                                                            className="removeInput"
+                                                                            onClick={self.removeRoleFromUserInProject.bind(self, k, l)}
+                                                                            >
+                                                                                <img src={imgRemove} />
+                                                                                Remove Role
+                                                                            </span>
+                                                                            : null
+                                                                        }
+
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })
+                                                    }
+                                                    {!state.isReadOnly ?
+                                                        <div className="buttonGroup">
+                                                            <span className="addInput addRole" onClick={self.addRoleToUserInProject.bind(self, k)}><img src={imgAdd} />
+                                                                Add Role
+                                                            </span>
+                                                            {
+                                                                (!(u.role && u.role.length)) ?
+                                                                    <span
+                                                                        className="removeInput"
+                                                                        onClick={self.removeUserFromProject.bind(self, k)}
+                                                                    >
+                                                                        <img src={imgRemove} />
+                                                                        Remove User
+                                                                    </span> : null
+                                                            }
+                                                        </div>
+                                                        : null
+                                                    }
+                                                </div>
+                                            </div>
+                                        )
+                                    })
+                                }
+                                </div>
+                                 : null
+                             }
                             {
                                 !state.isReadOnly ?
                                     <div className="tableRow tableRow--header">
@@ -344,10 +362,16 @@ class ProjectManagementDashboard extends React.Component {
                                             <div className="addUser">
                                                 <SelectOption
                                                     onChange={this.actions.handleSelectedUser}
-                                                    value={state.selectedUser}
+                                                    defaultValue={state.selectedUser}
                                                     initial={true}
-                                                    options={availableUsers}
-                                                    ref={(el) => self.selectUserList = el}
+                                                    options={state.users && state.users.filter((u) => {
+                                                        return projectUsers.indexOf(u['user-name']) == -1
+                                                    }).map((u) => {
+                                                        return {
+                                                            label: u['user-name'],
+                                                            value: u
+                                                        }
+                                                    })}
                                                 />
                                                 <span className="addInput" onClick={this.addUserToProject}><img src={imgAdd} />
                                                     Add User
@@ -371,16 +395,16 @@ class ProjectManagementDashboard extends React.Component {
     }
 }
 // onClick={this.Store.update.bind(null, Account)}
-ProjectManagementDashboard.contextTypes = {
+PlatformRoleManagement.contextTypes = {
     router: React.PropTypes.object
 };
 
-ProjectManagementDashboard.defaultProps = {
+PlatformRoleManagement.defaultProps = {
     projectList: [],
     selectedProject: {}
 }
 
-export default SkyquakeComponent(ProjectManagementDashboard);
+export default SkyquakeComponent(PlatformRoleManagement);
 
 
 function isElementInView(el) {
