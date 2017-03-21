@@ -53,6 +53,7 @@ export default class SelectOption extends React.Component {
                   <select
                     className={this.props.className}
                     onChange={this.handleOnChange}
+                    value={JSON.stringify(this.props.value)}
                     defaultValue={JSON.stringify(defaultValue)}>
                       {
                        options

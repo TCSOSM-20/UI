@@ -10,5 +10,10 @@
         "route": "user-management",
         "component": "./dashboard/dashboard.jsx",
         "type": "internal"
+    },{
+        "label": "Platform Role Management",
+        "route": "platform",
+        "component": "./platformRoleManagement/platformRoleManagement.jsx",
+        "type": "internal"
     }]
 }

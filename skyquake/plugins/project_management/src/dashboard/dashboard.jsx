@@ -95,16 +95,16 @@ class ProjectManagementDashboard extends React.Component {
         e.preventDefault();
         e.stopPropagation();
         let projectUsers = self.state.projectUsers;
-
+        let cleanUsers = [];
         //Remove null values from role
         projectUsers.map((u) => {
            u.role && u.role.map((r,i) => {
              let role = {};
              //you may add a user without a role or a keys, but if one is present then the other must be as well.
             if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
-                projectUsers.splice(i, 1);
+                // projectUsers.splice(i, 1);
             } else {
-                return u;
+                cleanUsers.push(u);
             }
            })
         })
@@ -121,16 +121,17 @@ class ProjectManagementDashboard extends React.Component {
         e.preventDefault();
         e.stopPropagation();
         let projectUsers = self.state.projectUsers;
-
+        let cleanUsers = [];
         //Remove null values from role
         projectUsers.map((u) => {
            u.role && u.role.map((r,i) => {
              let role = {};
              //you may add a user without a role or a keys, but if one is present then the other must be as well.
+            // if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
             if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
-                projectUsers.splice(i, 1);
+                // projectUsers.splice(i, 1);
             } else {
-                return u;
+                cleanUsers.push(u);
             }
            })
         })
@@ -139,7 +140,7 @@ class ProjectManagementDashboard extends React.Component {
             'name': self.state['name'],
             'description': self.state.description,
             'project-config' : {
-                'user': projectUsers
+                'user': cleanUsers
             }
         }));
     }
@@ -160,7 +161,9 @@ class ProjectManagementDashboard extends React.Component {
         })
     }
     addUserToProject = (e) => {
-        this.actions.handleAddUser();
+        let selectUserList = this.selectUserList;
+        console.log(ReactDOM.findDOMNode(selectUserList))
+        this.actions.handleAddUser(e);
     }
     removeUserFromProject = (userIndex, e) => {
         this.actions.handleRemoveUserFromProject(userIndex);
@@ -216,6 +219,14 @@ class ProjectManagementDashboard extends React.Component {
         let projectUsers = [];
         self.state.projectUsers.map((u) => {
             projectUsers.push(u['user-name']);
+        });
+        let availableUsers = state.users && state.users.filter((u) => {
+            return projectUsers.indexOf(u['user-name']) == -1
+        }).map((u) => {
+            return {
+                label: u['user-name'],
+                value: u
+            }
         });
 
         if(!this.state.isReadOnly) {
@@ -312,7 +323,7 @@ class ProjectManagementDashboard extends React.Component {
                                     <tr key={i}>
                                         {!state.isReadOnly ? <td><span
                                                                     className="removeInput"
-                                                                    onClick={self.removeUserFromProject.bind(self, u)}
+                                                                    onClick={self.removeUserFromProject.bind(self, i)}
                                                                 >
                                                                     <img src={imgRemove} />
 
@@ -409,16 +420,10 @@ class ProjectManagementDashboard extends React.Component {
                                             <div className="addUser">
                                                 <SelectOption
                                                     onChange={this.actions.handleSelectedUser}
-                                                    defaultValue={state.selectedUser}
+                                                    value={state.selectedUser}
                                                     initial={true}
-                                                    options={state.users && state.users.filter((u) => {
-                                                        return projectUsers.indexOf(u['user-name']) == -1
-                                                    }).map((u) => {
-                                                        return {
-                                                            label: u['user-name'],
-                                                            value: u
-                                                        }
-                                                    })}
+                                                    options={availableUsers}
+                                                    ref={(el) => self.selectUserList = el}
                                                 />
                                                 <span className="addInput" onClick={this.addUserToProject}><img src={imgAdd} />
                                                     Add User

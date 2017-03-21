@@ -113,7 +113,7 @@ export default class skyquakeContainer extends React.Component {
                             currentPlugin={this.state.currentPlugin}
                             store={SkyquakeContainerStore} />
                         <div className="titleBar">
-                            <h1>{(this.state.nav.name ? this.state.nav.name : this.state.currentPlugin) + tag}</h1>
+                            <h1>{(this.state.nav.name ? this.state.nav.name.replace('_', ' ').replace('-', ' ') : this.state.currentPlugin && this.state.currentPlugin.replace('_', ' ').replace('-', ' ')) + tag}</h1>
                         </div>
                         <div className={"application " + routeName}>
                             {this.props.children}
