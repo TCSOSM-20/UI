@@ -36,7 +36,6 @@ import ComposerAppActions from '../actions/ComposerAppActions'
 import CatalogDataSource from '../sources/CatalogDataSource'
 import ComposerAppStore from '../stores/ComposerAppStore'
 import SelectionManager from '../libraries/SelectionManager'
-import ExportSelectorDialog from '../components/ExportSelectorDialog'
 
 const defaults = {
 	catalogs: [],
@@ -581,61 +580,17 @@ class CatalogDataStore {
 	}
 
 	exportSelectedCatalogItems(draggedItem) {
-		const onSelectFormat = (selectedFormat, event) => {
-			this.setState({
-				selectedFormat: selectedFormat
-			});
-		};
-
-		const onSelectGrammar = (selectedGrammar, event) => {
-			this.setState({
-				selectedGrammar: selectedGrammar
-			});
-		}
-
-
-		const onCancel = () => {
-			this.resetSelectionState();
-			ModalOverlayActions.hideModalOverlay();
-		};
-
-		const onDownload = (event) => {
-			CatalogPackageManagerActions.downloadCatalogPackage.defer({
-				selectedItems: selectedItems,
-				selectedFormat: this.selectedFormat,
-				selectedGrammar: this.selectedGrammar
-			});
-			this.resetSelectionState();
-			ModalOverlayActions.hideModalOverlay();
-			return;
-		}
-
-		if (draggedItem) {
-			// if item is given make sure it is also selected
-			//draggedItem.uiState.selected = true;
-			SelectionManager.addSelection(draggedItem);
-			this.updateCatalogItem(draggedItem);
-		}
 		// collect the selected items and delegate to the catalog package manager action creator
 		const selectedItems = this.getAllSelectedCatalogItems();
 		if (selectedItems.length) {
-			CatalogDataStore.chooseExportFormat(onSelectFormat, onSelectGrammar, onDownload, onCancel);
+			CatalogPackageManagerActions.downloadCatalogPackage.defer({
+				selectedItems: selectedItems,
+				selectedFormat: 'mano',
+				selectedGrammar: 'osm'
+			});
+			this.resetSelectionState();
 		}
 	}
-
-	static chooseExportFormat(onSelectFormat, onSelectGrammar, onDownload, onCancel) {
-		ModalOverlayActions.showModalOverlay.defer(
-			<ExportSelectorDialog
-				onSelectFormat={onSelectFormat}
-				onSelectGrammar={onSelectGrammar}
-				onCancel={onCancel}
-				onDownload={onDownload}
-				currentlySelectedFormat='mano'
-				currentlySelectedGrammar='osm'
-			/>
-		);
-	}
-
 }
 
 export default alt.createStore(CatalogDataStore, 'CatalogDataStore');
