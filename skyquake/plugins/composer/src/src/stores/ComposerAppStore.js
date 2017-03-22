@@ -241,7 +241,9 @@ class ComposerAppStore {
 		}
 		SelectionManager.select(item);
 		this.updateItem(item);
-		this.openFileManagerSockets(item)
+		if (item) {
+			this.openFileManagerSockets(item);
+		}
 	}
 	catalogItemMetaDataChanged(item) {
 		this.updateItem(item);
