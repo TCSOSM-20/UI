@@ -68,11 +68,12 @@ class JobListCard extends React.Component {
                 <section className='jobListCard--details'>
                     <h4 onClick={this.openModal.bind(this)}>Job Details</h4>
                     <Modal
+                        className='jobListCard--details--modal'
                         visible={this.state.modalVisible}
                         width="600"
                         height="400"
                         effect="fadeInUp">
-                        <div>
+                        <div className='jobListCard--details--tree'>
                             <TreeView nodeLabel={<span>Job Details</span>} key={'job-details'} defaultCollapsed={false}>
                                 <p>{jobDetailsText}</p>
                             </TreeView>
