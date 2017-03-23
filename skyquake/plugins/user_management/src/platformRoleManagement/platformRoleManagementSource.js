@@ -42,22 +42,22 @@ module.exports = function(Alt) {
           interceptResponse: interceptResponse({
             'error': 'There was an error retrieving the resource orchestrator information.'
           }),
-          success: Alt.actions.global.getUsersSuccess,
+          success: Alt.actions.global.getPlatformRoleUsersSuccess,
                     loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
         },
-        getProjects: {
+        getPlatform: {
           remote: function() {
               return new Promise(function(resolve, reject) {
                 // setTimeout(function() {
                 //   resolve(Projects);
                 // }, 1000)
                 $.ajax({
-                  url: `/project?api_server=${API_SERVER}`,
+                  url: `/platform?api_server=${API_SERVER}`,
                   type: 'GET',
                   beforeSend: Utils.addAuthorizationStub,
                   success: function(data, textStatus, jqXHR) {
-                    resolve(data.project);
+                    resolve(data.platform);
                   }
                 }).fail(function(xhr){
                   //Authentication and the handling of fail states should be wrapped up into a connection class.
@@ -68,15 +68,15 @@ module.exports = function(Alt) {
           interceptResponse: interceptResponse({
             'error': 'There was an error retrieving the resource orchestrator information.'
           }),
-          success: Alt.actions.global.getProjectsSuccess,
+          success: Alt.actions.global.getPlatformSuccess,
                     loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
         },
-        updateProject: {
+        updatePlatform: {
           remote: function(state, project) {
             return new Promise(function(resolve, reject) {
               $.ajax({
-                  url: `/project?api_server=${API_SERVER}`,
+                  url: `/platform?api_server=${API_SERVER}`,
                   type: 'PUT',
                   data: project,
                   beforeSend: Utils.addAuthorizationStub,

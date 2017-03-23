@@ -5,7 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AppHeader from 'widgets/header/header.jsx';
-import ProjectManagementStore from './platformRoleManagementStore.js';
+import PlatformRoleManagementStore from './platformRoleManagementStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import 'style/layout.scss';
 import './platformRoleManagement.scss';
@@ -23,15 +23,14 @@ import imgRemove from '../../node_modules/open-iconic/svg/trash.svg'
 class PlatformRoleManagement extends React.Component {
     constructor(props) {
         super(props);
-        this.Store = this.props.flux.stores.hasOwnProperty('ProjectManagementStore') ? this.props.flux.stores.ProjectManagementStore : this.props.flux.createStore(ProjectManagementStore);
-        this.Store.getProjects();
-        this.Store.getUsers();
+        this.Store = this.props.flux.stores.hasOwnProperty('PlatformRoleManagementStore') ? this.props.flux.stores.PlatformRoleManagementStore : this.props.flux.createStore(PlatformRoleManagementStore);
         this.state = this.Store.getState();
         this.actions = this.state.actions;
+        this.Store.getPlatform();
+        this.Store.getUsers();
     }
     componentDidUpdate() {
-        let self = this;
-        ReactDOM.findDOMNode(this.projectList).addEventListener('transitionend', this.onTransitionEnd, false);
+
     }
     componentWillMount() {
         this.Store.listen(this.updateState);
@@ -86,65 +85,41 @@ class PlatformRoleManagement extends React.Component {
                 'name': this.state['name']
             });
     }
-    createProject = (e) => {
+    updatePlatform = (e) => {
         let self = this;
         e.preventDefault();
         e.stopPropagation();
-        let projectUsers = self.state.projectUsers;
-        let selectedUsers = [];
-        //Remove null values from role
-        projectUsers.map((u) => {
-           u.role && u.role.map((r,i) => {
-             let role = {};
-             //you may add a user without a role or a keys, but if one is present then the other must be as well.
-            if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
-                projectUsers.splice(i, 1);
-            } else {
-                return u;
+        let platformUsers = self.state.platformUsers;
+        let cleanUsers = this.cleanUsers(platformUsers);
+
+
+        this.Store.updatePlatform({
+                'user': platformUsers
             }
-           })
-        })
-        this.Store.createProject({
-            'name': self.state['name'],
-            'description': self.state.description,
-            'project-config' : {
-                'user': projectUsers
-            }
-        });
+        );
     }
-    updateProject = (e) => {
-        let self = this;
-        e.preventDefault();
-        e.stopPropagation();
-        let projectUsers = self.state.projectUsers;
-
+     cleanUsers(projectUsers) {
+        let cleanUsers = [];
         //Remove null values from role
         projectUsers.map((u) => {
-           u.role && u.role.map((r,i) => {
-             let role = {};
-             //you may add a user without a role or a keys, but if one is present then the other must be as well.
-            if(!r || ((r.role || r['keys']) && (!r.role || !r['keys']))) {
-                projectUsers.splice(i, 1);
-            } else {
-                return u;
-            }
-           })
-        })
-
-        this.Store.updateProject(_.merge({
-            'name': self.state['name'],
-            'description': self.state.description,
-            'project-config' : {
-                'user': projectUsers
-            }
-        }));
+            let cleanRoles = [];
+            u.role && u.role.map((r,i) => {
+                let role = {};
+                if(r.role){
+                    //removing key for rbac-platform
+                    delete r.keys;
+                    cleanRoles.push(r)
+                }
+            });
+           u.role = cleanRoles;
+           cleanUsers.push(u);
+        });
+        return cleanUsers;
     }
      evaluateSubmit = (e) => {
         if (e.keyCode == 13) {
             if (this.props.isEdit) {
-                this.updateProject(e);
-            } else {
-                this.createProject(e);
+                this.updatePlatform(e);
             }
             e.preventDefault();
             e.stopPropagation();
@@ -209,9 +184,9 @@ class PlatformRoleManagement extends React.Component {
                 <Button label="EDIT" type="submit" onClick={this.editProject} />
             </ButtonGroup>
         );
-        let projectUsers = [];
-        self.state.projectUsers.map((u) => {
-            projectUsers.push(u['user-name']);
+        let platformUsers = [];
+        self.state.platformUsers.map((u) => {
+            platformUsers.push(u['user-name']);
         });
 
         if(!this.state.isReadOnly) {
@@ -219,14 +194,14 @@ class PlatformRoleManagement extends React.Component {
                                 state.isEdit ?
                                 (
                                     <ButtonGroup className="buttonGroup">
-                                        <Button label="Update" type="submit" onClick={this.updateProject} />
+                                        <Button label="Update" type="submit" onClick={this.updatePlatform} />
                                         <Button label="Delete" onClick={this.deleteProject} />
                                         <Button label="Cancel" onClick={this.cancelEditProject} />
                                     </ButtonGroup>
                                 )
                                 : (
                                     <ButtonGroup className="buttonGroup">
-                                        <Button label="Create" type="submit" onClick={this.createProject}  />
+                                        <Button label="Create" type="submit" onClick={this.updatePlatform}  />
                                     </ButtonGroup>
                                 )
                             )
@@ -257,10 +232,10 @@ class PlatformRoleManagement extends React.Component {
                             </thead>
                             <tbody>
                                 {
-                            state.projectUsers.map((u,i)=> {
-                                let userRoles = u.role.map((r) => {
+                            state.platformUsers.map((u,i)=> {
+                                let userRoles = u.role && u.role.map((r) => {
                                     return r.role;
-                                })
+                                }) || [];
                                 return (
                                     <tr key={i}>
                                         {!state.isReadOnly ? <td><span
@@ -284,77 +259,6 @@ class PlatformRoleManagement extends React.Component {
                         }
                             </tbody>
                         </table>
-
-
-                        { false ?
-                            <div>
-                                <div className="tableRow tableRow--header">
-                                    <div className="projectName">
-                                        User Name
-                                    </div>
-                                    <div>
-                                        Role
-                                    </div>
-                                </div>
-                                {
-                                    state.projectUsers && state.projectUsers.map((u, k) => {
-                                        return (
-                                            <div ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data projectUsers`} key={k}>
-                                                <div className="userName" style={state.isReadOnly ? {paddingTop: '0.25rem'} : {} }>{u['user-name']}</div>
-                                                <div>
-                                                    {
-                                                        u.role && u.role.map((r, l) => {
-                                                            return (
-                                                                <div key={l}>
-                                                                    <div style={{display: 'flex'}} className="selectRole">
-                                                                        <SelectOption
-                                                                            readonly={state.isReadOnly}
-                                                                            defaultValue={r.role}
-                                                                            options={state.roles}
-                                                                            onChange={self.updateUserRoleInProject.bind(self, k, l)}
-                                                                        />
-                                                                        {!state.isReadOnly ?
-                                                                            <span
-                                                                            className="removeInput"
-                                                                            onClick={self.removeRoleFromUserInProject.bind(self, k, l)}
-                                                                            >
-                                                                                <img src={imgRemove} />
-                                                                                Remove Role
-                                                                            </span>
-                                                                            : null
-                                                                        }
-
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        })
-                                                    }
-                                                    {!state.isReadOnly ?
-                                                        <div className="buttonGroup">
-                                                            <span className="addInput addRole" onClick={self.addRoleToUserInProject.bind(self, k)}><img src={imgAdd} />
-                                                                Add Role
-                                                            </span>
-                                                            {
-                                                                (!(u.role && u.role.length)) ?
-                                                                    <span
-                                                                        className="removeInput"
-                                                                        onClick={self.removeUserFromProject.bind(self, k)}
-                                                                    >
-                                                                        <img src={imgRemove} />
-                                                                        Remove User
-                                                                    </span> : null
-                                                            }
-                                                        </div>
-                                                        : null
-                                                    }
-                                                </div>
-                                            </div>
-                                        )
-                                    })
-                                }
-                                </div>
-                                 : null
-                             }
                             {
                                 !state.isReadOnly ?
                                     <div className="tableRow tableRow--header">
@@ -365,7 +269,7 @@ class PlatformRoleManagement extends React.Component {
                                                     defaultValue={state.selectedUser}
                                                     initial={true}
                                                     options={state.users && state.users.filter((u) => {
-                                                        return projectUsers.indexOf(u['user-name']) == -1
+                                                        return platformUsers.indexOf(u['user-name']) == -1
                                                     }).map((u) => {
                                                         return {
                                                             label: u['user-name'],

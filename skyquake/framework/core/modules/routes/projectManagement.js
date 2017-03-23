@@ -65,6 +65,21 @@ Router.delete('/project/:projectname', cors(), function(req, res) {
     });
 });
 
+Router.put('/platform', cors(), function(req, res) {
+    ProjectManagementAPI.updatePlatform(req).then(function(response) {
+        utils.sendSuccessResponse(response, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+
+Router.get('/platform', cors(), function(req, res) {
+    ProjectManagementAPI.getPlatform(req).then(function(response) {
+        utils.sendSuccessResponse(response, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
 module.exports = Router;
 
 

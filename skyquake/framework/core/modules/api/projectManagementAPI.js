@@ -62,6 +62,7 @@ ProjectManagement.get = function(req) {
         });
     });
 };
+
 ProjectManagement.create = function(req) {
     var self = this;
     var api_server = req.query['api_server'];
@@ -175,4 +176,87 @@ ProjectManagement.delete = function(req) {
         });
     })
 }
+
+
+ProjectManagement.getPlatform = function(req) {
+    var self = this;
+    var api_server = req.query['api_server'];
+
+    return new Promise(function(resolve, reject) {
+        Promise.all([
+            rp({
+                uri: utils.confdPort(api_server) + '/api/operational/rbac-platform-config',
+                method: 'GET',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
+                    'Authorization': req.get('Authorization')
+                }),
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true
+            })
+        ]).then(function(result) {
+            var response = {};
+            response['data'] = {};
+            if (result[0].body) {
+                response['data']['platform'] = JSON.parse(result[0].body)['rw-rbac-platform:rbac-platform-config'];
+            }
+            response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
+
+            resolve(response);
+        }).catch(function(error) {
+            var response = {};
+            console.log('Problem with ProjectManagement.getPlatform', error);
+            response.statusCode = error.statusCode || 500;
+            response.errorMessage = {
+                error: 'Failed to get ProjectManagement.getPlatform' + error
+            };
+            reject(response);
+        });
+    });
+};
+
+ProjectManagement.updatePlatform = function(req) {
+    var self = this;
+    var api_server = req.query['api_server'];
+    var bodyData = req.body;
+    data = bodyData;
+    var updateTasks = [];
+
+    var updateUser = rp({
+                uri: utils.confdPort(api_server) + '/api/config/rbac-platform-config',
+                method: 'PUT',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
+                    'Authorization': req.get('Authorization')
+                }),
+                forever: constants.FOREVER_ON,
+                json: data,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true
+            });
+    updateTasks.push(updateUser)
+    return new Promise(function(resolve, reject) {
+        Promise.all([
+            updateTasks
+        ]).then(function(result) {
+            var response = {};
+            response['data'] = {};
+            if (result[0].body) {
+                response['data'] = result[0].body;
+            }
+            response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
+
+            resolve(response);
+        }).catch(function(error) {
+            var response = {};
+            console.log('Problem with ProjectManagement.updatePlatform', error);
+            response.statusCode = error.statusCode || 500;
+            response.errorMessage = {
+                error: 'Failed to passwordChange user' + error
+            };
+            reject(response);
+        });
+    });
+};
+
+
 module.exports = ProjectManagement;

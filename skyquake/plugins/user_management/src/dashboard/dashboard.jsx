@@ -24,9 +24,9 @@ class UserManagementDashboard extends React.Component {
     constructor(props) {
         super(props);
         this.Store = this.props.flux.stores.hasOwnProperty('UserManagementStore') ? this.props.flux.stores.UserManagementStore : this.props.flux.createStore(UserManagementStore);
-        this.Store.getUsers();
-        this.state = this.Store.getState();
-        this.actions = this.state.actions;
+       this.state = this.Store.getState();
+       this.actions = this.state.actions;
+
     }
     componentDidUpdate() {
         let self = this;
@@ -38,6 +38,7 @@ class UserManagementDashboard extends React.Component {
     }
     componentWillMount() {
         this.Store.listen(this.updateState);
+        this.Store.getUsers();
     }
     componentWillUnmount() {
         this.Store.unlisten(this.updateState);

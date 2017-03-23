@@ -12,10 +12,10 @@ export default class PlatformRoleManagementStore {
         this.projects = [];
         this['name'] = '';
         this['description'] = 'Some Description';
-        this.projectUsers = [];
+        this.platformUsers = [];
         this.selectedUser = null;
         this.selectedRole = null;
-        this.roles = ['super_admin', 'operator_role'
+        this.roles = ['rw-rbac-platform:platform-admin', 'rw-rbac-platform:platform-oper', 'rw-rbac-platform:super-admin'
         // 'some_other_role', 'yet_another_role', 'operator_role', 'some_other_role', 'yet_another_role'
         ];
         this.users = [];
@@ -63,7 +63,7 @@ export default class PlatformRoleManagementStore {
         let ProjectUser = {
             'name': project['name'],
             'description': project['description'],
-            'projectUsers': project['project-config'] && project['project-config']['user'] || []
+            'platformUsers': project['project-config'] && project['project-config']['user'] || []
         }
         let state = _.merge({
             activeIndex: projectIndex,
@@ -136,7 +136,7 @@ export default class PlatformRoleManagementStore {
                 projectOpen: true,
                 activeIndex: null,
                 isReadOnly: false,
-                projectUsers: []
+                platformUsers: []
             }
         ))
     }
@@ -149,78 +149,93 @@ export default class PlatformRoleManagementStore {
     handleAddUser() {
         let u = JSON.parse(this.selectedUser);
         let r = this.selectedRole;
-        let projectUsers = this.projectUsers;
+        let platformUsers = this.platformUsers;
+        let keys = ","
         console.log('adding user')
-        projectUsers.push({
+        platformUsers.push({
           'user-name': u['user-name'],
           'user-domain': u['user-domain'],
           "role":[{
                       "role": r,
-                      "keys": r
+                      "keys": keys
             }
           ]
         })
-        this.setState({projectUsers, selectedUser: null})
+        this.setState({platformUsers, selectedUser: null})
     }
     handleToggleUserRoleInProject(data) {
         let self = this;
         let {userIndex, roleIndex, checked} = data;
-        let projectUsers = this.projectUsers;
+        let platformUsers = this.platformUsers;
         let selectedRole = self.roles[roleIndex];
+        let keys = ","
         if(checked) {
-            projectUsers[userIndex].role.push({
-                role: self.roles[roleIndex],
-                keys: self.roles[roleIndex]
+            if(!platformUsers[userIndex].role) platformUsers[userIndex].role = [];
+            platformUsers[userIndex].role.push({
+                role: selectedRole,
+                keys: keys
             })
         } else {
-            let role = projectUsers[userIndex].role;
-            let roleIndex = _.findIndex(role, {role:selectedRole, keys: selectedRole})
-            projectUsers[userIndex].role.splice(roleIndex, 1)
+            let role = platformUsers[userIndex].role;
+            let roleIndex = _.findIndex(role, {role:selectedRole, keys: keys})
+            platformUsers[userIndex].role.splice(roleIndex, 1)
         }
-       self.setState({projectUsers});
+       self.setState({platformUsers});
 
     }
     handleUpdateUserRoleInProject(data) {
         let {userIndex, roleIndex, value} = data;
-        let projectUsers = this.projectUsers;
-        projectUsers[userIndex].role[roleIndex].role = value;
-        projectUsers[userIndex].role[roleIndex]['keys'] = value;
+        let platformUsers = this.platformUsers;
+        platformUsers[userIndex].role[roleIndex].role = value;
+        platformUsers[userIndex].role[roleIndex]['keys'] = value;
 
     }
     addRoleToUserInProject(userIndex) {
-        let projectUsers = this.projectUsers;
-        if(!projectUsers[userIndex].role) {
-            projectUsers[userIndex].role = [];
+        let platformUsers = this.platformUsers;
+        if(!platformUsers[userIndex].role) {
+            platformUsers[userIndex].role = [];
         }
-        projectUsers[userIndex].role.push({
+        platformUsers[userIndex].role.push({
               'role': null,
               //temp until we get actual keys
-              'keys' : 'some key'
+              'keys' : ','
             });
         this.setState({
-            projectUsers
+            platformUsers
         })
     }
     handleRemoveRoleFromUserInProject (data) {
         let {userIndex, roleIndex} = data;
-        let projectUsers = this.projectUsers;
-        projectUsers[userIndex].role.splice(roleIndex, 1);
+        let platformUsers = this.platformUsers;
+        platformUsers[userIndex].role.splice(roleIndex, 1);
         this.setState({
-            projectUsers
+            platformUsers
         })
     }
     handleRemoveUserFromProject (userIndex) {
-        let projectUsers = this.projectUsers;
-        projectUsers.splice(userIndex, 1);
+        let platformUsers = this.platformUsers;
+        platformUsers.splice(userIndex, 1);
         this.setState({
-            projectUsers
+            platformUsers
         })
     }
     getProjectsSuccess(projects) {
         this.alt.actions.global.hideScreenLoader.defer();
         this.setState({projects: projects});
     }
-    getUsersSuccess(users) {
+    getPlatformSuccess(platform) {
+        this.alt.actions.global.hideScreenLoader.defer();
+        let platformUsers = platform.user
+        let state = _.merge({
+            platform: platform,
+            projectOpen: true,
+            isEdit: true,
+            isReadOnly: true,
+            platformUsers: platformUsers
+        });
+        this.setState(state)
+    }
+    getPlatformRoleUsersSuccess(users) {
         console.log(users)
         this.alt.actions.global.hideScreenLoader.defer();
         this.setState({users});
