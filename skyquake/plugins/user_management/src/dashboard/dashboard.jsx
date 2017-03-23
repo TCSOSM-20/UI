@@ -233,10 +233,12 @@ class UserManagementDashboard extends React.Component {
                                     platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
                                 }
                                 return (
-                                    <div ref={(el) => this[`user-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
+                                    <div ref={(el) => this[`user-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`}
+                                        key={k}
+                                        onClick={self.viewUser.bind(null, u, k)}>
                                         <div
                                             className={`userName userName-header ${((self.state.activeIndex == k) && self.state.userOpen) ? 'activeUser' : ''}`}
-                                            onClick={self.viewUser.bind(null, u, k)}>
+                                            >
                                             {u['user-name']}
                                         </div>
                                         <div>

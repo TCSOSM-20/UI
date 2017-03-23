@@ -170,6 +170,7 @@ export default class ProjectManagementStore {
         let selectedRole = self.roles[roleIndex];
         let keys = ',';
         if(checked) {
+            if(!projectUsers[userIndex].role) projectUsers[userIndex].role = [];
             projectUsers[userIndex].role.push({
                 role: self.roles[roleIndex],
                 keys: keys

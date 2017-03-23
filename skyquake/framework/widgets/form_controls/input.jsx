@@ -71,7 +71,7 @@ export default class Input extends Component {
         } else {
             displayedValue = value.toString();
         }
-        if( props.readonly && props.type == "checkbox" ) {
+        if( props.readonly && props.type == "checkbox" && props.checked ) {
             displayedValue = <img src={CircleSVG} />
         }
         let html = (

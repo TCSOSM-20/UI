@@ -259,10 +259,10 @@ class ProjectManagementDashboard extends React.Component {
                                 platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
                             }
                             return (
-                                <div ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.projectOpen) ? 'tableRow--data-active' : ''}`} key={k}>
+                                <div onClick={self.viewProject.bind(null, u, k)} ref={(el) => this[`project-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.projectOpen) ? 'tableRow--data-active' : ''}`} key={k}>
                                     <div
                                         className={`projectName projectName-header ${((self.state.activeIndex == k) && self.state.projectOpen) ? 'activeProject' : ''}`}
-                                        onClick={self.viewProject.bind(null, u, k)}>
+                                        >
                                         {u['name']}
                                     </div>
                                     <div>
@@ -310,9 +310,9 @@ class ProjectManagementDashboard extends React.Component {
                             <tbody>
                                 {
                             state.projectUsers.map((u,i)=> {
-                                let userRoles = u.role.map((r) => {
+                                let userRoles = u.role && u.role.map((r) => {
                                     return r.role;
-                                })
+                                }) || [];
                                 return (
                                     <tr key={i}>
                                         {!state.isReadOnly ? <td><span
@@ -327,7 +327,7 @@ class ProjectManagementDashboard extends React.Component {
                                         </td>
                                         {
                                             state.roles.map((r,j) => {
-                                                return <td key={j}><Input readonly={state.isReadOnly} type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} value={(userRoles.indexOf(r) > -1)} checked={(userRoles.indexOf(r) > -1)} /></td>
+                                                return <td key={j}><Input readonly={state.isReadOnly} type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} checked={(userRoles.indexOf(r) > -1)} /></td>
                                             })
                                         }
                                     </tr>
