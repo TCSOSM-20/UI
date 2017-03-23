@@ -18,7 +18,7 @@ import Button, {ButtonGroup} from 'widgets/button/sq-button.jsx';
 import SelectOption from 'widgets/form_controls/selectOption.jsx';
 import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
-import imgRemove from '../../node_modules/open-iconic/svg/trash.svg'
+import imgRemove from '../../node_modules/open-iconic/svg/trash.svg';
 
 class UserManagementDashboard extends React.Component {
     constructor(props) {
@@ -214,84 +214,84 @@ class UserManagementDashboard extends React.Component {
         }
 
         html = (
-            <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'flexDirection': 'row'}} >
-                <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded ${this.state.userOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
-                    <Panel title="User List" style={{marginBottom: 0}} no-corners>
-                        <div className="tableRow tableRow--header">
-                            <div className="userName">
-                                Username
-                            </div>
-                            <div>
-                                Domain
-                            </div>
-                        </div>
-                        {state.users && state.users.map((u, k) => {
-                            let platformRoles = [];
-                            for(let role in u.platformRoles) {
-                                platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
-                            }
-                            return (
-                                <div ref={(el) => this[`user-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
-                                    <div
-                                        className={`userName userName-header ${((self.state.activeIndex == k) && self.state.userOpen) ? 'activeUser' : ''}`}
-                                        onClick={self.viewUser.bind(null, u, k)}>
-                                        {u['user-name']}
-                                    </div>
-                                    <div>
-                                        {u['user-domain']}
-                                    </div>
-
-
+            <PanelWrapper column>
+                <AppHeader nav={[{name: 'PLATFORM ROLE MANAGEMENT', onClick: this.context.router.push.bind(this, {pathname: '/platform'})}]}/>
+                <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'flexDirection': 'row'}} >
+                    <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded ${this.state.userOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
+                        <Panel title="User List" style={{marginBottom: 0}} no-corners>
+                            <div className="tableRow tableRow--header">
+                                <div className="userName">
+                                    Username
                                 </div>
-                            )
-                        })}
-                    </Panel>
-                    <ButtonGroup  className="buttonGroup" style={{margin: '0 0.5rem 0.5rem', background: '#ddd', paddingBottom: '0.5rem'}}>
-                        <Button label="Add User" onClick={this.addUser} />
-                    </ButtonGroup>
+                                <div>
+                                    Domain
+                                </div>
+                            </div>
+                            {state.users && state.users.map((u, k) => {
+                                let platformRoles = [];
+                                for(let role in u.platformRoles) {
+                                    platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
+                                }
+                                return (
+                                    <div ref={(el) => this[`user-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`} key={k}>
+                                        <div
+                                            className={`userName userName-header ${((self.state.activeIndex == k) && self.state.userOpen) ? 'activeUser' : ''}`}
+                                            onClick={self.viewUser.bind(null, u, k)}>
+                                            {u['user-name']}
+                                        </div>
+                                        <div>
+                                            {u['user-domain']}
+                                        </div>
+
+
+                                    </div>
+                                )
+                            })}
+                        </Panel>
+                        <ButtonGroup  className="buttonGroup" style={{margin: '0 0.5rem 0.5rem', background: '#ddd', paddingBottom: '0.5rem'}}>
+                            <Button label="Add User" onClick={this.addUser} />
+                        </ButtonGroup>
+                    </PanelWrapper>
+                    <PanelWrapper onKeyUp={this.evaluateSubmit}
+                        className={`userAdmin column`}>
+                        <Panel
+                            title={state.isEdit ? state['user-name'] : 'Create User'}
+                            style={{marginBottom: 0}}
+                            hasCloseButton={this.closePanel}
+                            no-corners>
+                            <FormSection title="USER INFO">
+                            {
+                                this.state.isEdit ?
+                                    null
+                                    : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
+                            }
+                                <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
+
+                                <Input type="radiogroup" readonly={state.isReadOnly} label="Disabled" value={state.disabled} options={[{value: true, label: 'YES'}, {value: false, label: 'NO'}]}  onChange={this.disableChange} />
+                            </FormSection>
+                            <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
+                                <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />
+                                <Input label="Platform Admin" onChange={this.platformChange.bind(null, 'platform_admin')}  checked={state.platformRoles.platform_admin} type="checkbox" />
+                                <Input label="Platform Oper" onChange={this.platformChange.bind(null, 'platform_oper')}  checked={state.platformRoles.platform_oper} type="checkbox" />
+                            </FormSection>
+                            <FormSection title="PROJECT ROLES" style={{display:'none'}}>
+                                <InputCollection
+                                    inital={true}
+                                    type='select'
+                                    readonly={state.isReadOnly}
+                                    options={state.projectRolesOptions}
+                                    collection={state.projectRoles}
+                                    onChange={this.updateProjectRole}
+                                    AddItemFn={this.addProjectRole}
+                                    RemoveItemFn={this.removeProjectRole}
+                                    />
+                            </FormSection>
+                            {passwordSectionHTML}
+
+                        </Panel>
+                            {formButtonsHTML}
+                    </PanelWrapper>
                 </PanelWrapper>
-                <PanelWrapper onKeyUp={this.evaluateSubmit}
-                    className={`userAdmin column`}>
-                    <Panel
-                        title={state.isEdit ? state['user-name'] : 'Create User'}
-                        style={{marginBottom: 0}}
-                        hasCloseButton={this.closePanel}
-                        no-corners>
-                        <FormSection title="USER INFO">
-                        {
-                            this.state.isEdit ?
-                                null
-                                : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
-                        }
-                            <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
-
-                            <Input type="radiogroup" readonly={state.isReadOnly} label="Disabled" value={state.disabled} options={[{value: true, label: 'YES'}, {value: false, label: 'NO'}]}  onChange={this.disableChange} />
-                        </FormSection>
-                        <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
-                            <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />
-                            <Input label="Platform Admin" onChange={this.platformChange.bind(null, 'platform_admin')}  checked={state.platformRoles.platform_admin} type="checkbox" />
-                            <Input label="Platform Oper" onChange={this.platformChange.bind(null, 'platform_oper')}  checked={state.platformRoles.platform_oper} type="checkbox" />
-                        </FormSection>
-                        <FormSection title="PROJECT ROLES" style={{display:'none'}}>
-                            <InputCollection
-                                inital={true}
-                                type='select'
-                                readonly={state.isReadOnly}
-                                options={state.projectRolesOptions}
-                                collection={state.projectRoles}
-                                onChange={this.updateProjectRole}
-                                AddItemFn={this.addProjectRole}
-                                RemoveItemFn={this.removeProjectRole}
-                                />
-                        </FormSection>
-                        {passwordSectionHTML}
-
-                    </Panel>
-                        {formButtonsHTML}
-
-                </PanelWrapper>
-
-
             </PanelWrapper>
         );
         return html;

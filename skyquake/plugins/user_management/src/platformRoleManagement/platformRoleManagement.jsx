@@ -201,98 +201,96 @@ class PlatformRoleManagement extends React.Component {
                                 )
                                 : (
                                     <ButtonGroup className="buttonGroup">
-                                        <Button label="Create" type="submit" onClick={this.updatePlatform}  />
+                                        <Button label="Edit" type="submit" onClick={this.updatePlatform}  />
                                     </ButtonGroup>
                                 )
                             )
         }
 
         html = (
-            <PanelWrapper className={`row projectManagement ${false ? 'projectList-open' : ''}`} style={{'alignContent': 'center', 'flexDirection': 'row'}} >
-                <PanelWrapper onKeyUp={this.evaluateSubmit}
-                    className={`ProjectAdmin column`}>
-                    <Panel
-                        title={state.isEdit ? state['name'] : 'Create Project'}
-                        style={{marginBottom: 0}}
-                        hasCloseButton={this.closePanel}
-                        no-corners>
-                        <FormSection title="USER ROLES">
+            <PanelWrapper column>
+                <AppHeader nav={[{name: 'USER MANAGEMENT', onClick: this.context.router.push.bind(this, {pathname: '/'})}]}/>
+                <PanelWrapper className={`row projectManagement ${false ? 'projectList-open' : ''}`} style={{'alignContent': 'center', 'flexDirection': 'row'}} >
+                    <PanelWrapper onKeyUp={this.evaluateSubmit}
+                        className={`ProjectAdmin column`}>
+                        <Panel
+                            title="Manage Roles"
+                            style={{marginBottom: 0}}
+                            no-corners>
+                            <FormSection title="USER ROLES">
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    {!state.isReadOnly ? <td></td> : null}
-                                    <td>User Name</td>
-                                    {
-                                        state.roles.map((r,i) => {
-                                            return <td key={i}>{r}</td>
-                                        })
-                                    }
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                            state.platformUsers.map((u,i)=> {
-                                let userRoles = u.role && u.role.map((r) => {
-                                    return r.role;
-                                }) || [];
-                                return (
-                                    <tr key={i}>
-                                        {!state.isReadOnly ? <td><span
-                                                                    className="removeInput"
-                                                                    onClick={self.removeUserFromProject.bind(self, u)}
-                                                                >
-                                                                    <img src={imgRemove} />
-
-                                                                </span></td> : null}
-                                        <td>
-                                            {u['user-name']}
-                                        </td>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        {!state.isReadOnly ? <td></td> : null}
+                                        <td>User Name</td>
                                         {
-                                            state.roles.map((r,j) => {
-                                                return <td key={j}><Input type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} checked={(userRoles.indexOf(r) > -1)} /></td>
+                                            state.roles.map((r,i) => {
+                                                return <td key={i}>{r}</td>
                                             })
                                         }
                                     </tr>
-                                )
-                            })
-                        }
-                            </tbody>
-                        </table>
-                            {
-                                !state.isReadOnly ?
-                                    <div className="tableRow tableRow--header">
-                                        <div>
-                                            <div className="addUser">
-                                                <SelectOption
-                                                    onChange={this.actions.handleSelectedUser}
-                                                    defaultValue={state.selectedUser}
-                                                    initial={true}
-                                                    options={state.users && state.users.filter((u) => {
-                                                        return platformUsers.indexOf(u['user-name']) == -1
-                                                    }).map((u) => {
-                                                        return {
-                                                            label: u['user-name'],
-                                                            value: u
-                                                        }
-                                                    })}
-                                                />
-                                                <span className="addInput" onClick={this.addUserToProject}><img src={imgAdd} />
-                                                    Add User
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div> : null
+                                </thead>
+                                <tbody>
+                                    {
+                                state.platformUsers.map((u,i)=> {
+                                    let userRoles = u.role && u.role.map((r) => {
+                                        return r.role;
+                                    }) || [];
+                                    return (
+                                        <tr key={i}>
+                                            {!state.isReadOnly ? <td><span
+                                                                        className="removeInput"
+                                                                        onClick={self.removeUserFromProject.bind(self, u)}
+                                                                    >
+                                                                        <img src={imgRemove} />
+
+                                                                    </span></td> : null}
+                                            <td>
+                                                {u['user-name']}
+                                            </td>
+                                            {
+                                                state.roles.map((r,j) => {
+                                                    return <td key={j}><Input readonly={state.isReadOnly} type="checkbox" onChange={self.toggleUserRoleInProject.bind(self, i, j)} checked={(userRoles.indexOf(r) > -1)} /></td>
+                                                })
+                                            }
+                                        </tr>
+                                    )
+                                })
                             }
+                                </tbody>
+                            </table>
+                                {
+                                    !state.isReadOnly ?
+                                        <div className="tableRow tableRow--header">
+                                            <div>
+                                                <div className="addUser">
+                                                    <SelectOption
+                                                        onChange={this.actions.handleSelectedUser}
+                                                        defaultValue={state.selectedUser}
+                                                        initial={true}
+                                                        options={state.users && state.users.filter((u) => {
+                                                            return platformUsers.indexOf(u['user-name']) == -1
+                                                        }).map((u) => {
+                                                            return {
+                                                                label: u['user-name'],
+                                                                value: u
+                                                            }
+                                                        })}
+                                                    />
+                                                    <span className="addInput" onClick={this.addUserToProject}><img src={imgAdd} />
+                                                        Add User
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div> : null
+                                }
 
-                        </FormSection>
-
-                    </Panel>
+                            </FormSection>
+                        </Panel>
                         {formButtonsHTML}
-
+                    </PanelWrapper>
                 </PanelWrapper>
-
-
             </PanelWrapper>
         );
         return html;

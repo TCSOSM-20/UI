@@ -225,7 +225,7 @@ export default class PlatformRoleManagementStore {
     }
     getPlatformSuccess(platform) {
         this.alt.actions.global.hideScreenLoader.defer();
-        let platformUsers = platform.user
+        let platformUsers = platform && platform.user || [];
         let state = _.merge({
             platform: platform,
             projectOpen: true,

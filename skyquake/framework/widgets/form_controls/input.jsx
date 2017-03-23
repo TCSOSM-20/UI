@@ -17,7 +17,7 @@
  */
 import './formControls.scss';
 import SelectOption from 'widgets/form_controls/selectOption.jsx';
-
+import CircleSVG from '../../../node_modules/open-iconic/svg/media-record.svg'
 import React, {Component} from 'react';
 
 export default class Input extends Component {
@@ -70,6 +70,9 @@ export default class Input extends Component {
             displayedValue = null;
         } else {
             displayedValue = value.toString();
+        }
+        if( props.readonly && props.type == "checkbox" ) {
+            displayedValue = <img src={CircleSVG} />
         }
         let html = (
             <label className={className} style={props.style}>

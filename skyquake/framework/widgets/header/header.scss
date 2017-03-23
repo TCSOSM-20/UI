@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,14 +17,20 @@
  */
 
 header.header-app-component {
-    padding: 20px 0px;
+    padding: 10px 0px;
+    display:-ms-flexbox;
     display:flex;
-    flex-direction:column;
+    -ms-flex-direction:column;
+        flex-direction:column;
     .header-app-main {
+        display:-ms-flexbox;
         display:flex;
-        flex-direction:row;
-        justify-content:space-between;
-        align-items:center;
+        -ms-flex-direction:row;
+            flex-direction:row;
+        -ms-flex-pack:justify;
+            justify-content:space-between;
+        -ms-flex-align:center;
+            align-items:center;
     }
     h1 {
         /*background: url('../../style/img/header-logo.png') no-repeat;*/
@@ -39,15 +45,19 @@ header.header-app-component {
         font-size: 1.625rem;
         font-weight: 400;
         position:relative;
-        flex: 1 0 auto;
+        -ms-flex: 1 0 auto;
+            flex: 1 0 auto;
 
     }
     ul {
+            display:-ms-flexbox;
             display:flex;
         }
         li {
+            display:-ms-flexbox;
             display:flex;
-             flex:1 1 auto;
+             -ms-flex:1 1 auto;
+                 flex:1 1 auto;
              border-right:1px solid #e5e5e5;
              padding: 0 1rem;
             &:last-child {
@@ -55,12 +65,13 @@ header.header-app-component {
             }
             a {
                 cursor:pointer;
-                // padding: 0.125rem;
-                // border-bottom:1px solid black;
+                /* padding: 0.125rem;*/
+                /* border-bottom:1px solid black;*/
                 text-decoration:underline;
             }
         }
     .header-app-nav {
+        display:-ms-flexbox;
         display:flex;
         margin-left: 0.25rem;
         a,span {
@@ -81,8 +92,11 @@ header.header-app-component {
         }
     }
     nav {
+        display:-ms-flexbox;
         display:flex;
-        flex:0 1 auto;
-        align-items:center;
+        -ms-flex:0 1 auto;
+            flex:0 1 auto;
+        -ms-flex-align:center;
+            align-items:center;
     }
 }

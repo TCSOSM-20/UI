@@ -60,17 +60,22 @@ Panel.defaultProps = {
 export class PanelWrapper extends Component {
     render() {
         let wrapperClass = 'skyquakePanelWrapper';
-        let {className, ...props} = this.props;
+        let {className, column, style, ...props} = this.props;
         if(className) {
             wrapperClass = `${wrapperClass} ${className}`
         }
+        if(column) {
+            style.flexDirection = 'column';
+        }
         return (
-        <div className={wrapperClass} {...props}>
+        <div className={wrapperClass} style={style} {...props}>
             {this.props.children}
         </div>)
     }
 }
-
+PanelWrapper.defaultProps = {
+    style: {}
+}
 export default Panel;
 
 
