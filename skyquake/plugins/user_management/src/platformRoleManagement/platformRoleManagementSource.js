@@ -13,9 +13,6 @@ if (DEV_MODE) {
 }
 
 
-let Projects = mockProjects();
-let Users = mockUsers();
-
 
 module.exports = function(Alt) {
     return {
@@ -23,9 +20,6 @@ module.exports = function(Alt) {
         getUsers: {
           remote: function() {
               return new Promise(function(resolve, reject) {
-                // setTimeout(function() {
-                //   resolve(Users);
-                // }, 1000);
                 $.ajax({
                   url: `/user?api_server=${API_SERVER}`,
                   type: 'GET',
@@ -54,9 +48,6 @@ module.exports = function(Alt) {
         getPlatform: {
           remote: function() {
               return new Promise(function(resolve, reject) {
-                // setTimeout(function() {
-                //   resolve(Projects);
-                // }, 1000)
                 $.ajax({
                   url: `/platform?api_server=${API_SERVER}`,
                   type: 'GET',
@@ -114,9 +105,6 @@ module.exports = function(Alt) {
         deleteProject: {
           remote: function(state, project) {
             return new Promise(function(resolve, reject) {
-              // setTimeout(function() {
-              //     resolve(true);
-              // }, 1000)
               $.ajax({
                 url: `/project/${project['name']}?api_server=${API_SERVER}`,
                 type: 'DELETE',
@@ -146,9 +134,6 @@ module.exports = function(Alt) {
             remote: function(state, project) {
 
               return new Promise(function(resolve, reject) {
-                // setTimeout(function() {
-                //     resolve(true);
-                // }, 1000)
                 $.ajax({
                   url: `/project?api_server=${API_SERVER}`,
                   type: 'POST',
@@ -191,61 +176,3 @@ function interceptResponse (responses) {
   }
 }
 
-function mockProjects() {
-  let data = [];
-  let count = 10;
-  for(let i = 0; i < 3; i++) {
-    data.push({
-      name: `Test Project ${i}`,
-      description: 'Some description',
-      roles: ['Some-Role', 'Some-Other-Role'],
-      users: [
-        {
-          'user-name': 'Some-User',
-          'user-domain': 'system',
-          role: [
-            {
-              'role': 'Some-Role',
-              'key-set' : 'some key'
-            },
-            {
-              'role': 'Some-Other-Role',
-              'key-set' : 'some key'
-            }
-          ]
-        },
-        {
-          'user-name': 'Some-User',
-          'user-domain': 'system',
-          role: [
-            {
-              'role': 'Some-Role',
-              'key-set' : 'some key'
-            }
-          ]
-        }
-      ]
-    })
-  }
-  return data;
-}
-function mockUsers() {
-  let data = [];
-  let count = 10;
-  for(let i = 0; i < 10; i++) {
-    data.push({
-      'user-name': `Tester ${i}`,
-      'user-domain': 'Some Domain',
-      platformRoles: {
-        super_admin: true,
-        platform_admin: false,
-        platform_oper: false
-      },
-      disabled: false,
-      projectRoles: [
-        'Project:Role'
-      ]
-    })
-  }
-  return data;
-}

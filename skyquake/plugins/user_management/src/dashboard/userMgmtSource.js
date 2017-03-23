@@ -13,7 +13,6 @@ if (DEV_MODE) {
 }
 
 
-let Users = mockUsers();
 
 
 module.exports = function(Alt) {
@@ -21,9 +20,6 @@ module.exports = function(Alt) {
         getUsers: {
           remote: function() {
               return new Promise(function(resolve, reject) {
-                // setTimeout(function() {
-                //   resolve(Users);
-                // }, 1000)
                 $.ajax({
                   url: `/user?api_server=${API_SERVER}`,
                   type: 'GET',
@@ -81,9 +77,6 @@ module.exports = function(Alt) {
         deleteUser: {
           remote: function(state, user) {
             return new Promise(function(resolve, reject) {
-                         // setTimeout(function() {
-              //     resolve(true);
-              // }, 1000)
               $.ajax({
                 url: `/user/${user['user-name']}/${user['user-domain']}?api_server=${API_SERVER}`,
                 type: 'DELETE',
@@ -114,9 +107,6 @@ module.exports = function(Alt) {
             remote: function(state, user) {
 
               return new Promise(function(resolve, reject) {
-                // setTimeout(function() {
-                //     resolve(true);
-                // }, 1000)
                 $.ajax({
                   url: `/user?api_server=${API_SERVER}`,
                   type: 'POST',
@@ -159,23 +149,3 @@ function interceptResponse (responses) {
   }
 }
 
-function mockUsers() {
-  let data = [];
-  let count = 10;
-  for(let i = 0; i < 10; i++) {
-    data.push({
-      username: `Tester ${i}`,
-      domain: 'Some Domain',
-      platformRoles: {
-        super_admin: true,
-        platform_admin: false,
-        platform_oper: false
-      },
-      disabled: false,
-      projectRoles: [
-        'Project:Role'
-      ]
-    })
-  }
-  return data;
-}
