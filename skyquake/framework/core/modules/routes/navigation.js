@@ -37,8 +37,20 @@ Router.use(bodyParser.urlencoded({
     extended: true
 }));
 
-Router.get('/', cors(), function(req, res, next) {
-	res.redirect('/launchpad/?api_server=' + req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname));
+Router.get('/login.html', cors(), function(req, res) {
+	res.render('login.html');
+	res.end();
+});
+
+Router.get('/', cors(), function(req, res) {
+	var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
+	if (req.session.loggedIn) {
+		console.log('Logged in. Redirect to launchpad')
+		res.redirect('/launchpad/?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname));
+	} else {
+		console.log('Redirect to login.html');
+		res.redirect('login.html?api_server=' + api_server);
+	}
 });
 
 Router.get('/nav', cors(), function(req, res) {

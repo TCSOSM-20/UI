@@ -93,7 +93,7 @@ function getAccount(req) {
         _.extend(
             requestHeaders,
             id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
 
@@ -160,7 +160,7 @@ function updateAccount(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
             url: url,
@@ -194,7 +194,7 @@ function deleteAccount(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
             url: url,
@@ -238,7 +238,7 @@ function refreshAccountConnectionStatus (req) {
     var headers = _.extend({},
         constants.HTTP_HEADERS.accept.data,
         constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         }
     );
     return new Promise(function(resolve, reject) {

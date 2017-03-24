@@ -40,7 +40,8 @@ Support.severities = function() {
  * Class to convert RESTConf data to logging plugin
  */
 
-
+var LoggingConfigDecoder = {};
+var LoggingConfigEncoder = {};
 
 LoggingConfigDecoder = function(debugMode) {
   this.debugMode = debugMode || false

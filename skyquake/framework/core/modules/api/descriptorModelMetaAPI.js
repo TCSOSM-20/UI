@@ -36,7 +36,7 @@ ModelMeta.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/schema/nsd-catalog/nsd',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -46,7 +46,7 @@ ModelMeta.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/schema/vnfd-catalog/vnfd',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,

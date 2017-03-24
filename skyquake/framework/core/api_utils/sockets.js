@@ -33,6 +33,7 @@ var url = require('url');
 var sockjs = require('sockjs');
 var websocket_multiplex = require('websocket-multiplex');
 var utils = require('./utils.js');
+var configurationAPI = require('../modules/api/configuration.js');
 
 
 var Subscriptions = function() {
@@ -278,7 +279,7 @@ function PollingSocket(url, req, interval, config) {
   self.isClosed = false;
   var requestHeaders = {};
   _.extend(requestHeaders, {
-    'Authorization': req.get('Authorization')
+    Cookie: req.get('Cookie')
   });
 
   var pollServer = function() {

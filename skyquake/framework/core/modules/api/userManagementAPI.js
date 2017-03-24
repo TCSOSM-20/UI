@@ -36,7 +36,7 @@ UserManagement.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operational/user-config/users',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -75,7 +75,7 @@ UserManagement.create = function(req) {
                 uri: utils.confdPort(api_server) + '/api/config/user-config',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 json: data,
@@ -115,7 +115,7 @@ UserManagement.update = function(req) {
             uri: utils.confdPort(api_server) + '/api/operations/change-password',
             method: 'POST',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             json: {
@@ -136,7 +136,7 @@ UserManagement.update = function(req) {
                 uri: utils.confdPort(api_server) + '/api/config/user-config',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 json: data,
@@ -179,7 +179,7 @@ UserManagement.delete = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         rp({
             url: url,

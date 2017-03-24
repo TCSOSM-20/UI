@@ -36,7 +36,7 @@ ProjectManagement.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operational/project',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -76,7 +76,7 @@ ProjectManagement.create = function(req) {
                 uri: utils.confdPort(api_server) + '/api/config/project',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 json: data,
@@ -116,7 +116,7 @@ ProjectManagement.update = function(req) {
                 uri: utils.confdPort(api_server) + '/api/config/project',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 json: data,
@@ -158,7 +158,7 @@ ProjectManagement.delete = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         rp({
             url: url,

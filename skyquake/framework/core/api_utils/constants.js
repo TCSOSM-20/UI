@@ -73,6 +73,7 @@ constants.SOCKET_BASE_PORT = 3500;
 constants.SOCKET_POOL_LENGTH = 20;
 constants.SERVER_PORT = process.env.SERVER_PORT || 8000;
 constants.SECURE_SERVER_PORT = process.env.SECURE_SERVER_PORT || 8443;
+constants.REJECT_UNAUTHORIZED = false;
 
 constants.BASE_PACKAGE_UPLOAD_DESTINATION = 'upload/packages/';
 constants.PACKAGE_MANAGER_SERVER_PORT = 4567;

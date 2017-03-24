@@ -33,7 +33,7 @@ crashDetails.get = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
     request({
         url: utils.confdPort(api_server) + APIVersion +'/api/operational/crash?deep',

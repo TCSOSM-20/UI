@@ -37,7 +37,7 @@ ConfigAgentAccount.get = function(req) {
             var requestHeaders = {};
             _.extend(requestHeaders,
                 constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 });
 
             request({
@@ -77,7 +77,7 @@ ConfigAgentAccount.get = function(req) {
             var requestHeaders = {};
             _.extend(requestHeaders,
                 constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 });
 
             request({
@@ -130,7 +130,7 @@ ConfigAgentAccount.create = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
 
         request({
@@ -169,7 +169,7 @@ ConfigAgentAccount.update = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
 
         request({
@@ -211,7 +211,7 @@ ConfigAgentAccount.delete = function(req) {
         var requestHeaders = {};
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
             url: utils.confdPort(api_server) + '/api/config/config-agent/account/' + id,
