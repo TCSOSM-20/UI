@@ -96,11 +96,13 @@ class ProjectManagementDashboard extends React.Component {
         e.stopPropagation();
         let projectUsers = self.state.projectUsers;
         let cleanUsers = this.cleanUsers(projectUsers);
+        let projectName = self.state['name'];
 
         this.Store.createProject({
-            'name': self.state['name'],
+            'name': projectName,
             'description': self.state.description,
             'project-config' : {
+                'name-ref': projectName,
                 'user': cleanUsers
             }
         });
@@ -111,11 +113,13 @@ class ProjectManagementDashboard extends React.Component {
         e.stopPropagation();
         let projectUsers = self.state.projectUsers;
         let cleanUsers = this.cleanUsers(projectUsers);
+        let projectName = self.state['name'];
 
         this.Store.updateProject(_.merge({
-            'name': self.state['name'],
+            'name': projectName,
             'description': self.state.description,
             'project-config' : {
+                'name-ref': projectName,
                 'user': cleanUsers
             }
         }));
