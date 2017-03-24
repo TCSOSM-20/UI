@@ -6,7 +6,7 @@ var constants = require('../../../framework/core/api_utils/constants.js');
 var fs = require('fs');
 var _ = require('lodash');
 
-PackageFileHandler = {};
+var PackageFileHandler = {};
 
 function deleteFile(filename) {
 	setTimeout(function() {
@@ -18,7 +18,7 @@ function checkStatus(req, transactionId, isUpdate) {
 	var upload_server = req.query['upload_server'];
 	var headers = _.extend({},
         {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         }
     );
     var type = isUpdate ? 'update' : 'upload';

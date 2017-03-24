@@ -95,7 +95,7 @@ var validateResponse = function(callerName, error, response, body, resolve, reje
 
 var checkAuthorizationHeader = function(req) {
 	return new Promise(function(resolve, reject) {
-		if (req.get('Authorization') == null) {
+		if (req.session && req.session.authorization == null) {
 			reject();
 		} else {
 			resolve();
@@ -200,7 +200,7 @@ var passThroughConstructor = function(app) {
 				uri: uri,
 				method: 'GET',
 				headers: _.extend({}, CONSTANTS.HTTP_HEADERS.accept[type], {
-					'Authorization': req.get('Authorization'),
+					'Authorization': req.session && req.session.authorization,
 					forever: CONSTANTS.FOREVER_ON,
 					rejectUnauthorized: false,
 				})

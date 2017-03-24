@@ -105,6 +105,9 @@ if (cluster.isMaster && clusteredLaunch) {
 
 	var app = express();
 
+	app.set('views', __dirname + '/framework/core/views');
+	app.engine('html', require('ejs').renderFile);
+
 	app.use(session({
 	  secret: 'ritio rocks',
 	  resave: true,
@@ -137,6 +140,7 @@ if (cluster.isMaster && clusteredLaunch) {
 	var configurationAPI = require('./framework/core/modules/api/configuration');
 	var userManagement_routes = require('./framework/core/modules/routes/userManagement');
 	var projectManagement_routes = require('./framework/core/modules/routes/projectManagement');
+	var session_routes = require('./framework/core/modules/routes/sessions');
 	/**
 	 * Processing when a plugin is added or modified
 	 * @param {string} plugin_name - Name of the plugin
@@ -157,6 +161,15 @@ if (cluster.isMaster && clusteredLaunch) {
 		}
 
 	}
+
+	/**
+	 * Serve jquery
+	 */
+	app.use('/jquery', express.static('./node_modules/jquery/dist/jquery.min.js'));
+	/**
+	 * Serve images
+	 */
+	app.use('/img', express.static('./framework/style/img'));
 
 	/**
 	 * Start listening on a port
@@ -221,6 +234,9 @@ if (cluster.isMaster && clusteredLaunch) {
 
 		//Configure project management route(s)
 		app.use(projectManagement_routes);
+
+		//Configure session route(s)
+		app.use(session_routes);
 
 		// app.get('/testme', function(req, res) {
 		// 	res.sendFile(__dirname + '/index.html');

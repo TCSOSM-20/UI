@@ -129,8 +129,9 @@ Utils.getDescriptorModelMeta = function() {
 }
 
 Utils.addAuthorizationStub = function(xhr) {
-    var Auth = window.sessionStorage.getItem("auth");
-    xhr.setRequestHeader('Authorization', 'Basic ' + Auth);
+    // NO-OP now that we are dealing with it on the server
+    // var Auth = window.sessionStorage.getItem("auth");
+    // xhr.setRequestHeader('Authorization', 'Basic ' + Auth);
 };
 
 Utils.getByteDataWithUnitPrefix = function(number, precision) {
@@ -208,10 +209,22 @@ Utils.clearAuthentication = function(callback) {
     window.sessionStorage.removeItem("auth");
     AuthActions.notAuthenticated();
     window.sessionStorage.setItem("locationRefHash", window.location.hash);
+    $.ajax({
+        url: '//' + window.location.hostname + ':' + window.location.port + '/session?api_server=' + API_SERVER,
+        type: 'DELETE',
+        success: function(data) {
+            console.log('User logged out');
+        },
+        error: function(data) {
+            console.log('Problem logging user out');
+        }
+    });
+
+
     if (callback) {
         callback();
     } else {
-        window.location.hash = Utils.loginHash;
+        window.location.replace(window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/?api_server=' + API_SERVER);
     }
 }
 Utils.isNotAuthenticated = function(windowLocation, callback) {

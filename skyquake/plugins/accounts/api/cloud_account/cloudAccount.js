@@ -40,7 +40,7 @@ Cloud.get = function(req) {
       var requestHeaders = {};
       _.extend(requestHeaders,
         constants.HTTP_HEADERS.accept.collection, {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         });
 
       request({
@@ -77,7 +77,7 @@ Cloud.get = function(req) {
       var requestHeaders = {};
       _.extend(requestHeaders,
         constants.HTTP_HEADERS.accept.data, {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         });
 
       request({
@@ -128,7 +128,7 @@ Cloud.create = function(req) {
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data,
       constants.HTTP_HEADERS.content_type.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
@@ -167,7 +167,7 @@ Cloud.update = function(req) {
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data,
       constants.HTTP_HEADERS.content_type.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
@@ -209,7 +209,7 @@ Cloud.delete = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
     request({
       url: utils.confdPort(api_server) + APIVersion + '/api/config/cloud/account/' + id,
@@ -237,7 +237,7 @@ Cloud.getResources = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
@@ -280,7 +280,7 @@ Cloud.getPools = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({

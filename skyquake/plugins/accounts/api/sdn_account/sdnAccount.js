@@ -38,7 +38,7 @@ Sdn.get = function(req) {
       var requestHeaders = {};
       _.extend(requestHeaders,
         constants.HTTP_HEADERS.accept.collection, {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         });
       request({
           url: utils.confdPort(api_server) + '/api/operational/sdn/account?deep',
@@ -77,7 +77,7 @@ Sdn.get = function(req) {
       var requestHeaders = {};
       _.extend(requestHeaders,
         constants.HTTP_HEADERS.accept.data, {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         });
 
       request({
@@ -130,7 +130,7 @@ Sdn.create = function(req) {
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data,
       constants.HTTP_HEADERS.content_type.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
@@ -168,7 +168,7 @@ Sdn.update = function(req) {
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data,
       constants.HTTP_HEADERS.content_type.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
@@ -211,7 +211,7 @@ Sdn.delete = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({

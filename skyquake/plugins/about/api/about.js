@@ -32,7 +32,7 @@ About.getVCS = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
     request({
         url: utils.confdPort(api_server) + APIVersion + '/api/operational/vcs/info?deep',
@@ -64,7 +64,7 @@ About.getVersion = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
     request({
         url: utils.confdPort(api_server) + APIVersion + '/api/operational/version?deep',
@@ -116,7 +116,7 @@ About.uptime = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
     request({
         url: utils.confdPort(api_server) + APIVersion + '/api/operational/uptime/uptime',

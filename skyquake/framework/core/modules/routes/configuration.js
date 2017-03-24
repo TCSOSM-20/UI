@@ -74,7 +74,7 @@ function checkAuth(uri, req){
             uri: uri,
             method: 'GET',
             headers: _.extend({}, {
-                'Authorization': req.get('Authorization'),
+                'Authorization': req.session && req.session.authorization,
                 forever: CONSTANTS.FOREVER_ON,
                 rejectUnauthorized: false,
             })

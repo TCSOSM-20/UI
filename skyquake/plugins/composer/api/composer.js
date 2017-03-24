@@ -40,7 +40,7 @@ Composer.get = function(req) {
                 uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -50,7 +50,7 @@ Composer.get = function(req) {
                 uri: utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -60,7 +60,7 @@ Composer.get = function(req) {
                 uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -73,7 +73,7 @@ Composer.get = function(req) {
             //   headers: _.extend({},
             //     constants.HTTP_HEADERS.accept.collection,
             //     {
-            //       'Authorization': req.get('Authorization')
+            //       'Authorization': req.session && req.session.authorization
             //     }),
             //   forever: constants.FOREVER_ON,
             // rejectUnauthorized: false,
@@ -173,7 +173,7 @@ Composer.delete = function(req) {
             uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id,
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -189,7 +189,7 @@ Composer.delete = function(req) {
 Composer.getVNFD = function(req) {
     var api_server = req.query['api_server'];
     var vnfdID = req.body.data;
-    var authorization = req.get('Authorization');
+    var authorization = req.session && req.session.authorization;
     var VNFDs = [];
     if (typeof(vnfdID) == "object" && vnfdID.constructor.name == "Array") {
         vnfdID.map(function(id) {
@@ -254,7 +254,7 @@ Composer.create = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
             uri: utils.confdPort(api_server) + '/api/config/' + catalogType + '-catalog',
@@ -284,7 +284,7 @@ Composer.updateSave = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
             uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
@@ -325,7 +325,7 @@ Composer.update = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/package-update',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -377,7 +377,7 @@ Composer.upload = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/package-create',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -439,7 +439,7 @@ Composer.addFile = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/package-file-add',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -477,7 +477,7 @@ Composer.exportPackage = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/package-export',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -535,7 +535,7 @@ FileManager.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 json: payload,
                 forever: constants.FOREVER_ON,
@@ -557,7 +557,7 @@ FileManager.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 json: payload,
                 forever: constants.FOREVER_ON,
@@ -579,7 +579,7 @@ FileManager.get = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operations/get-package-endpoint',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 json: payload,
                 forever: constants.FOREVER_ON,
@@ -600,7 +600,7 @@ FileManager.get = function(req) {
                         uri: api_server + ':' + parsedEndpoint.port + parsedEndpoint.path,
                         method: 'GET',
                         headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                            'Authorization': req.get('Authorization')
+                            'Authorization': req.session && req.session.authorization
                         }),
                         forever: constants.FOREVER_ON,
                         rejectUnauthorized: false,
@@ -631,7 +631,7 @@ FileManager.job = function(req) {
             url: uri + url + '?deep',
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
