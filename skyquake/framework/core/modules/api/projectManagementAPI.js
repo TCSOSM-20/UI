@@ -188,7 +188,7 @@ ProjectManagement.getPlatform = function(req) {
                 uri: utils.confdPort(api_server) + '/api/operational/rbac-platform-config',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -226,7 +226,7 @@ ProjectManagement.updatePlatform = function(req) {
                 uri: utils.confdPort(api_server) + '/api/config/rbac-platform-config',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 json: data,
