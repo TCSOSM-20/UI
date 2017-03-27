@@ -79,7 +79,7 @@ export default {
             remote: function(state, location, streamSource) {
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling',
+                        url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling?api_server=' + API_SERVER,
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
