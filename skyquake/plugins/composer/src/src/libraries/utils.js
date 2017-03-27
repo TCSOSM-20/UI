@@ -327,13 +327,21 @@ export default {
 			} else if (fieldKeyArray.length == 2) {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
-						let found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						console.log(key, subKey);
+						var found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
 						if (found) {
 							for (let foundKey in found) {
-								// let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
-								if (foundKey == fieldKeyArray[1]) {
-									results = this.getAbsoluteResults(found[foundKey], pathArray.splice(-i, i));
-									return results;
+								if (_isArray(found[foundKey])) {
+									let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
+									if (topLevel) {
+										results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
+										return results;
+									}
+								} else {
+									if (foundKey == fieldKeyArray[1]) {
+										results = this.getAbsoluteResults(found[foundKey], pathArray.splice(-i, i));
+										return results;
+									}
 								}
 							}
 						}
@@ -342,13 +350,20 @@ export default {
 			} else if (fieldKeyArray.length == 3) {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
-						let found = _.find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						let found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
 						if (found) {
 							for (let foundKey in found) {
-								let topLevel = _.find(found[foundKey], {id: fieldKeyArray[1]});
-								if (topLevel) {
-									results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
-									return results;
+								if (_isArray(found[foundKey])) {
+									let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
+									if (topLevel) {
+										results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
+										return results;
+									}
+								} else {
+									if (foundKey == fieldKeyArray[1]) {
+										results = this.getAbsoluteResults(found[foundKey], pathArray.splice(-i, i));
+										return results;
+									}
 								}
 							}
 						}
