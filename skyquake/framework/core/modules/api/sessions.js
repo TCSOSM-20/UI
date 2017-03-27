@@ -42,7 +42,7 @@ function logAndReject(mesg, reject) {
 
 function logAndRedirectToLogin(mesg, res, req) {
     console.log(mesg);
-    res.render('login.html?api_server=' + req.query['api_server']);
+    res.redirect('login.html?api_server=' + req.query['api_server']);
     res.end();
 }
 
@@ -153,8 +153,6 @@ sessionsAPI.addProjectToSession = function(req, res) {
 }
 
 sessionsAPI.delete = function(req, res) {
-    var reqRef = req;
-    var res = res;
     var api_server = req.query["api_server"];
     var uri = utils.confdPort(api_server);
     var url = uri + '/api/logout';
@@ -167,7 +165,8 @@ sessionsAPI.delete = function(req, res) {
                     'Authorization': req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
-                rejectUnauthorized: constants.REJECT_UNAUTHORIZED
+                rejectUnauthorized: constants.REJECT_UNAUTHORIZED,
+                resolveWithFullResponse: true
             }),
             new Promise(function(success, failure) {
                 req.session.destroy(function(err) {
