@@ -145,7 +145,7 @@ const FileManagerSource = {
                 return new Promise(function(resolve, reject) {
                     //api/operational/download-jobs/job/
                    $.ajax({
-                    url: '/socket-polling',
+                    url: '/socket-polling?api_server=' + API_SERVER,
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
@@ -170,7 +170,7 @@ const FileManagerSource = {
                 return new Promise(function(resolve, reject) {
                     //api/operational/download-jobs/job/
                    $.ajax({
-                    url: '/socket-polling',
+                    url: '/socket-polling?api_server=' + API_SERVER,
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
