@@ -169,7 +169,7 @@ class Account extends React.Component {
     }
     evaluateSubmit = (e) => {
         if (e.keyCode == 13) {
-            if (this.props.edit) {
+            if (this.props.params.name != 'create') {
                 this.update(e);
             } else {
                 this.create(e);
