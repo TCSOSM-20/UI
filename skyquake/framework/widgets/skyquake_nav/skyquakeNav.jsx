@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,10 @@ import { Link } from 'react-router';
 import Utils from 'utils/utils.js';
 import Crouton from 'react-crouton';
 import 'style/common.scss';
+
+import './skyquakeNav.scss';
+import SelectOption from '../form_controls/selectOption.jsx';
+import {FormSection} from '../form_controls/formControls.jsx';
 
 //Temporary, until api server is on same port as webserver
 var rw = require('utils/rw.js');
@@ -49,6 +53,36 @@ class LogoutAppMenuItem extends React.Component {
 }
 
 
+class UserNav extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    selectProject(e) {
+        let value = JSON.parse(e.currentTarget.value)
+        console.log('selected project', value)
+    }
+    render() {
+        let projects = this.props.projects.map((p,i) => {
+            return {
+                label: p.name,
+                value: p
+            }
+        })
+        return (
+            <div className="userSection">
+                Project:
+                <SelectOption options={projects} onChange={this.selectProject} className="projectSelect"/>
+            </div>
+        )
+    }
+}
+
+UserNav.defaultProps = {
+    projects: [
+
+    ]
+}
+
 //
 // Exported classes and functions
 //
@@ -63,6 +97,10 @@ export default class skyquakeNav extends React.Component {
         this.state = {};
         this.state.validateErrorEvent = 0;
         this.state.validateErrorMsg = '';
+    }
+    componentDidMount() {
+        this.props.store.openProjectSocket();
+        this.props.store.getUserProfile();
     }
     validateError = (msg) => {
         this.setState({
@@ -90,7 +128,7 @@ export default class skyquakeNav extends React.Component {
                 <div>
                 {this.returnCrouton()}
             <nav className="skyquakeNav">
-                {buildNav.call(this, this.props.nav, this.props.currentPlugin)}
+                {buildNav.call(this, this.props.nav, this.props.currentPlugin, this.props)}
             </nav>
 
             </div>
@@ -156,12 +194,15 @@ export function returnLinkItem(link) {
     return ref;
 }
 
+
+
+
 /**
  * Constructs nav for each plugin, along with available subnavs
  * @param  {array} nav List returned from /nav endpoint.
  * @return {array}     List of constructed nav element for each plugin
  */
-export function buildNav(nav, currentPlugin) {
+export function buildNav(nav, currentPlugin, props) {
     let navList = [];
     let navListHTML = [];
     let secondaryNav = [];
@@ -169,7 +210,8 @@ export function buildNav(nav, currentPlugin) {
     self.hasSubNav = {};
     let secondaryNavHTML = (
         <div className="secondaryNav" key="secondaryNav">
-        {secondaryNav}
+            {secondaryNav}
+            <UserNav projects={props.projects}/>
             <LogoutAppMenuItem />
         </div>
     )

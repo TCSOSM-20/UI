@@ -28,7 +28,7 @@ export default class SelectOption extends React.Component {
   render() {
     let html;
     let defaultValue = this.props.defaultValue;
-    let options =  this.props.options.map(function(op, i) {
+    let options =  this.props.options && this.props.options.map(function(op, i) {
     let value;
     let label;
     if(typeof(op) == 'object') {
@@ -40,12 +40,12 @@ export default class SelectOption extends React.Component {
     }
 
       return <option key={i} value={JSON.stringify(value)}>{label}</option>
-    });
+    }) || [];
     if (this.props.initial) {
       options.unshift(<option key='blank' value={JSON.stringify(this.props.defaultValue)}></option>);
     }
     html = (
-        <label key={this.props.key}>
+        <label key={this.props.key} className={this.props.className}>
             {this.props.label}
             {
               this.props.readonly ? defaultValue

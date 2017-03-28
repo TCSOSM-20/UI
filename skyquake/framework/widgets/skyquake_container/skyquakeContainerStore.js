@@ -20,6 +20,7 @@
 import Alt from './skyquakeAltInstance.js';
 import SkyquakeContainerSource from './skyquakeContainerSource.js';
 import SkyquakeContainerActions from './skyquakeContainerActions';
+let Utils = require('utils/utils.js');
 import _ from 'lodash';
 //Temporary, until api server is on same port as webserver
 var rw = require('utils/rw.js');
@@ -32,6 +33,8 @@ class SkyquakeContainerStore {
         this.nav = {};
         this.notifications = [];
         this.socket = null;
+        this.projects = [];
+        this.user = {};
         //Notification defaults
         this.notificationMessage = '';
         this.displayNotification = false;
@@ -161,6 +164,32 @@ class SkyquakeContainerStore {
         })
     }
 
+    openProjectSocketSuccess = (connection) => {
+        var self = this;
+        var ws = window.multiplexer.channel(connection);
+        if (!connection) return;
+        self.setState({
+            socket: ws.ws,
+            channelId: connection
+        });
+        ws.onmessage = function(socket) {
+            try {
+                var data = JSON.parse(socket.data);
+                Utils.checkAuthentication(data.statusCode, function() {
+                    self.closeSocket();
+                });
+
+                self.setState({
+                    projects: data.project
+                });
+            } catch(e) {
+                console.log('HIT an exception in openProjectSocketSuccess', e);
+            }
+        };
+    }
+    getUserProfileSuccess = (user) => {
+        this.setState({user})
+    }
     //Notifications
     showNotification = (data) => {
         let state = {

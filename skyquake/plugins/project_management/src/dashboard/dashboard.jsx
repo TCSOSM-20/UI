@@ -94,9 +94,10 @@ class ProjectManagementDashboard extends React.Component {
         let self = this;
         e.preventDefault();
         e.stopPropagation();
-        let projectUsers = self.state.projectUsers;
-        let cleanUsers = this.cleanUsers(projectUsers);
         let projectName = self.state['name'];
+        let projectUsers = self.state.projectUsers;
+        let cleanUsers = this.cleanUsers(projectUsers, projectName);
+
 
         this.Store.createProject({
             'name': projectName,
@@ -111,9 +112,10 @@ class ProjectManagementDashboard extends React.Component {
         let self = this;
         e.preventDefault();
         e.stopPropagation();
+         let projectName = self.state['name'];
         let projectUsers = self.state.projectUsers;
-        let cleanUsers = this.cleanUsers(projectUsers);
-        let projectName = self.state['name'];
+        let cleanUsers = this.cleanUsers(projectUsers, projectName);
+
 
         this.Store.updateProject(_.merge({
             'name': projectName,
@@ -124,7 +126,7 @@ class ProjectManagementDashboard extends React.Component {
             }
         }));
     }
-    cleanUsers(projectUsers) {
+    cleanUsers(projectUsers, projectName) {
         let cleanUsers = [];
         //Remove null values from role
         projectUsers.map((u) => {
@@ -132,8 +134,10 @@ class ProjectManagementDashboard extends React.Component {
            u.role && u.role.map((r,i) => {
              let role = {};
              //you may add a user without a role or a keys, but if one is present then the other must be as well.
-            if(!r.role || ( !r || ((r.role || r['keys']) && (!r.role || !r['keys'])))) {
+            if(!r.role ) {
             } else {
+                delete r.keys;
+                    // r.keys = projectName;
                     cleanRoles.push(r)
             }
            });

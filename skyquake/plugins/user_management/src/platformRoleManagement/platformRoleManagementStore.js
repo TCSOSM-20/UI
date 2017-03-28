@@ -150,14 +150,12 @@ export default class PlatformRoleManagementStore {
         let u = JSON.parse(this.selectedUser);
         let r = this.selectedRole;
         let platformUsers = this.platformUsers;
-        let keys = ","
         console.log('adding user')
         platformUsers.push({
           'user-name': u['user-name'],
           'user-domain': u['user-domain'],
           "role":[{
-                      "role": r,
-                      "keys": keys
+                      "role": r
             }
           ]
         })
@@ -168,16 +166,13 @@ export default class PlatformRoleManagementStore {
         let {userIndex, roleIndex, checked} = data;
         let platformUsers = this.platformUsers;
         let selectedRole = self.roles[roleIndex];
-        let keys = ","
         if(checked) {
             if(!platformUsers[userIndex].role) platformUsers[userIndex].role = [];
             platformUsers[userIndex].role.push({
-                role: selectedRole,
-                keys: keys
+                role: selectedRole
             })
         } else {
             let role = platformUsers[userIndex].role;
-            let roleIndex = _.findIndex(role, {role:selectedRole, keys: keys})
             platformUsers[userIndex].role.splice(roleIndex, 1)
         }
        self.setState({platformUsers});
@@ -187,7 +182,6 @@ export default class PlatformRoleManagementStore {
         let {userIndex, roleIndex, value} = data;
         let platformUsers = this.platformUsers;
         platformUsers[userIndex].role[roleIndex].role = value;
-        platformUsers[userIndex].role[roleIndex]['keys'] = value;
 
     }
     addRoleToUserInProject(userIndex) {
@@ -196,9 +190,7 @@ export default class PlatformRoleManagementStore {
             platformUsers[userIndex].role = [];
         }
         platformUsers[userIndex].role.push({
-              'role': null,
-              //temp until we get actual keys
-              'keys' : ','
+              'role': null
             });
         this.setState({
             platformUsers

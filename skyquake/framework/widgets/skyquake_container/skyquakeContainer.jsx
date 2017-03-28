@@ -18,7 +18,7 @@
 import React from 'react';
 import AltContainer from 'alt-container';
 import Alt from './skyquakeAltInstance.js';
-import SkyquakeNav from './skyquakeNav.jsx';
+import SkyquakeNav from '../skyquake_nav/skyquakeNav.jsx';
 import EventCenter from './eventCenter.jsx';
 import SkyquakeContainerActions from './skyquakeContainerActions.js'
 import SkyquakeContainerStore from './skyquakeContainerStore.js';
@@ -111,7 +111,8 @@ export default class skyquakeContainer extends React.Component {
                         <ScreenLoader show={displayScreenLoader}/>
                         <SkyquakeNav nav={this.state.nav}
                             currentPlugin={this.state.currentPlugin}
-                            store={SkyquakeContainerStore} />
+                            store={SkyquakeContainerStore}
+                            projects={this.state.projects} />
                         <div className="titleBar">
                             <h1>{(this.state.nav.name ? this.state.nav.name.replace('_', ' ').replace('-', ' ') : this.state.currentPlugin && this.state.currentPlugin.replace('_', ' ').replace('-', ' ')) + tag}</h1>
                         </div>

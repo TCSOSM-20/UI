@@ -25,7 +25,7 @@ module.exports = function(Alt) {
                   type: 'GET',
                   beforeSend: Utils.addAuthorizationStub,
                   success: function(data, textStatus, jqXHR) {
-                    resolve(data.users);
+                    resolve(data.user);
                   }
                 }).fail(function(xhr){
                   //Authentication and the handling of fail states should be wrapped up into a connection class.

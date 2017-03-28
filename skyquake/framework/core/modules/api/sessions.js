@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -109,7 +109,10 @@ sessionsAPI.create = function(req, res) {
 
             req.session.authorization = authorization_header_string;
             req.session.loggedIn = true;
-
+            req.session.userdata = {
+                username: username,
+                // project: req.session.projectId
+            };
             var successMsg = 'User =>' + username + ' successfully logged in.';
             successMsg += req.session.projectId ? 'Project =>' + req.session.projectId + ' set as default.' : '';
 
