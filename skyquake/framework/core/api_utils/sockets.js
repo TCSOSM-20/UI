@@ -284,7 +284,7 @@ function PollingSocket(url, req, interval, config) {
 
   var pollServer = function() {
     Request({
-      url: url,
+      url: utils.projectContextUrl(req, url),
       method: config.method || 'GET',
       headers: requestHeaders,
       json: config.payload,

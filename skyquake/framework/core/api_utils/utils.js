@@ -49,6 +49,14 @@ var confdPort = function(api_server) {
 	return api_server + ':' + CONFD_PORT;
 };
 
+var projectContextUrl = function(req, url) {
+	if (req.session && req.session.projectId) {
+		return url.replace(/(\/api\/operational\/|\/api\/config\/|\/api\/operations\/)(.*)/, '$1project/pname/$2');
+
+	}
+	return url;
+}
+
 
 var validateResponse = function(callerName, error, response, body, resolve, reject) {
 	var res = {};
@@ -197,7 +205,7 @@ var passThroughConstructor = function(app) {
 		}
 		new Promise(function(resolve, reject) {
 			request({
-				uri: uri,
+				uri: projectContextUrl(req, uri),
 				method: 'GET',
 				headers: _.extend({}, CONSTANTS.HTTP_HEADERS.accept[type], {
 					'Authorization': req.session && req.session.authorization,
@@ -244,5 +252,7 @@ module.exports = {
 
     passThroughConstructor: passThroughConstructor,
 
-    getPortForProtocol: getPortForProtocol
+    getPortForProtocol: getPortForProtocol,
+
+    projectContextUrl: projectContextUrl
 };

@@ -37,7 +37,7 @@ Composer.get = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -47,7 +47,7 @@ Composer.get = function(req) {
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -57,7 +57,7 @@ Composer.get = function(req) {
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization
@@ -170,7 +170,7 @@ Composer.delete = function(req) {
     console.log('Deleting', catalogType, id, 'from', api_server);
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id),
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization
@@ -218,7 +218,7 @@ Composer.getVNFD = function(req) {
         return new Promise(function(resolve, reject) {
             var url = utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd' + (id ? '/' + id : '') + '?deep';
             request({
-                uri: url,
+                uri: utils.projectContextUrl(req, url),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': authorization
@@ -257,7 +257,7 @@ Composer.create = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + '/api/config/' + catalogType + '-catalog',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/' + catalogType + '-catalog'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -287,7 +287,7 @@ Composer.updateSave = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -322,7 +322,7 @@ Composer.update = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-update',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-update'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -374,7 +374,7 @@ Composer.upload = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-create',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-create'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -436,7 +436,7 @@ Composer.addFile = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-file-add',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-file-add'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -474,7 +474,7 @@ Composer.exportPackage = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-export',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-export'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -532,7 +532,7 @@ FileManager.get = function(req) {
     function deleteFile(payload) {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -554,7 +554,7 @@ FileManager.get = function(req) {
     function download(payload) {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -576,7 +576,7 @@ FileManager.get = function(req) {
     function list(payload) {
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/get-package-endpoint',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/get-package-endpoint'),
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -597,7 +597,7 @@ FileManager.get = function(req) {
                     }
                     parsedEndpoint = URL.parse(endpoint);
                     rp({
-                        uri: api_server + ':' + parsedEndpoint.port + parsedEndpoint.path,
+                        uri: utils.projectContextUrl(req, api_server + ':' + parsedEndpoint.port + parsedEndpoint.path),
                         method: 'GET',
                         headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                             'Authorization': req.session && req.session.authorization
@@ -628,7 +628,7 @@ FileManager.job = function(req) {
     var id = req.params['id'];
     return new Promise(function(resolve, reject) {
         request({
-            url: uri + url + '?deep',
+            url: utils.projectContextUrl(req, uri + url + '?deep'),
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization

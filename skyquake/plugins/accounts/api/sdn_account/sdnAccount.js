@@ -41,7 +41,7 @@ Sdn.get = function(req) {
           'Authorization': req.session && req.session.authorization
         });
       request({
-          url: utils.confdPort(api_server) + '/api/operational/sdn/account?deep',
+          url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operational/sdn/account?deep'),
           type: 'GET',
           headers: requestHeaders,
           forever: constants.FOREVER_ON,
@@ -81,7 +81,7 @@ Sdn.get = function(req) {
         });
 
       request({
-          url: utils.confdPort(api_server) + '/api/operational/sdn/account/' + id + '?deep',
+          url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operational/sdn/account/' + id + '?deep'),
           type: 'GET',
           headers: requestHeaders,
           forever: constants.FOREVER_ON,
@@ -134,7 +134,7 @@ Sdn.create = function(req) {
       });
 
     request({
-      url: utils.confdPort(api_server) + '/api/config/sdn/account',
+      url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/sdn/account'),
       method: 'POST',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -172,7 +172,7 @@ Sdn.update = function(req) {
       });
 
     request({
-      url: utils.confdPort(api_server) + '/api/config/sdn/account/' + id,
+      url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/sdn/account/' + id),
       method: 'PUT',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -215,7 +215,7 @@ Sdn.delete = function(req) {
       });
 
     request({
-      url: utils.confdPort(api_server) + '/api/config/sdn/account/' + id,
+      url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/sdn/account/' + id),
       method: 'DELETE',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,

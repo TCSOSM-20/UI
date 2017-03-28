@@ -98,7 +98,7 @@ function getAccount(req) {
         );
 
         request({
-                url: url + '?deep',
+                url: utils.projectContextUrl(req, url + '?deep'),
                 type: 'GET',
                 headers: requestHeaders,
                 forever: constants.FOREVER_ON,
@@ -163,7 +163,7 @@ function updateAccount(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: url,
+            url: utils.projectContextUrl(req, url),
             method: method,
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -197,7 +197,7 @@ function deleteAccount(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: url,
+            url: utils.projectContextUrl(req, url),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -244,7 +244,7 @@ function refreshAccountConnectionStatus (req) {
     return new Promise(function(resolve, reject) {
 
         request({
-            uri: utils.confdPort(api_server) + '/api/operations/' + rpcInfo[Type].rpc,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/' + rpcInfo[Type].rpc),
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,

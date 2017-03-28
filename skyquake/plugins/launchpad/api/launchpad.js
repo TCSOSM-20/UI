@@ -59,7 +59,7 @@ RPC.executeNSServicePrimitive = function(req) {
             }
         );
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/operations/exec-ns-service-primitive',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/exec-ns-service-primitive'),
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -92,7 +92,7 @@ RPC.getNSServicePrimitiveValues = function(req) {
             }
         );
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operations/get-ns-service-primitive-values',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/get-ns-service-primitive-values'),
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -142,7 +142,7 @@ RPC.refreshAccountConnectionStatus = function(req) {
     return new Promise(function(resolve, reject) {
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operations/' + rpcInfo[Type].rpc,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/' + rpcInfo[Type].rpc),
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -171,7 +171,7 @@ Catalog.get = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -181,7 +181,7 @@ Catalog.get = function(req) {
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -191,7 +191,7 @@ Catalog.get = function(req) {
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization
@@ -315,7 +315,7 @@ Catalog.delete = function(req) {
     console.log('Deleting', catalogType, id, 'from', api_server);
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id),
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization
@@ -363,7 +363,7 @@ Catalog.getVNFD = function(req) {
         return new Promise(function(resolve, reject) {
             var url = utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd' + (id ? '/' + id : '') + '?deep';
             request({
-                uri: url,
+                uri: utils.projectContextUrl(req, url),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': authorization
@@ -402,7 +402,7 @@ Catalog.create = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -432,7 +432,7 @@ Catalog.update = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -510,7 +510,7 @@ NSR.get = function(req) {
     var id = req.params.id;
     var nsdInfo = new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep'),
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                 'Authorization': req.session && req.session.authorization
@@ -533,7 +533,7 @@ NSR.get = function(req) {
     })
     var config = new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-config/nsr' + (id ? '/' + id : '') + '?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-config/nsr' + (id ? '/' + id : '') + '?deep'),
             method: 'GET',
             headers: _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
                 'Authorization': req.session && req.session.authorization
@@ -557,7 +557,7 @@ NSR.get = function(req) {
     });
     var opData = new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr' + (id ? '/' + id : '') + '?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr' + (id ? '/' + id : '') + '?deep'),
             method: 'GET',
             headers: _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
                 'Authorization': req.session && req.session.authorization
@@ -863,7 +863,7 @@ NSR.create = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -907,7 +907,7 @@ NSR.delete = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1003,7 +1003,7 @@ NSR.setStatus = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/admin-status/',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/admin-status/'),
             method: 'PUT',
             headers: requestHeaders,
             json: {
@@ -1058,7 +1058,7 @@ NSR.createScalingGroupInstance = function(req) {
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/scaling-group/' + scaling_group_id + '/instance',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/scaling-group/' + scaling_group_id + '/instance'),
             method: 'POST',
             headers: requestHeaders,
             json: jsonData,
@@ -1107,7 +1107,7 @@ NSR.deleteScalingGroupInstance = function(req) {
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/scaling-group/' + scaling_group_id + '/instance/' + scaling_instance_id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/scaling-group/' + scaling_group_id + '/instance/' + scaling_instance_id),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1151,7 +1151,7 @@ NSR.nsd.vld.get = function(req) {
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld' + (vld_id ? '/' + vld_id : '')  +'?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld' + (vld_id ? '/' + vld_id : '')  +'?deep'),
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1194,7 +1194,7 @@ NSR.nsd.vld.create = function(req) {
             'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld' + (vld_id ? '/' + vld_id : ''),
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld' + (vld_id ? '/' + vld_id : '')),
             method: vld_id ? 'PUT' : 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1238,7 +1238,7 @@ NSR.nsd.vld.delete = function(req) {
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld/' + vld_id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld/' + vld_id),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1264,7 +1264,7 @@ VNFR.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1346,7 +1346,7 @@ VNFR.getByNSR = function(req) {
             });
         } else {
             request({
-                url: uri,
+                url: utils.projectContextUrl(req, uri),
                 method: 'GET',
                 headers: headers,
                 forever: constants.FOREVER_ON,
@@ -1386,7 +1386,7 @@ VLR.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1410,7 +1410,7 @@ RIFT.api = function(req) {
     var url = req.path;
     return new Promise(function(resolve, reject) {
         request({
-            url: uri + url + '?deep',
+            url: utils.projectContextUrl(req, uri + url + '?deep'),
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization
@@ -1438,7 +1438,7 @@ ComputeTopology.get = function(req) {
     return new Promise(function(resolve, reject) {
         var nsrPromise = new Promise(function(success, failure) {
             request({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr/' + nsr_id + '?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr/' + nsr_id + '?deep'),
                 method: 'GET',
                 headers: _.extend({},
                     constants.HTTP_HEADERS.accept.data, {
@@ -1487,7 +1487,7 @@ ComputeTopology.get = function(req) {
                     vnfrPromises.push(
                         new Promise(function(success, failure) {
                             rp({
-                                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/vnfr-catalog/vnfr/' + vnfrId + '?deep',
+                                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/vnfr-catalog/vnfr/' + vnfrId + '?deep'),
                                 method: 'GET',
                                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                                     'Authorization': req.session && req.session.authorization
@@ -1585,7 +1585,7 @@ NetworkTopology.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1616,7 +1616,7 @@ VDUR.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1643,7 +1643,7 @@ VDUR.consoleUrl.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1670,7 +1670,7 @@ CloudAccount.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1707,7 +1707,7 @@ ConfigAgentAccount.get = function(req) {
                 });
 
             request({
-                    url: utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account',
+                    url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account'),
                     type: 'GET',
                     headers: requestHeaders,
                     forever: constants.FOREVER_ON,
@@ -1747,7 +1747,7 @@ ConfigAgentAccount.get = function(req) {
                 });
 
             request({
-                    url: utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account/' + id,
+                    url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account/' + id),
                     type: 'GET',
                     headers: requestHeaders,
                     forever: constants.FOREVER_ON,
@@ -1800,7 +1800,7 @@ ConfigAgentAccount.create = function(req) {
             });
 
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/config-agent',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/config-agent'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1839,7 +1839,7 @@ ConfigAgentAccount.update = function(req) {
             });
 
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + id,
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + id),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1880,7 +1880,7 @@ ConfigAgentAccount.delete = function(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + id,
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + id),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1906,7 +1906,7 @@ DataCenters.get = function(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/operational/datacenters?deep',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/datacenters?deep'),
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1947,7 +1947,7 @@ SSHkey.get  = function(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair?deep',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair?deep'),
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1981,7 +1981,7 @@ SSHkey.delete = function(req) {
     console.log('Deleting ssk-key', id);
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/' + id),
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization
@@ -2002,7 +2002,7 @@ SSHkey.post = function(req) {
     var data = req.body;
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/'),
             method: 'POST',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization
@@ -2025,7 +2025,7 @@ SSHkey.put = function(req) {
     var data = req.body;
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/'),
             method: 'PUT',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.session && req.session.authorization

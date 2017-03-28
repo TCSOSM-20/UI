@@ -41,7 +41,7 @@ ConfigAgentAccount.get = function(req) {
                 });
 
             request({
-                    url: utils.confdPort(api_server) + '/api/operational/config-agent/account',
+                    url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operational/config-agent/account'),
                     type: 'GET',
                     headers: requestHeaders,
                     forever: constants.FOREVER_ON,
@@ -81,7 +81,7 @@ ConfigAgentAccount.get = function(req) {
                 });
 
             request({
-                    url: utils.confdPort(api_server) + '/api/operational/config-agent/account/' + id,
+                    url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operational/config-agent/account/' + id),
                     type: 'GET',
                     headers: requestHeaders,
                     forever: constants.FOREVER_ON,
@@ -134,7 +134,7 @@ ConfigAgentAccount.create = function(req) {
             });
 
         request({
-            url: utils.confdPort(api_server) + '/api/config/config-agent',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/config-agent'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -173,7 +173,7 @@ ConfigAgentAccount.update = function(req) {
             });
 
         request({
-            url: utils.confdPort(api_server) + '/api/config/config-agent/account/' + id,
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/config-agent/account/' + id),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -214,7 +214,7 @@ ConfigAgentAccount.delete = function(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + '/api/config/config-agent/account/' + id,
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/config-agent/account/' + id),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,

@@ -104,7 +104,7 @@ sessionsAPI.create = function(req, res) {
                     });
                 });
 
-                req.session.projectId = (project_list_for_user.length > 0) && project_list_for_user[0];
+                req.session.projectId = (project_list_for_user.length > 0) && project_list_for_user.sort() && project_list_for_user[0];
             }
 
             req.session.authorization = authorization_header_string;

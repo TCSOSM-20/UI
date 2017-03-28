@@ -71,7 +71,7 @@ Router.get('/check-auth', function(req, res) {
 function checkAuth(uri, req){
     return new Promise(function(resolve, reject) {
         request({
-            uri: uri,
+            uri: utils.projectContextUrl(uri),
             method: 'GET',
             headers: _.extend({}, {
                 'Authorization': req.session && req.session.authorization,

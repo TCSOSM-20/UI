@@ -23,7 +23,7 @@ return new Promise(function(resolve, reject) {
         );
 
         request({
-                url: url + '?deep',
+                url: utils.projectContextUrl(req, url + '?deep'),
                 type: 'GET',
                 headers: requestHeaders,
                 forever: constants.FOREVER_ON,
@@ -74,7 +74,7 @@ function updateAccount(req) {
                 'Authorization': req.session && req.session.authorization
             });
         request({
-            url: url,
+            url: utils.projectContextUrl(req, url),
             method: method,
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
