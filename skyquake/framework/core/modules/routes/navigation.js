@@ -49,7 +49,7 @@ Router.get('/', cors(), function(req, res) {
 		res.redirect('/launchpad/?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname));
 	} else {
 		console.log('Redirect to login.html');
-		res.redirect('login.html?api_server=' + api_server);
+		res.redirect('login.html?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname));
 	}
 });
 
