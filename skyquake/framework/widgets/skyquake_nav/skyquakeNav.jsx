@@ -52,26 +52,65 @@ class LogoutAppMenuItem extends React.Component {
     }
 }
 
+class SelectProject extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    selectProject(e) {
+        let value = JSON.parse(e.currentTarget.value);
+        console.log('selected project', value)
+    }
+    render() {
+        let props = this.props;
+        let currentValue = JSON.stringify(props.currentProject);
+        let projects = this.props.projects.map((p,i) => {
+            return {
+                label: p.name,
+                value: p.name
+            }
+        });
+        return (
+            <div className="userSection app">
+                Project:
+                <SelectOption
+                    options={projects}
+                    value={currentValue}
+                    defaultValue={currentValue}
+                    onChange={props.onSelectProject}
+                    className="projectSelect" />
+            </div>
+        )
+    }
+}
 
 class UserNav extends React.Component {
     constructor(props) {
         super(props);
+    }
+    handleLogout() {
+        Utils.clearAuthentication();
     }
     selectProject(e) {
         let value = JSON.parse(e.currentTarget.value)
         console.log('selected project', value)
     }
     render() {
-        let projects = this.props.projects.map((p,i) => {
-            return {
-                label: p.name,
-                value: p
-            }
-        })
+        let props = this.props;
         return (
-            <div className="userSection">
-                Project:
-                <SelectOption options={projects} onChange={this.selectProject} className="projectSelect"/>
+            <div className="app">
+                <h2>
+                    <a>
+                        {props.currentUser}
+                    </a>
+                    <span className="oi" data-glyph="caret-bottom"></span>
+                </h2>
+                <ul className="menu">
+                    <li>
+                        <a onClick={this.handleLogout}>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
         )
     }
@@ -211,8 +250,12 @@ export function buildNav(nav, currentPlugin, props) {
     let secondaryNavHTML = (
         <div className="secondaryNav" key="secondaryNav">
             {secondaryNav}
-            <UserNav projects={props.projects}/>
-            <LogoutAppMenuItem />
+            <SelectProject
+                onSelectProject={props.store.selectActiveProject}
+                projects={props.projects}
+                currentProject={props.currentProject} />
+            <UserNav
+                currentUser={props.currentUser}  />
         </div>
     )
     for (let k in nav) {

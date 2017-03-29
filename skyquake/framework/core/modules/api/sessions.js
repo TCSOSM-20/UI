@@ -139,7 +139,7 @@ sessionsAPI.addProjectToSession = function(req, res) {
     return new Promise(function(resolve, reject) {
         if (req.session && req.session.loggedIn == true) {
             req.session.projectId = req.params.projectId;
-            var successMsg = 'Added project' + projectId + ' to session' + req.sessionID;
+            var successMsg = 'Added project' + req.session.projectId + ' to session' + req.sessionID;
             console.log(successMsg);
 
             return resolve ({

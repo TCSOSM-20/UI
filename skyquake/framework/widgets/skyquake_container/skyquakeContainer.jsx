@@ -85,7 +85,7 @@ export default class skyquakeContainer extends React.Component {
     render() {
         const {displayNotification, notificationMessage, displayScreenLoader, notificationType, ...state} = this.state;
         var html;
-
+        let nav = _.cloneDeep(this.state.nav);
         if (this.matchesLoginUrl()) {
             html = (
                 <AltContainer>
@@ -109,8 +109,10 @@ export default class skyquakeContainer extends React.Component {
                             onDismiss={SkyquakeContainerActions.hideNotification}
                         />
                         <ScreenLoader show={displayScreenLoader}/>
-                        <SkyquakeNav nav={this.state.nav}
-                            currentPlugin={this.state.currentPlugin}
+                        <SkyquakeNav nav={nav}
+                            currentPlugin={this.state.user.currentPlugin}
+                            currentUser={this.state.user.userId}
+                            currentProject={this.state.user.projectId}
                             store={SkyquakeContainerStore}
                             projects={this.state.projects} />
                         <div className="titleBar">

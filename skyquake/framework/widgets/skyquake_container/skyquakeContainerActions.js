@@ -31,5 +31,6 @@ export default Alt.generateActions(
     'showScreenLoader',
     'hideScreenLoader',
     'openProjectSocketSuccess',
-    'getUserProfileSuccess'
+    'getUserProfileSuccess',
+    'selectActiveProjectSuccess'
 );

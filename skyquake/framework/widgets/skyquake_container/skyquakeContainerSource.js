@@ -160,9 +160,37 @@ export default {
                     });;
                 });
             },
+            loading: Alt.actions.global.showScreenLoader,
             success: SkyquakeContainerActions.getUserProfileSuccess
         }
-    }
+    },
 
+    selectActiveProject() {
+        return {
+            remote: function(state, event) {
+                let projectId;
+                try {
+                    projectId = JSON.parse(JSON.parse(event.currentTarget.value));
+                } catch(e) {
+                    console.log('Something went wrong in the selectActiveProject source function', e);
+                }
+
+                return new Promise(function(resolve, reject) {
+                    $.ajax({
+                        url: `/session/${projectId}?api_server=${API_SERVER}`,
+                        type: 'PUT',
+                        beforeSend: Utils.addAuthorizationStub,
+                        success: function(data) {
+                            resolve(projectId);
+                        }
+                    }).fail(function(xhr) {
+                        //Authentication and the handling of fail states should be wrapped up into a connection class.
+                        Utils.checkAuthentication(xhr.status);
+                    });;
+                });
+            },
+            success: SkyquakeContainerActions.selectActiveProjectSuccess
+        }
+    }
 }
 

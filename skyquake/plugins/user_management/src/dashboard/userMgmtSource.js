@@ -42,7 +42,7 @@ module.exports = function(Alt) {
             'error': 'There was an error retrieving the resource orchestrator information.'
           }),
           success: Alt.actions.global.getUsersSuccess,
-                    loading: Alt.actions.global.showScreenLoader,
+          loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
         },
         updateUser: {

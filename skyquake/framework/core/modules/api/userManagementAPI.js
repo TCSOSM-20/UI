@@ -72,9 +72,6 @@ UserManagement.getProfile = function(req) {
             userId: req.session.userdata.username,
             projectId: req.session.projectId
         };
-            // if (result[0].body) {
-            //     response['data']['users'] = JSON.parse(result[0].body)['rw-user:users'];
-            // }
         response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
 
         resolve(response);

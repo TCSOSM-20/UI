@@ -178,18 +178,25 @@ class SkyquakeContainerStore {
                 Utils.checkAuthentication(data.statusCode, function() {
                     self.closeSocket();
                 });
-
-                self.setState({
-                    projects: data.project
-                });
+                if (!_.isEqual(data.project, self.projects)) {
+                    self.setState({
+                        projects: data.project
+                    });
+                }
             } catch(e) {
                 console.log('HIT an exception in openProjectSocketSuccess', e);
             }
         };
     }
     getUserProfileSuccess = (user) => {
+        this.alt.actions.global.hideScreenLoader.defer();
         this.setState({user})
     }
+    selectActiveProjectSuccess = (projectId) => {
+        let user = this.user;
+        user.projectId = projectId;
+        this.setState({user});
+        }
     //Notifications
     showNotification = (data) => {
         let state = {
@@ -201,7 +208,8 @@ class SkyquakeContainerStore {
         if(typeof(data) == 'string') {
 
         } else {
-            state.notificationMessage = data.msg;
+            if(!data) data = {};
+            state.notificationMessage = data.msg || 'Something very bad happened wrong';
             if(data.type) {
                 state.notificationType = data.type;
             }
