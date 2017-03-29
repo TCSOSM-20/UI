@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -112,7 +112,10 @@ sessionsAPI.create = function(req, res) {
 
             req.session.authorization = authorization_header_string;
             req.session.loggedIn = true;
-
+            req.session.userdata = {
+                username: username,
+                // project: req.session.projectId
+            };
             var successMsg = 'User =>' + username + ' successfully logged in.';
             successMsg += req.session.projectId ? 'Project =>' + req.session.projectId + ' set as default.' : '';
 
@@ -139,7 +142,7 @@ sessionsAPI.addProjectToSession = function(req, res) {
     return new Promise(function(resolve, reject) {
         if (req.session && req.session.loggedIn == true) {
             req.session.projectId = req.params.projectId;
-            var successMsg = 'Added project' + projectId + ' to session' + req.sessionID;
+            var successMsg = 'Added project' + req.session.projectId + ' to session' + req.sessionID;
             console.log(successMsg);
 
             return resolve ({

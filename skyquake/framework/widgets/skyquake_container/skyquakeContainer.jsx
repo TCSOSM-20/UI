@@ -18,7 +18,7 @@
 import React from 'react';
 import AltContainer from 'alt-container';
 import Alt from './skyquakeAltInstance.js';
-import SkyquakeNav from './skyquakeNav.jsx';
+import SkyquakeNav from '../skyquake_nav/skyquakeNav.jsx';
 import EventCenter from './eventCenter.jsx';
 import SkyquakeContainerActions from './skyquakeContainerActions.js'
 import SkyquakeContainerStore from './skyquakeContainerStore.js';
@@ -85,7 +85,7 @@ export default class skyquakeContainer extends React.Component {
     render() {
         const {displayNotification, notificationMessage, displayScreenLoader, notificationType, ...state} = this.state;
         var html;
-
+        let nav = _.cloneDeep(this.state.nav);
         if (this.matchesLoginUrl()) {
             html = (
                 <AltContainer>
@@ -109,9 +109,12 @@ export default class skyquakeContainer extends React.Component {
                             onDismiss={SkyquakeContainerActions.hideNotification}
                         />
                         <ScreenLoader show={displayScreenLoader}/>
-                        <SkyquakeNav nav={this.state.nav}
-                            currentPlugin={this.state.currentPlugin}
-                            store={SkyquakeContainerStore} />
+                        <SkyquakeNav nav={nav}
+                            currentPlugin={this.state.user.currentPlugin}
+                            currentUser={this.state.user.userId}
+                            currentProject={this.state.user.projectId}
+                            store={SkyquakeContainerStore}
+                            projects={this.state.projects} />
                         <div className="titleBar">
                             <h1>{(this.state.nav.name ? this.state.nav.name.replace('_', ' ').replace('-', ' ') : this.state.currentPlugin && this.state.currentPlugin.replace('_', ' ').replace('-', ' ')) + tag}</h1>
                         </div>

@@ -15,7 +15,7 @@ export default class ProjectManagementStore {
         this.projectUsers = [];
         this.selectedUser = null;
         this.selectedRole = null;
-        this.roles = ['rw-rbac-platform:platform-admin', 'rw-rbac-platform:platform-oper', 'rw-rbac-platform:super-admin'
+        this.roles = ['rw-project:project-admin', 'rw-project:project-oper', 'rw-project:project-create'
         // ,'some_other_role', 'yet_another_role', 'operator_role', 'some_other_role', 'yet_another_role'
         ];
         this.users = [];
@@ -147,17 +147,17 @@ export default class ProjectManagementStore {
         });
     }
     handleAddUser(e) {
+        let self = this;
         let u = JSON.parse(this.selectedUser);
         let r = this.selectedRole;
         let projectUsers = this.projectUsers;
-        let keys = ',';
         console.log('adding user')
         projectUsers.push({
           'user-name': u['user-name'],
           'user-domain': u['user-domain'],
           "role":[{
                       "role": r,
-                      "keys": keys
+                      "keys": self.name
             }
           ]
         })
@@ -168,16 +168,14 @@ export default class ProjectManagementStore {
         let {userIndex, roleIndex, checked} = data;
         let projectUsers = this.projectUsers;
         let selectedRole = self.roles[roleIndex];
-        let keys = ',';
         if(checked) {
             if(!projectUsers[userIndex].role) projectUsers[userIndex].role = [];
             projectUsers[userIndex].role.push({
-                role: self.roles[roleIndex],
-                keys: keys
+                role: self.roles[roleIndex]
             })
         } else {
             let role = projectUsers[userIndex].role;
-            let roleIndex = _.findIndex(role, {role:selectedRole, keys: keys})
+            let roleIndex = _.findIndex(role, {role:selectedRole})
             projectUsers[userIndex].role.splice(roleIndex, 1)
         }
        self.setState({projectUsers});
@@ -186,9 +184,7 @@ export default class ProjectManagementStore {
     handleUpdateUserRoleInProject(data) {
         let {userIndex, roleIndex, value} = data;
         let projectUsers = this.projectUsers;
-        let keys = ',';
         projectUsers[userIndex].role[roleIndex].role = value;
-        projectUsers[userIndex].role[roleIndex]['keys'] = keys;
 
     }
     addRoleToUserInProject(userIndex) {
@@ -196,11 +192,8 @@ export default class ProjectManagementStore {
         if(!projectUsers[userIndex].role) {
             projectUsers[userIndex].role = [];
         }
-        let keys = ',';
         projectUsers[userIndex].role.push({
-              'role': null,
-              //temp until we get actual keys
-              'keys' : keys
+              'role': null
             });
         this.setState({
             projectUsers

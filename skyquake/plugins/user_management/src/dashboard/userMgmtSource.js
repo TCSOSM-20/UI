@@ -25,7 +25,7 @@ module.exports = function(Alt) {
                   type: 'GET',
                   beforeSend: Utils.addAuthorizationStub,
                   success: function(data, textStatus, jqXHR) {
-                    resolve(data.users);
+                    resolve(data.user);
                   }
                 }).fail(function(xhr){
                   //Authentication and the handling of fail states should be wrapped up into a connection class.
@@ -42,7 +42,7 @@ module.exports = function(Alt) {
             'error': 'There was an error retrieving the resource orchestrator information.'
           }),
           success: Alt.actions.global.getUsersSuccess,
-                    loading: Alt.actions.global.showScreenLoader,
+          loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
         },
         updateUser: {

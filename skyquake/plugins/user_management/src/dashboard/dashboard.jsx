@@ -79,7 +79,7 @@ class UserManagementDashboard extends React.Component {
     cancelEditUser = () => {
         this.actions.editUser(true)
     }
-    closePanel = () => {
+    osePanel = () => {
         this.actions.handleCloseUserPanel();
     }
     // updateUser = (e) => {

@@ -33,7 +33,7 @@ UserManagement.get = function(req) {
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operational/user-config/users',
+                uri: utils.confdPort(api_server) + '/api/operational/user-config/user',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization
@@ -46,7 +46,7 @@ UserManagement.get = function(req) {
             var response = {};
             response['data'] = {};
             if (result[0].body) {
-                response['data']['users'] = JSON.parse(result[0].body)['rw-user:users'];
+                response['data']['user'] = JSON.parse(result[0].body)['rw-user:user'];
             }
             response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
 
@@ -62,12 +62,27 @@ UserManagement.get = function(req) {
         });
     });
 };
+
+UserManagement.getProfile = function(req) {
+    var self = this;
+    var api_server = req.query['api_server'];
+    return new Promise(function(resolve, reject) {
+        var response = {};
+            response['data'] = {
+            userId: req.session.userdata.username,
+            projectId: req.session.projectId
+        };
+        response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
+
+        resolve(response);
+    });
+};
 UserManagement.create = function(req) {
     var self = this;
     var api_server = req.query['api_server'];
     var data = req.body;
     data = {
-        "users":[data]
+        "user":[data]
     }
     return new Promise(function(resolve, reject) {
         Promise.all([
@@ -107,7 +122,7 @@ UserManagement.update = function(req) {
     var api_server = req.query['api_server'];
     var bodyData = req.body;
     data = {
-        "users":[bodyData]
+        "user":[bodyData]
     }
     var updateTasks = [];
     if(bodyData.hasOwnProperty('old-password')) {
@@ -174,7 +189,7 @@ UserManagement.delete = function(req) {
     var domain = req.params.domain;
     var api_server = req.query["api_server"];
     var requestHeaders = {};
-    var url = `${utils.confdPort(api_server)}/api/config/user-config/users/${username},${domain}`
+    var url = `${utils.confdPort(api_server)}/api/config/user-config/user/${username},${domain}`
     return new Promise(function(resolve, reject) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,10 @@ import { Link } from 'react-router';
 import Utils from 'utils/utils.js';
 import Crouton from 'react-crouton';
 import 'style/common.scss';
+
+import './skyquakeNav.scss';
+import SelectOption from '../form_controls/selectOption.jsx';
+import {FormSection} from '../form_controls/formControls.jsx';
 
 //Temporary, until api server is on same port as webserver
 var rw = require('utils/rw.js');
@@ -48,6 +52,75 @@ class LogoutAppMenuItem extends React.Component {
     }
 }
 
+class SelectProject extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    selectProject(e) {
+        let value = JSON.parse(e.currentTarget.value);
+        console.log('selected project', value)
+    }
+    render() {
+        let props = this.props;
+        let currentValue = JSON.stringify(props.currentProject);
+        let projects = this.props.projects.map((p,i) => {
+            return {
+                label: p.name,
+                value: p.name
+            }
+        });
+        return (
+            <div className="userSection app">
+                Project:
+                <SelectOption
+                    options={projects}
+                    value={currentValue}
+                    defaultValue={currentValue}
+                    onChange={props.onSelectProject}
+                    className="projectSelect" />
+            </div>
+        )
+    }
+}
+
+class UserNav extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    handleLogout() {
+        Utils.clearAuthentication();
+    }
+    selectProject(e) {
+        let value = JSON.parse(e.currentTarget.value)
+        console.log('selected project', value)
+    }
+    render() {
+        let props = this.props;
+        return (
+            <div className="app">
+                <h2>
+                    <a>
+                        {props.currentUser}
+                    </a>
+                    <span className="oi" data-glyph="caret-bottom"></span>
+                </h2>
+                <ul className="menu">
+                    <li>
+                        <a onClick={this.handleLogout}>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        )
+    }
+}
+
+UserNav.defaultProps = {
+    projects: [
+
+    ]
+}
 
 //
 // Exported classes and functions
@@ -63,6 +136,10 @@ export default class skyquakeNav extends React.Component {
         this.state = {};
         this.state.validateErrorEvent = 0;
         this.state.validateErrorMsg = '';
+    }
+    componentDidMount() {
+        this.props.store.openProjectSocket();
+        this.props.store.getUserProfile();
     }
     validateError = (msg) => {
         this.setState({
@@ -90,7 +167,7 @@ export default class skyquakeNav extends React.Component {
                 <div>
                 {this.returnCrouton()}
             <nav className="skyquakeNav">
-                {buildNav.call(this, this.props.nav, this.props.currentPlugin)}
+                {buildNav.call(this, this.props.nav, this.props.currentPlugin, this.props)}
             </nav>
 
             </div>
@@ -156,12 +233,15 @@ export function returnLinkItem(link) {
     return ref;
 }
 
+
+
+
 /**
  * Constructs nav for each plugin, along with available subnavs
  * @param  {array} nav List returned from /nav endpoint.
  * @return {array}     List of constructed nav element for each plugin
  */
-export function buildNav(nav, currentPlugin) {
+export function buildNav(nav, currentPlugin, props) {
     let navList = [];
     let navListHTML = [];
     let secondaryNav = [];
@@ -169,8 +249,13 @@ export function buildNav(nav, currentPlugin) {
     self.hasSubNav = {};
     let secondaryNavHTML = (
         <div className="secondaryNav" key="secondaryNav">
-        {secondaryNav}
-            <LogoutAppMenuItem />
+            {secondaryNav}
+            <SelectProject
+                onSelectProject={props.store.selectActiveProject}
+                projects={props.projects}
+                currentProject={props.currentProject} />
+            <UserNav
+                currentUser={props.currentUser}  />
         </div>
     )
     for (let k in nav) {
