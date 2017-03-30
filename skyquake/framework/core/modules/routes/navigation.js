@@ -44,7 +44,7 @@ Router.get('/login.html', cors(), function(req, res) {
 
 Router.get('/', cors(), function(req, res) {
 	var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
-	if (req.session.loggedIn) {
+	if (req.session && req.session.loggedIn) {
 		console.log('Logged in. Redirect to launchpad')
 		res.redirect('/launchpad/?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname));
 	} else {
