@@ -175,11 +175,11 @@ export default function EditDescriptorModelProperties(props) {
 		}
 	}
 
-	function buildField(container, property, path, value, fieldKey) {
+	function buildField(container, property, path, value, fieldId) {
 		let cds = CatalogDataStore;
 		let catalogs = cds.getTransientCatalogs();
 
-		const name = path.join('.');
+		const pathToProperty = path.join('.');
 		const isEditable = true;
 		const isGuid = Property.isGuid(property);
 		const isBoolean = Property.isBoolean(property);
@@ -197,81 +197,139 @@ export default function EditDescriptorModelProperties(props) {
 				// so we categorically ignore them
 				// https://trello.com/c/uzEwVx6W/230-bug-enum-should-not-use-index-only-name
 				//return <option key={fieldKey + ':' + i} value={d.value}>{d.name}</option>;
-				return <option key={fieldKey.toString() + ':' + i} value={d.name}>{d.name}</option>;
+				return <option key={':' + i} value={d.name}>{d.name}</option>;
 			});
 			const isValueSet = enumeration.filter(d => d.isSelected).length > 0;
 			if (!isValueSet || property.cardinality === '0..1') {
 				const noValueDisplayText = changeCase.title(property.name);
-				options.unshift(<option key={'(value-not-in-enum)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
+				options.unshift(<option key={'(value-not-in-enum)'} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return (
+				<select 
+					key={fieldId} 
+					id={fieldId}
+					name={pathToProperty} 
+					className={ClassNames({'-value-not-set': !isValueSet})} 
+					value={value} 
+					title={pathToProperty} 
+					onChange={onChange} 
+					onFocus={onFocus} 
+					onBlur={endEditing} 
+					onMouseDown={startEditing} 
+					onMouseOver={startEditing} 
+					readOnly={!isEditable}>
+						{options}
+				</select>
+			);
 		}
 
 		if (isLeafRef) {
-			let fullFieldKey = _isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
+			let fullPathString = container.key + ':' + path.join(':');
 			let containerRef = container;
 			while (containerRef.parent) {
-				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
+				fullPathString = containerRef.parent.key + ':' + fullPathString;
 				containerRef = containerRef.parent;
 			}
-			const leafRefPathValues = Property.getLeafRef(property, path, value, fullFieldKey, catalogs, container);
+			const leafRefPathValues = Property.getLeafRef(property, path, value, fullPathString, catalogs, container);
 
 			const options = leafRefPathValues && leafRefPathValues.map((d, i) => {
-				return <option key={fieldKey.toString() + ':' + i} value={d.value}>{d.value}</option>;
+				return <option key={':' + i} value={d.value}>{d.value}</option>;
 			});
 			const isValueSet = leafRefPathValues.filter(d => d.isSelected).length > 0;
 			if (!isValueSet || property.cardinality === '0..1') {
 				const noValueDisplayText = changeCase.title(property.name);
-				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
+				options.unshift(<option key={'(value-not-in-leafref)'} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return (
+				<select 
+					key={fieldId} 
+					id={fieldId} 
+					name={pathToProperty}
+					className={ClassNames({'-value-not-set': !isValueSet})} 
+					value={value} 
+					title={pathToProperty} 
+					onChange={onChange} 
+					onFocus={onFocus} 
+					onBlur={endEditing} 
+					onMouseDown={startEditing} 
+					onMouseOver={startEditing} 
+					readOnly={!isEditable}>
+						{options}
+				</select>
+			);
 		}
 
 		if (isBoolean) {
-			let fullFieldKey = _isArray(fieldKey) ? fieldKey.join(':') : fieldKey;
-			let containerRef = container;
-			while (containerRef.parent) {
-				fullFieldKey = containerRef.parent.key + ':' + fullFieldKey;
-				containerRef = containerRef.parent;
-			}
-
 			const options = [
-				<option key={fieldKey.toString() + '-true'} value="TRUE">TRUE</option>,
-				<option key={fieldKey.toString() + '-false'} value="FALSE">FALSE</option>
+				<option key={'true'} value="TRUE">TRUE</option>,
+				<option key={'false'} value="FALSE">FALSE</option>
 			]
 
 			// if (!isValueSet) {
 				const noValueDisplayText = changeCase.title(property.name);
-				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}></option>);
+				options.unshift(<option key={'(value-not-in-leafref)'} value="" placeholder={placeholder}></option>);
 			// }
 			let val = value;
 			if(typeof(val) == 'number') {
 				val = value ? "TRUE" : "FALSE"
 			}
 			const isValueSet = (val != '' && val)
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={val && val.toUpperCase()} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return (
+				<select 
+					key={fieldId} 
+					id={fieldId} 
+					name={pathToProperty}
+					className={ClassNames({'-value-not-set': !isValueSet})} 
+					value={val && val.toUpperCase()} title={pathToProperty} 
+					onChange={onChange} onFocus={onFocus} 
+					onBlur={endEditing} 
+					onMouseDown={startEditing} 
+					onMouseOver={startEditing} 
+					readOnly={!isEditable}>
+						{options}
+				</select>
+			);
 		}
 
 		if (property['preserve-line-breaks']) {
-			return <textarea key={fieldKey.toString()} cols="5" id={fieldKey.toString()} name={name} value={value} placeholder={placeholder} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing} readOnly={!isEditable} />;
+			return (
+				<textarea 
+					key={fieldId} 
+					cols="5" 
+					id={fieldId} 
+					name={pathToProperty}
+					value={value} 
+					placeholder={placeholder} 
+					onChange={onChange} 
+					onFocus={onFocus} 
+					onBlur={endEditing} 
+					onMouseDown={startEditing} 
+					onMouseOver={startEditing} 
+					onMouseOut={endEditing} 
+					onMouseLeave={endEditing} 
+					readOnly={!isEditable} />
+			);
 		}
 
-		return <input key={fieldKey.toString()}
-					  id={fieldKey.toString()}
-					  type="text"
-					  name={name}
-					  value={fieldValue}
-					  className={className}
-					  placeholder={placeholder}
-					  onChange={onChange}
-					  onFocus={onFocus}
-					  onBlur={endEditing}
-					  onMouseDown={startEditing}
-					  onMouseOver={startEditing}
-					  onMouseOut={endEditing}
-					  onMouseLeave={endEditing}
-					  readOnly={!isEditable}
-		/>;
+		return (
+			<input 
+				key={fieldId}
+				id={fieldId}
+				name={pathToProperty}
+				type="text"
+				value={fieldValue}
+				className={className}
+				placeholder={placeholder}
+				onChange={onChange}
+				onFocus={onFocus}
+				onBlur={endEditing}
+				onMouseDown={startEditing}
+				onMouseOver={startEditing}
+				onMouseOut={endEditing}
+				onMouseLeave={endEditing}
+				readOnly={!isEditable}
+			/>
+		);
 
 	}
 
@@ -290,8 +348,7 @@ export default function EditDescriptorModelProperties(props) {
 		});
 	}
 
-	function buildChoice(container, property, path, value, key) {
-
+	function buildChoice(container, property, path, value, fieldId) {
 		function onFormFieldValueChanged(event) {
 			if (DescriptorModelFactory.isContainer(this)) {
 
@@ -442,8 +499,8 @@ export default function EditDescriptorModelProperties(props) {
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 
 		return (
-			<div key={key} className="choice">
-				<select key={Date.now()} className={ClassNames({'-value-not-set': !selectedOptionValue})} name={selectName} value={selectedOptionValue} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing}>
+			<div key={fieldId} className="choice">
+				<select id={fieldId} className={ClassNames({'-value-not-set': !selectedOptionValue})} name={selectName} value={selectedOptionValue} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing}>
 					{options}
 				</select>
 				{valueResponse}
@@ -452,13 +509,13 @@ export default function EditDescriptorModelProperties(props) {
 
 	}
 
-	function buildSimpleListItem(container, property, path, value, key, index) {
+	function buildSimpleListItem(container, property, path, value, uniqueId, index) {
 		// todo need to abstract this better
 		const title = getTitle(value);
 		var req = require.context("../", true, /\.svg/);
 		return (
-			<div>
-				<a href="#select-list-item" key={Date.now()} className={property.name + '-list-item simple-list-item '} onClick={onClickSelectItem.bind(container, property, path, value)}>
+			<div key={uniqueId} >
+				<a href="#select-list-item" className={property.name + '-list-item simple-list-item '} onClick={onClickSelectItem.bind(container, property, path, value)}>
 					<img src={req('./' + DescriptorModelIconFactory.getUrlForType(property.name))} width="20px" />
 					<span>{title}</span>
 				</a>
@@ -467,10 +524,10 @@ export default function EditDescriptorModelProperties(props) {
 		);
 	}
 
-	function buildRemoveListItem(container, property, valuePath, fieldKey, index) {
+	function buildRemoveListItem(container, property, valuePath, index) {
 		const className = ClassNames(property.name + '-remove actions');
 		return (
-			<div key={fieldKey.concat(index).join(':')} className={className}>
+			<div className={className}>
 				<h3>
 					<span className={property.type + '-name name'}>{changeCase.title(property.name)}</span>
 					<span className="info">{index + 1}</span>
@@ -480,12 +537,12 @@ export default function EditDescriptorModelProperties(props) {
 		);
 	}
 
-	function buildLeafListItem(container, property, valuePath, value, key, index) {
+	function buildLeafListItem(container, property, valuePath, value, index) {
 		// look at the type to determine how to parse the value
 		return (
-			<div>
-				{buildRemoveListItem(container, property, valuePath, key, index)}
-				{buildField(container, property, valuePath, value, key)}
+			<div key={uniqueId}>
+				{buildRemoveListItem(container, property, valuePath, index)}
+				{buildField(container, property, valuePath, value, uniqueId)}
 			</div>
 
 		);
@@ -498,12 +555,21 @@ export default function EditDescriptorModelProperties(props) {
 		const isArray = Property.isArray(property);
 		const isObject = Property.isObject(property);
 		const isLeafList = Property.isLeafList(property);
-		const fieldKey = [container.id].concat(path);
 		const isRequired = Property.isRequired(property);
 		const title = changeCase.titleCase(property.name);
 		const columnCount = property.properties.length || 1;
 		const isColumnar = isArray && (Math.round(props.width / columnCount) > 155);
 		const classNames = {'-is-required': isRequired, '-is-columnar': isColumnar};
+
+		// create a unique Id for use as react component keys and html element ids
+		// use uid (from ui info) instead of id property (which is not stable)
+		let uniqueId = container.uid;
+		let containerRef = container;
+		while (containerRef.parent) {
+			uniqueId = containerRef.parent.uid + ':' + uniqueId;
+			containerRef = containerRef.parent;
+		}
+		uniqueId += ':' + path.join(':')
 
 		if (!property.properties && isObject) {
 			const uiState = DescriptorModelMetaFactory.getModelMetaForType(property.name) || {};
@@ -528,12 +594,16 @@ export default function EditDescriptorModelProperties(props) {
 		valueAsArray.forEach((value, index) => {
 
 			let field;
-			const key = fieldKey.slice();
 			const valuePath = path.slice();
+			// create a unique field Id for use as react component keys and html element ids
+			// notes: 
+			//   keys only need to be unique on components in the same array
+			//   html element ids should be unique with the document (or form)
+			let fieldId = uniqueId;
 
 			if (isArray) {
 				valuePath.push(index);
-				key.push(index);
+				fieldId += index;
 			}
 
 			if (isMetaField) {
@@ -545,17 +615,17 @@ export default function EditDescriptorModelProperties(props) {
 			}
 
 			if (isMissingDescriptorMeta) {
-				field = <span key={key.concat('warning').join(':')} className="warning">No Descriptor Meta for {property.name}</span>;
+				field = <span key={fieldId} className="warning">No Descriptor Meta for {property.name}</span>;
 			} else if (property.type === 'choice') {
-				field = buildChoice(container, property, valuePath, value, key.join(':'));
+				field = buildChoice(container, property, valuePath, value, fieldId);
 			} else if (isSimpleListView) {
-				field = buildSimpleListItem(container, property, valuePath, value, key, index);
+				field = buildSimpleListItem(container, property, valuePath, value, fieldId, index);
 			} else if (isLeafList) {
-				field = buildLeafListItem(container, property, valuePath, value, key, index);
+				field = buildLeafListItem(container, property, valuePath, value, fieldId, index);
 			} else if (hasProperties) {
-				field = buildElement(container, property, valuePath, value, key.join(':'))
+				field = buildElement(container, property, valuePath, value, fieldId)
 			} else {
-				field = buildField(container, property, valuePath, value, key.join(':'));
+				field = buildField(container, property, valuePath, value, fieldId);
 			}
 
 			function onClickLeaf(property, path, value, event) {
@@ -573,10 +643,10 @@ export default function EditDescriptorModelProperties(props) {
 			const isContainerList = isArray && !(isSimpleListView || isLeafList);
 
 			fields.push(
-				<div key={fieldKey.concat(['property-content', index]).join(':')}
+				<div key={fieldId}
 					 className={ClassNames('property-content', {'simple-list': isSimpleListView})}
 					 onClick={clickHandler.bind(container, property, valuePath, value)}>
-					{isContainerList ? buildRemoveListItem(container, property, valuePath, fieldKey, index) : null}
+					{isContainerList ? buildRemoveListItem(container, property, valuePath, index) : null}
 					{field}
 				</div>
 			);
@@ -605,9 +675,9 @@ export default function EditDescriptorModelProperties(props) {
 		const onFocus = isLeaf ? event => event.target.classList.add('-is-focused') : false;
 
 		return (
-			<div key={fieldKey.join(':')} className={ClassNames(property.type + '-property property', classNames)} onFocus={onFocus}>
+			<div key={uniqueId} className={ClassNames(property.type + '-property property', classNames)} onFocus={onFocus}>
 				<h3 className="property-label">
-					<label htmlFor={fieldKey.join(':')}>
+					<label htmlFor={uniqueId}>
 						<span className={property.type + '-name name'}>{title}</span>
 						<small>
 							<span className={property.type + '-info info'}>{displayValueInfo}</span>
