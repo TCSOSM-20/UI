@@ -172,6 +172,7 @@ class ComposerAppStore {
 			addFileSuccess: FileManagerActions.addFileSuccess,
 			deletePackageFile: FileManagerActions.deletePackageFile,
 			deleteFileSuccess: FileManagerActions.deleteFileSuccess,
+			deleteFileError: FileManagerActions.deleteFileError,
 			closeFileManagerSockets: FileManagerActions.closeFileManagerSockets,
 			openFileManagerSockets: FileManagerActions.openFileManagerSockets,
 			openDownloadMonitoringSocketSuccess: FileManagerActions.openDownloadMonitoringSocketSuccess,
@@ -681,6 +682,15 @@ class ComposerAppStore {
 			files: files
 		})
 	}
+	deleteFileError = (error) => {
+		const filepath = error.path;
+		const message = error.data && error.data.output ? ' (' + error.data.output['error-trace'] + ')' : ' (server error)';
+		console.log('Unable to delete', filepath, 'Error:', message);
+		ComposerAppActions.showError.defer({
+			errorMessage: 'Unable to delete ' + filepath + message + '. '
+		});
+	}
+
 	newPathNameUpdated = (event) => {
 		const value = event.target.value;
 		this.setState({

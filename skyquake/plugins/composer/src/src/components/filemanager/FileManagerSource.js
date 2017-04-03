@@ -100,16 +100,26 @@ const FileManagerSource = {
                         beforeSend: Utils.addAuthorizationStub,
                         url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&package_path=' + path ,
                         success: function(data) {
-                            resolve({
-                                data: data,
-                                path: path
-                            });
+                            if (data.output.status == 'True') {
+                                resolve({
+                                    data: data,
+                                    path: path
+                                });
+                            } else {
+                                reject({
+                                    data: data,
+                                    path: path
+                                })
+                            }
                         },
                         error: function(error) {
                             if (typeof error == 'string') {
                                 error = JSON.parse(error);
                             }
-                            reject(error);
+                            reject({
+                                path: path,
+                                data: error
+                            });
                         }
                     }).fail(function(xhr){
                         //Authentication and the handling of fail states should be wrapped up into a connection class.
