@@ -168,6 +168,7 @@ var DataCenters = {};
 Catalog.get = function(req) {
     var api_server = req.query['api_server'];
     var results = {}
+    var projectPrefix = req.session.projectId ? "project-" : "";
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
@@ -258,12 +259,12 @@ Catalog.get = function(req) {
             var vnfdCatalog = null;
             var vnfdDict = {};
             if (result[1].body) {
-                vnfdCatalog = JSON.parse(result[1].body).collection['vnfd:vnfd'].map(function(v, i) {
+                vnfdCatalog = JSON.parse(result[1].body).collection[projectPrefix + 'vnfd:vnfd'].map(function(v, i) {
                     vnfdDict[v.id] = v['short-name'] || v.name;
                 })
             }
             if (result[0].body) {
-                response[0].descriptors = JSON.parse(result[0].body).collection['nsd:nsd'];
+                response[0].descriptors = JSON.parse(result[0].body).collection[projectPrefix + 'nsd:nsd'];
                 if (result[2].body) {
                     var data = JSON.parse(result[2].body);
                     if (data && data["nsr:ns-instance-opdata"] && data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"]) {
@@ -286,10 +287,10 @@ Catalog.get = function(req) {
                 }
             };
             if (result[1].body) {
-                response[1].descriptors = JSON.parse(result[1].body).collection['vnfd:vnfd'];
+                response[1].descriptors = JSON.parse(result[1].body).collection[projectPrefix + 'vnfd:vnfd'];
             };
             // if (result[2].body) {
-            //   response[2].descriptors = JSON.parse(result[2].body).collection['pnfd:pnfd'];
+            //   response[2].descriptors = JSON.parse(result[2].body).collection[projectPrefix + 'pnfd:pnfd'];
             // };
             resolve({
                 statusCode: response.statusCode || 200,
@@ -508,6 +509,7 @@ NSR.get = function(req) {
     var nsrPromises = [];
     var api_server = req.query["api_server"];
     var id = req.params.id;
+    var projectPrefix = req.session.projectId ? "project-" : "";
     var nsdInfo = new Promise(function(resolve, reject) {
         request({
             uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep'),
@@ -523,7 +525,7 @@ NSR.get = function(req) {
                 var isString = typeof(response.body) == "string";
                 if (isString && response.body == '') return resolve('empty');
                 data = isString ? JSON.parse(response.body) : response.body;
-                var nsdData = data.collection["nsd:nsd"];
+                var nsdData = data.collection[projectPrefix + "nsd:nsd"];
                 if (nsdData.constructor.name == "Object") {
                     nsdData = [nsdData];
                 }

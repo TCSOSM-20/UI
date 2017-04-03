@@ -31,6 +31,7 @@ var sessionsAPI = {};
 var _ = require('lodash');
 var base64 = require('base-64');
 var APIVersion = '/v2';
+var configurationAPI = require('./configuration');
 
 function logAndReject(mesg, reject) {
     res.errorMessage = {
@@ -41,8 +42,10 @@ function logAndReject(mesg, reject) {
 }
 
 function logAndRedirectToLogin(mesg, res, req) {
+    var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
+    var upload_server = req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname);
     console.log(mesg);
-    res.redirect('login.html?api_server=' + req.query['api_server']);
+    res.redirect('login.html?api_server=' + api_server + '&upload_server=' + upload_server);
     res.end();
 }
 

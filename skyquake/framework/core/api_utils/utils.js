@@ -51,7 +51,7 @@ var confdPort = function(api_server) {
 
 var projectContextUrl = function(req, url) {
 	if (req.session && req.session.projectId) {
-		return url.replace(/(\/api\/operational\/|\/api\/config\/|\/api\/operations\/)(.*)/, '$1project/pname/$2');
+		return url.replace(/(\/api\/operational\/|\/api\/config\/|\/api\/operations\/)(.*)/, '$1project/' + req.session.projectId + '/$2');
 
 	}
 	return url;
@@ -69,12 +69,12 @@ var validateResponse = function(callerName, error, response, body, resolve, reje
 		};
 		reject(res);
 		return false;
-	} else if (response.statusCode >= 400) {
+	} else if (response.statusCode >= CONSTANTS.HTTP_RESPONSE_CODES.ERROR.BAD_REQUEST) {
 		console.log('Problem with "', callerName, '": ', response.statusCode, ':', body);
 		res.statusCode = response.statusCode;
 
 		// auth specific
-		if (response.statusCode == 401) {
+		if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.ERROR.UNAUTHORIZED) {
 			res.errorMessage = {
 				error: 'Authentication needed' + body
 			};
@@ -89,7 +89,7 @@ var validateResponse = function(callerName, error, response, body, resolve, reje
 
 		reject(res);
 		return false;
-	} else if (response.statusCode == 204) {
+	} else if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.SUCCESS.NO_CONTENT) {
 		resolve({
 			statusCode: response.statusCode,
 			data: {}
@@ -127,12 +127,12 @@ if (process.env.LOG_REQUESTS) {
 				reject(res);
 				fs.appendFileSync(logFile, 'Request API: ' + response.request.uri.href + ' ; ' + 'Error: ' + error);
 				return false;
-			} else if (response.statusCode >= 400) {
+			} else if (response.statusCode >= CONSTANTS.HTTP_RESPONSE_CODES.ERROR.BAD_REQUEST) {
 				console.log('Problem with "', callerName, '": ', response.statusCode, ':', body);
 				res.statusCode = response.statusCode;
 
 				// auth specific
-				if (response.statusCode == 401) {
+				if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.ERROR.UNAUTHORIZED) {
 					res.errorMessage = {
 						error: 'Authentication needed' + body
 					};
@@ -148,7 +148,7 @@ if (process.env.LOG_REQUESTS) {
 				reject(res);
 				fs.appendFileSync(logFile, 'Request API: ' + response.request.uri.href + ' ; ' + 'Error Body: ' + body);
 				return false;
-			} else if (response.statusCode == 204) {
+			} else if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.SUCCESS.NO_CONTENT) {
 				resolve();
 				fs.appendFileSync(logFile, 'Request API: ' + response.request.uri.href + ' ; ' + 'Response Body: ' + body);
 				return false;

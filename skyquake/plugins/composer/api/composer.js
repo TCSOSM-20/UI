@@ -34,6 +34,7 @@ var DataCenters = {};
 Composer.get = function(req) {
     var api_server = req.query['api_server'];
     var results = {}
+    var projectPrefix = req.session.projectId ? "project-" : "";
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
@@ -121,7 +122,7 @@ Composer.get = function(req) {
                 "descriptors": []
             }];
             if (result[0].body) {
-                response[0].descriptors = JSON.parse(result[0].body).collection['nsd:nsd'];
+                response[0].descriptors = JSON.parse(result[0].body).collection[projectPrefix + 'nsd:nsd'];
                 if (result[2].body) {
                     var data = JSON.parse(result[2].body);
                     if (data && data["nsr:ns-instance-opdata"] && data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"]) {
@@ -141,10 +142,10 @@ Composer.get = function(req) {
                 }
             };
             if (result[1].body) {
-                response[1].descriptors = JSON.parse(result[1].body).collection['vnfd:vnfd'];
+                response[1].descriptors = JSON.parse(result[1].body).collection[projectPrefix + 'vnfd:vnfd'];
             };
             // if (result[2].body) {
-            //   response[2].descriptors = JSON.parse(result[2].body).collection['pnfd:pnfd'];
+            //   response[2].descriptors = JSON.parse(result[2].body).collection[projectPrefix + 'pnfd:pnfd'];
             // };
             resolve({
                 statusCode: response.statusCode || 200,

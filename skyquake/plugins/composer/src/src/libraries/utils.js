@@ -180,6 +180,9 @@ export default {
 						console.log('Something went wrong while resolving a leafref. Reached a leaf with predicate.');
 					} else {
 						// contains no predicate
+						if (!objectCopy) {
+							break;
+						}
 						results.push(objectCopy[fragment]);
 					}
 				}
@@ -236,6 +239,9 @@ export default {
 						}
 					} else {
 						// contains no predicate
+						if (!objectCopy) {
+							break;
+						}
 						objectCopy = objectCopy[fragment];
 					}
 				}
