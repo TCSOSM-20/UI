@@ -15,5 +15,13 @@
         "route": "platform",
         "component": "./platformRoleManagement/platformRoleManagement.jsx",
         "type": "internal"
-    }]
+    },
+      {
+        "label": "User Profile",
+        "route": "user-profile",
+        "component": "./userProfile/userProfile.jsx",
+        "type": "internal",
+        "unique" : true
+    }
+    ]
 }
