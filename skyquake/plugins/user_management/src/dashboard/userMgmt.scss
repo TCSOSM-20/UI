@@ -90,65 +90,28 @@
         padding: 0.5rem 0;
         border-top: #d3d3d3 1px solid;
     }
-}
-
-
-
-.FormSection {
-    &-title {
-        color: #000;
-        background: lightgray;
-        padding: 0.5rem;
-        border-top: 1px solid #f1f1f1;
-        border-bottom: 1px solid #f1f1f1;
-    }
-    &-body {
-        padding: 0.5rem 0.75rem;
-    }
-    label {
-        -ms-flex: 1 0;
-            flex: 1 0;
-    }
-    /* label {*/
-    /*     display: -ms-flexbox;*/
-    /*     display: flex;*/
-    /*     -ms-flex-direction: column;*/
-    /*     flex-direction: column;*/
-    /*     width: 100%;*/
-    /*     margin: 0.5rem 0;*/
-    /*     -ms-flex-align: start;*/
-    /*     align-items: flex-start;*/
-    /*     -ms-flex-pack: start;*/
-    /*     justify-content: flex-start;*/
-    /* }*/
-    select {
-        font-size: 1rem;
-        min-width: 75%;
-        height: 35px;
+    table {
+        font-size: 0.8rem;
+        thead {
+            border-bottom:1px solid #d3d3d3;
+            td{
+                font-weight:bold;
+            }
+        }
+        td{
+            padding:0.25rem 0.5rem;
+            vertical-align: middle;
+            .checkbox {
+                -ms-flex-pack:center;
+                    justify-content:center;
+            }
+        }
     }
 }
 
 
-.InputCollection {
-    display:-ms-flexbox;
-    display:flex;
-    -ms-flex-wrap: nowrap;
-        flex-wrap: nowrap;
-    -ms-flex-align: center;
-        align-items: center;
-    button {
-        padding: 0.25rem;
-        height: 1.5rem;
-        font-size: 0.75rem;
-    }
-    select {
-        min-width: 100%;
-    }
-    margin-bottom:0.5rem;
-    &-wrapper {
 
-    }
-}
+
 .tableRow {
     display:-ms-flexbox;
     display:flex;

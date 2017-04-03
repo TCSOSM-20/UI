@@ -5,10 +5,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import AppHeader from 'widgets/header/header.jsx';
-import UserManagementStore from './userMgmtStore.js';
+import UserProfileStore from './userProfileStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import 'style/layout.scss';
-import './userMgmt.scss';
+import '../dashboard/userMgmt.scss';
 import {Panel, PanelWrapper} from 'widgets/panel/panel';
 
 
@@ -20,10 +20,10 @@ import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../node_modules/open-iconic/svg/trash.svg';
 
-class UserManagementDashboard extends React.Component {
+class UserProfileDashboard extends React.Component {
     constructor(props) {
         super(props);
-        this.Store = this.props.flux.stores.hasOwnProperty('UserManagementStore') ? this.props.flux.stores.UserManagementStore : this.props.flux.createStore(UserManagementStore);
+        this.Store = this.props.flux.stores.hasOwnProperty('UserProfileStore') ? this.props.flux.stores.UserProfileStore : this.props.flux.createStore(UserProfileStore);
        this.state = this.Store.getState();
        this.actions = this.state.actions;
 
@@ -117,7 +117,7 @@ class UserManagementDashboard extends React.Component {
         let validatedPasswords = validatePasswordFields(this.state);
         if(validatedPasswords) {
             this.Store.updateUser(_.merge({
-                            'user-name': this.state['user-name'],
+                            'user-name': this.context.userProfile.userId,
                             'user-domain': this.state['user-domain'],
                             'password': this.state['new-password']
                         }));
@@ -171,6 +171,7 @@ class UserManagementDashboard extends React.Component {
         console.log(value)
     }
     render() {
+
         let self = this;
         let html;
         let props = this.props;
@@ -181,118 +182,76 @@ class UserManagementDashboard extends React.Component {
                 <Button label="EDIT" type="submit" onClick={this.editUser} />
             </ButtonGroup>
         );
-        if(!this.state.isReadOnly) {
-            passwordSectionHTML = ( this.state.isEdit ?
+        const User = this.context.userProfile || {};
+            passwordSectionHTML = (
                                         (
                                             <FormSection title="PASSWORD CHANGE">
                                                 <Input label="NEW PASSWORD" type="password" value={state['new-password']}  onChange={this.updateInput.bind(null, 'new-password')}/>
                                                 <Input label="REPEAT NEW PASSWORD" type="password"  value={state['confirm-password']}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
                                             </FormSection>
-                                        ) :
-                                        (
-                                            <FormSection title="CREATE PASSWORD">
-                                                <Input label="CREATE PASSWORD" type="password" value={state.newPassword}  onChange={this.updateInput.bind(null, 'new-password')}/>
-                                                <Input label="REPEAT PASSWORD" type="password"  value={state.repeatNewPassword}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
-                                            </FormSection>
                                         )
                                     );
             formButtonsHTML = (
-                                state.isEdit ?
-                                (
+
+
                                     <ButtonGroup className="buttonGroup">
                                         <Button label="Update" type="submit" onClick={this.updateUser} />
-                                        <Button label="Delete" onClick={this.deleteUser} />
-                                        <Button label="Cancel" onClick={this.cancelEditUser} />
                                     </ButtonGroup>
-                                )
-                                : (
-                                    <ButtonGroup className="buttonGroup">
-                                        <Button label="Create" type="submit" onClick={this.createUser}  />
-                                    </ButtonGroup>
-                                )
+
+
                             )
-        }
 
         html = (
             <PanelWrapper column>
-                <AppHeader nav={[{name: 'PLATFORM ROLE MANAGEMENT', onClick: this.context.router.push.bind(this, {pathname: '/platform'})}]}/>
                 <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'flexDirection': 'row'}} >
-                    <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded ${this.state.userOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
-                        <Panel title="User List" style={{marginBottom: 0}} no-corners>
-                            <div className="tableRow tableRow--header">
-                                <div className="userName">
-                                    Username
-                                </div>
-                                <div>
-                                    Domain
-                                </div>
-                            </div>
-                            {state.users && state.users.map((u, k) => {
-                                let platformRoles = [];
-                                for(let role in u.platformRoles) {
-                                    platformRoles.push(<div>{`${role}: ${u.platformRoles[role]}`}</div>)
-                                }
-                                return (
-                                    <div ref={(el) => this[`user-ref-${k}`] = el} className={`tableRow tableRow--data ${((self.state.activeIndex == k) && self.state.userOpen) ? 'tableRow--data-active' : ''}`}
-                                        key={k}
-                                        onClick={self.viewUser.bind(null, u, k)}>
-                                        <div
-                                            className={`userName userName-header ${((self.state.activeIndex == k) && self.state.userOpen) ? 'activeUser' : ''}`}
-                                            >
-                                            {u['user-name']}
-                                        </div>
-                                        <div>
-                                            {u['user-domain']}
-                                        </div>
-
-
-                                    </div>
-                                )
-                            })}
-                        </Panel>
-                        <ButtonGroup  className="buttonGroup" style={{margin: '0 0.5rem 0.5rem', background: '#ddd', paddingBottom: '0.5rem'}}>
-                            <Button label="Add User" onClick={this.addUser} />
-                        </ButtonGroup>
-                    </PanelWrapper>
-                    <PanelWrapper onKeyUp={this.evaluateSubmit}
-                        className={`userAdmin column`}>
-                        <Panel
-                            title={state.isEdit ? state['user-name'] : 'Create User'}
-                            style={{marginBottom: 0}}
-                            hasCloseButton={this.closePanel}
-                            no-corners>
-                            <FormSection title="USER INFO">
-                            {
-                                this.state.isEdit ?
-                                    null
-                                    : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
-                            }
-                                <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
-
-                                <Input type="radiogroup" readonly={state.isReadOnly} label="Disabled" value={state.disabled} options={[{value: true, label: 'YES'}, {value: false, label: 'NO'}]}  onChange={this.disableChange} />
-                            </FormSection>
-                            <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
-                                <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />
-                                <Input label="Platform Admin" onChange={this.platformChange.bind(null, 'platform_admin')}  checked={state.platformRoles.platform_admin} type="checkbox" />
-                                <Input label="Platform Oper" onChange={this.platformChange.bind(null, 'platform_oper')}  checked={state.platformRoles.platform_oper} type="checkbox" />
-                            </FormSection>
-                            <FormSection title="PROJECT ROLES" style={{display:'none'}}>
-                                <InputCollection
-                                    inital={true}
-                                    type='select'
-                                    readonly={state.isReadOnly}
-                                    options={state.projectRolesOptions}
-                                    collection={state.projectRoles}
-                                    onChange={this.updateProjectRole}
-                                    AddItemFn={this.addProjectRole}
-                                    RemoveItemFn={this.removeProjectRole}
-                                    />
-                            </FormSection>
+                    <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded hideColumns`}>
+                        <Panel title={User.userId} style={{marginBottom: 0}} no-corners>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <td>User Name</td>
+                                        {
+                                            state.roles.map((r,i) => {
+                                                return <td key={i}>{r}</td>
+                                            })
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        User.projects && User.projects.map((p,i)=> {
+                                            let projectConfig = p['project-config'];
+                                            let userRoles = [];
+                                            if(projectConfig && projectConfig.user) {
+                                                projectConfig.user.map((u) => {
+                                                    if(u['user-name'] == User.userId) {
+                                                        userRoles = u.role && u.role.map((r) => {
+                                                            return r.role;
+                                                        })
+                                                    }
+                                                })
+                                            }
+                                            return (
+                                                <tr key={i}>
+                                                    <td>
+                                                        {p.name}
+                                                    </td>
+                                                    {
+                                                        state.roles.map((r,j) => {
+                                                            return <td key={j}><Input readonly={state.isReadOnly} type="checkbox" checked={(userRoles.indexOf(r) > -1)} /></td>
+                                                        })
+                                                    }
+                                                </tr>
+                                            )
+                                        })
+                                    }
+                                </tbody>
+                            </table>
                             {passwordSectionHTML}
-
                         </Panel>
-                            {formButtonsHTML}
+                        {formButtonsHTML}
                     </PanelWrapper>
+
                 </PanelWrapper>
             </PanelWrapper>
         );
@@ -300,17 +259,17 @@ class UserManagementDashboard extends React.Component {
     }
 }
 // onClick={this.Store.update.bind(null, Account)}
-UserManagementDashboard.contextTypes = {
+UserProfileDashboard.contextTypes = {
     router: React.PropTypes.object,
     userProfile: React.PropTypes.object
 };
 
-UserManagementDashboard.defaultProps = {
+UserProfileDashboard.defaultProps = {
     userList: [],
     selectedUser: {}
 }
 
-export default SkyquakeComponent(UserManagementDashboard);
+export default SkyquakeComponent(UserProfileDashboard);
 
 
 function isElementInView(el) {

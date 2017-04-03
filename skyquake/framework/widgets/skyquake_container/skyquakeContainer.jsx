@@ -40,13 +40,21 @@ export default class skyquakeContainer extends React.Component {
         this.state.eventCenterIsOpen = false;
         this.state.currentPlugin = SkyquakeContainerStore.currentPlugin;
     }
-
+    getChildContext() {
+        return {
+          userProfile: this.state.user
+        };
+    }
+    getUserProfile() {
+        return this.state.user;
+    }
     componentWillMount() {
         let self = this;
 
         Utils.bootstrapApplication().then(function() {
             SkyquakeContainerStore.listen(self.listener);
             SkyquakeContainerStore.getNav();
+            SkyquakeContainerStore.getUserProfile();
             SkyquakeContainerStore.getEventStreams();
         });
 
@@ -133,6 +141,9 @@ export default class skyquakeContainer extends React.Component {
         return html;
     }
 }
+skyquakeContainer.childContextTypes = {
+  userProfile: React.PropTypes.object
+};
 skyquakeContainer.contextTypes = {
     router: React.PropTypes.object
   };

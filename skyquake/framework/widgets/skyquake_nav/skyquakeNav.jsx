@@ -63,21 +63,28 @@ class SelectProject extends React.Component {
     render() {
         let props = this.props;
         let currentValue = JSON.stringify(props.currentProject);
-        let projects = this.props.projects.map((p,i) => {
+        let projects = this.props.projects && this.props.projects.map((p,i) => {
             return {
                 label: p.name,
                 value: p.name
             }
         });
+        let hasProjects = (this.props.projects && (this.props.projects.length > 0))
         return (
             <div className="userSection app">
-                Project:
-                <SelectOption
-                    options={projects}
-                    value={currentValue}
-                    defaultValue={currentValue}
-                    onChange={props.onSelectProject}
-                    className="projectSelect" />
+                {
+                    hasProjects ?  'Project:' : 'No Projects Assigned'
+                }
+                {
+                    hasProjects ?
+                    <SelectOption
+                        options={projects}
+                        value={currentValue}
+                        defaultValue={currentValue}
+                        onChange={props.onSelectProject}
+                        className="projectSelect" />
+                    : null
+                }
             </div>
         )
     }
@@ -96,12 +103,16 @@ class UserNav extends React.Component {
     }
     render() {
         let props = this.props;
+        let userProfileLink = '';
+        this.props.nav['user_management'] && this.props.nav['user_management'].routes.map((r) => {
+            if(r.unique) {
+                userProfileLink = returnLinkItem(r, props.currentUser)
+            }
+        })
         return (
             <div className="app">
                 <h2>
-                    <a>
-                        {props.currentUser}
-                    </a>
+                    {userProfileLink}
                     <span className="oi" data-glyph="caret-bottom"></span>
                 </h2>
                 <ul className="menu">
@@ -205,12 +216,12 @@ export function buildNavListItem (k, link, index) {
  * @param  {object} link Routing information from nav object.
  * @return {object}  component   returns a react component that links to a new route.
  */
-export function returnLinkItem(link) {
+export function returnLinkItem(link, label) {
     let ref;
     let route = link.route;
     if(link.isExternal) {
         ref = (
-            <a href={route}>{link.label}</a>
+            <a href={route}>{label || link.label}</a>
         )
     } else {
         if(link.path && link.path.replace(' ', '') != '') {
@@ -225,8 +236,8 @@ export function returnLinkItem(link) {
             }
         }
         ref = (
-           <Link to={route}>
-                {link.label}
+            <Link to={route}>
+                {label || link.label}
             </Link>
         )
     }
@@ -255,7 +266,8 @@ export function buildNav(nav, currentPlugin, props) {
                 projects={props.projects}
                 currentProject={props.currentProject} />
             <UserNav
-                currentUser={props.currentUser}  />
+                currentUser={props.currentUser}
+                nav={nav}  />
         </div>
     )
     for (let k in nav) {

@@ -16,7 +16,6 @@ export default class ProjectManagementStore {
         this.selectedUser = null;
         this.selectedRole = null;
         this.roles = ['rw-project:project-admin', 'rw-project:project-oper', 'rw-project:project-create'
-        // ,'some_other_role', 'yet_another_role', 'operator_role', 'some_other_role', 'yet_another_role'
         ];
         this.users = [];
         this.activeIndex = null;

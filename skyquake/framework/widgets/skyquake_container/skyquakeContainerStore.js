@@ -179,7 +179,10 @@ class SkyquakeContainerStore {
                     self.closeSocket();
                 });
                 if (!_.isEqual(data.project, self.projects)) {
+                    let user = self.user;
+                    user.projects = data.project;
                     self.setState({
+                        user: user,
                         projects: data.project
                     });
                 }
@@ -209,7 +212,7 @@ class SkyquakeContainerStore {
 
         } else {
             if(!data) data = {};
-            state.notificationMessage = data.msg || 'Something very bad happened wrong';
+            state.notificationMessage = data.msg || 'Something wrong occurred. Check the network tab and console logs for more information.';
             if(data.type) {
                 state.notificationType = data.type;
             }
