@@ -124,7 +124,7 @@ class FileManager extends React.Component {
 function buildList(self, data) {
     let toReturn = [];
     data.id.map(function(k,i) {
-        toReturn.push (contentFolder(self, data.data[k], k, i, self.props.filesState, self.updateFileLocationInput, self.sendDownloadFileRequst, self.deleteFile));
+        toReturn.push (contentFolder(self, data.data[k], k, k+i, self.props.filesState, self.updateFileLocationInput, self.sendDownloadFileRequst, self.deleteFile));
     });
     return toReturn.reverse();
 }
