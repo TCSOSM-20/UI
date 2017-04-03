@@ -132,7 +132,8 @@ function buildList(self, data) {
 function contentFolder(context, folder, path, key, inputState, updateFn, sendDownloadFileRequst, deleteFn) {
     let type = context.props.type;
     let id = context.props.item.id;
-    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + path.replace(/\//g, '-'), type, id, path);
+    let classId = `DZ-${path.replace(/\//g, '-')}`;
+    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + classId, type, id, path);
     return (
         <Panel title={path} key={key} itemClassName="nested" no-corners>
         <div className="folder">
@@ -170,11 +171,12 @@ class ItemUpload extends React.Component {
     }
     render() {
         let {type, id, path, key, ...props} = this.props;
+        let classId = `DZ-${path.replace(/\//g, '-')}`;
         return (
             <div className="inputSection">
                 <label className="sqTextInput" style={{flexDirection: 'row', alignItems:'center'}}>
                     <span>Upload File</span>
-                    <Button className={'ComposerAppAddFile ' + path.replace(/\//g, '-')} label="BROWSE"/>
+                    <Button className={'ComposerAppAddFile ' + classId} label="BROWSE"/>
                 </label>
             </div>
         )
