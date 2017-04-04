@@ -106,6 +106,7 @@ export default class skyquakeContainer extends React.Component {
                             type={notificationType}
                             hidden={!(displayNotification && notificationMessage)}
                             onDismiss={SkyquakeContainerActions.hideNotification}
+                            timeout= {5000}
                         />
                         <ScreenLoader show={displayScreenLoader}/>
                         <SkyquakeNav nav={this.state.nav}
