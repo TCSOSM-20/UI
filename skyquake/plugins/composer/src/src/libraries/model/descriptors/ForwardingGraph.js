@@ -56,7 +56,9 @@ export default class ForwardingGraph extends DescriptorModel {
 	}
 
 	createRsp() {
-		const model = DescriptorModelMetaFactory.createModelInstanceForType('nsd.vnffgd.rsp');
+		const property = DescriptorModelMetaFactory.getModelMetaForType('nsd.vnffgd.rsp');
+		const uniqueName = DescriptorModelMetaFactory.generateItemUniqueName(this.rsp, property);
+		const model = DescriptorModelMetaFactory.createModelInstanceForType('nsd.vnffgd.rsp', uniqueName);
 		return this.rsp = new RecordServicePath(model, this);
 	}
 

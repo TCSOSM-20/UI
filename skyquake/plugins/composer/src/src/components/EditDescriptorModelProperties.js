@@ -138,7 +138,10 @@ export default function EditDescriptorModelProperties(props) {
 				create(model, path, property);
 			} else {
 				const name = path.join('.');
-				const value = Property.createModelInstance(property);
+				// get a unique name for the new list item based on the current list content
+				// some lists, based on the key, may not get a uniqueName generated here
+				const uniqueName = DescriptorModelMetaFactory.generateItemUniqueName(container.model[property.name], property);
+				const value = Property.createModelInstance(property, uniqueName);
 				utils.assignPathValue(this.model, name, value);
 			}
 			CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());

@@ -64,9 +64,17 @@ export default {
 
 		return cachedDescriptorModelMetaRequest;
 	},
-	createModelInstanceForType(typeOrPath) {
+	/**
+	 * Create a new instance of the indicated property and, if relevent, use the given
+	 * unique name for the instance's key (see generateItemUniqueName)
+	 * 
+	 * @param {Object | string} typeOrPath a property definition object or a path to a property 
+	 * @param [{string}] uniqueName optional 
+	 * @returns 
+	 */
+	createModelInstanceForType(typeOrPath, uniqueName) {
 		const modelMeta = this.getModelMetaForType(typeOrPath);
-		return DescriptorModelMetaProperty.createModelInstance(modelMeta);
+		return DescriptorModelMetaProperty.createModelInstance(modelMeta, uniqueName);
 	},
 	getModelMetaForType(typeOrPath, filterProperties = () => true) {
 		// resolve paths like 'nsd' or 'vnfd.vdu' or 'nsd.constituent-vnfd'
@@ -98,5 +106,46 @@ export default {
 			return result;
 		}
 		console.warn('no model uiState found for type', typeOrPath);
+	},
+	/**
+	 * For a list with a single valued key that is of type string, generate a unique name
+	 * for a new entry to be added to the indicated list. This name will use the provided
+	 * prefix (or the list's name) followed by a number. The number will be based on the
+	 * current length of the array but will insure there is no collision with an existing
+	 * name.
+	 * 
+	 * @param {Array} list the list model data
+	 * @param {prooerty} property the schema definition of the list 
+	 * @param [{any} prefix] the perferred prefix for the name. If not provide property.name
+	 *  will be used. 
+	 * @returns {string}
+	 */
+	generateItemUniqueName (list, property, prefix) {
+		if (   property.type !== 'list' 
+			|| property.key.length !== 1
+			|| property.properties.find(prop => prop.name === property.key[0])['data-type'] !== 'string') {
+			// only support list with a single key of type string
+			return null;
+		}
+		if (!prefix) {
+			prefix = property.name;
+		}
+		let key = property.key[0];
+		let suffix = list ? list.length + 1 : 1
+		let keyValue = prefix + '-' + suffix;
+		function makeUniqueName() {
+			if (list) {
+				for (let i = 0; i < list.length; i = ++i) {
+					if (list[i][key] === keyValue) {
+						keyValue = keyValue + '-' + (i+1);
+						makeUniqueName(); // not worried about recursing too deep (chances ??)
+						break;
+					}
+				}
+			}
+		}
+		makeUniqueName();
+		return keyValue;
 	}
+
 }

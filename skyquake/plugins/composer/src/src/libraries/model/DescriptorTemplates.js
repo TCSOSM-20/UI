@@ -23,18 +23,18 @@
 
 'use strict';
 
-import guid from './../guid'
-import InstanceCounter from './../InstanceCounter'
-
-const generateName = (prefix, counter) => prefix + '-' + InstanceCounter.count(counter);
-
+//
+// note: values can be expressions. After the object is created the funtion will be 
+// invoked. if you use the arrow function syntax the this pointer will reference
+// the created object.
+//
 export default {
 	'vnfd': {
 		'description': 'A simple VNF descriptor w/ one VDU',
 		'version': '1.0',
 		'connection-point': [
 			{
-				'name': 'cp1',
+				'name': 'connection-point-1',
 				'type': 'VPORT'
 			}
 		],
@@ -43,8 +43,8 @@ export default {
 				'uiState': {
 					'type': 'vdu'
 				},
-				'id': () => guid(5),
-				'name': () => generateName('vdu', 'vnfd.vdu'),
+				'id': 'vdu-1',
+				'name': 'vdu-1',
 				'vm-flavor': {
 					'vcpu-count': 4,
 					'memory-mb': 16384,
@@ -54,7 +54,7 @@ export default {
 				'external-interface': [
 					{
 						'name': 'eth0',
-						'vnfd-connection-point-ref': 'cp1',
+						'vnfd-connection-point-ref': 'connection-point-1',
 						'virtual-interface': {
 							'type': 'VIRTIO'
 						}
@@ -64,8 +64,6 @@ export default {
 		]
 	},
 	'vnfd.internal-vld': {
-		'id': () => guid(),
-		'name': () => generateName('vld', 'new.vnfd.internal-vld'),
 		'description': 'Virtual link for internal fabric',
 		'type': 'ELAN'
 	}
