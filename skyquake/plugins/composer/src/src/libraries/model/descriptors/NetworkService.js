@@ -118,7 +118,9 @@ export default class NetworkService extends DescriptorModel {
 	}
 
 	createVld() {
-		const model = DescriptorModelMetaFactory.createModelInstanceForType('nsd.vld');
+		const property = DescriptorModelMetaFactory.getModelMetaForType('nsd.vld');
+		const uniqueName = DescriptorModelMetaFactory.generateItemUniqueName(this.vld, property);
+		const model = DescriptorModelMetaFactory.createModelInstanceForType('nsd.vld', uniqueName);
 		return this.vld = DescriptorModelFactory.newVirtualLink(model, this);
 	}
 
@@ -138,15 +140,13 @@ export default class NetworkService extends DescriptorModel {
 	}
 
 	set vnffgd(obj) {
-		const onAddForwardingGraph = (fg) => {
-			const index = this.vnffgd.map(suffixAsInteger('short-name')).reduce(toBiggestValue, this.vnffgd.length);
-			fg.model['short-name'] = 'FG-' + index;
-		};
-		this.updateModelList('vnffgd', obj, ForwardingGraph, onAddForwardingGraph);
+		this.updateModelList('vnffgd', obj, ForwardingGraph);
 	}
 
 	createVnffgd(model) {
-		model = model || DescriptorModelMetaFactory.createModelInstanceForType('nsd.vnffgd');
+		const property = DescriptorModelMetaFactory.getModelMetaForType('nsd.vnffgd');
+		const uniqueName = DescriptorModelMetaFactory.generateItemUniqueName(this.vnffgd, property, 'fg');
+		model = model || DescriptorModelMetaFactory.createModelInstanceForType('nsd.vnffgd', uniqueName);
 		return this.vnffgd = DescriptorModelFactory.newForwardingGraph(model, this);
 	}
 
