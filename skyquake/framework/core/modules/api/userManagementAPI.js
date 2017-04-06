@@ -129,7 +129,7 @@ UserManagement.getUserInfo = function(req, userId, domain) {
                                 data: p,
                                 role: {}
                             }
-                            u.role.map(function(r) {
+                            u.role && u.role.map(function(r) {
                                 userData.project[p.name].role[r.role] = true
                             });
                         }
