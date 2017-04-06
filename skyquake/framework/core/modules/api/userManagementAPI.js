@@ -25,6 +25,7 @@ var Promise = require('promise');
 var constants = require('../../api_utils/constants');
 var utils = require('../../api_utils/utils');
 var _ = require('lodash');
+var ProjectManagementAPI = require('./projectManagementAPI.js');
 
 UserManagement.get = function(req) {
     var self = this;
@@ -63,20 +64,96 @@ UserManagement.get = function(req) {
     });
 };
 
+
 UserManagement.getProfile = function(req) {
     var self = this;
     var api_server = req.query['api_server'];
     return new Promise(function(resolve, reject) {
         var response = {};
-            response['data'] = {
-            userId: req.session.userdata.username,
+        var userId = req.session.userdata.username
+        response['data'] = {
+            userId: userId,
             projectId: req.session.projectId
         };
-        response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
+        UserManagement.getUserInfo(req, userId).then(function(result) {
+            response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK;
+            response.data.data =result.data
+            resolve(response);
+        }, function(error) {
+            console.log('Error retrieving getUserInfo');
+            response.statusCode = constants.HTTP_RESPONSE_CODES.ERROR.INTERNAL_SERVER_ERROR;
+            reject(response);
+        })
 
-        resolve(response);
     });
 };
+UserManagement.getUserInfo = function(req, userId, domain) {
+    var self = this;
+    var api_server = req.query['api_server'];
+    var id = req.params['userId'] || userId;
+    var domain = req.params['domainId'] || domain;
+    var response = {};
+    return new Promise(function(resolve, reject) {
+        if (id) {
+            var getProjects = ProjectManagementAPI.get(req)
+            var getPlatformUser = ProjectManagementAPI.getPlatform(req, id)
+            Promise.all([
+                getProjects,
+                getPlatformUser
+            ]).then(function(result) {
+                var userData = {
+                    platform: {
+                        role: {
+
+                        }
+                    },
+                    project: {
+                        /**
+                         *  [projectId] : {
+                         *      data: [project object],
+                         *      role: {
+                         *          [roleId]: true
+                         *      }
+                         *  }
+                         */
+                    }
+                }
+                //Build project roles
+                var projects = result[0].data.project;
+                var userProjects = [];
+                projects && projects.map(function(p, i) {
+                    var users = p['project-config'] && p['project-config'].user;
+                    users && users.map(function(u) {
+                        if(u['user-name'] == id) {
+                            userData.project[p.name] = {
+                                data: p,
+                                role: {}
+                            }
+                            u.role.map(function(r) {
+                                userData.project[p.name].role[r.role] = true
+                            });
+                        }
+                    })
+                });
+                //Build platform roles
+                var platformRoles = result[1].data.platform && result[1].data.platform.role;
+                platformRoles && platformRoles.map(function(r) {
+                    userData.platform.role[r.role] = true
+                });
+                response.data = userData;
+                response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
+                resolve(response);
+            })
+        } else {
+            var errorMsg = 'userId not specified in UserManagement.getUserInfo';
+            console.error(errorMsg);
+            response.statusCode = constants.HTTP_RESPONSE_CODES.ERROR.BAD_REQUEST;
+            response.error = errorMsg;
+            reject(response)
+        }
+
+    })
+}
 UserManagement.create = function(req) {
     var self = this;
     var api_server = req.query['api_server'];

@@ -10,7 +10,7 @@ import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx'
 import 'style/layout.scss';
 import './userMgmt.scss';
 import {Panel, PanelWrapper} from 'widgets/panel/panel';
-
+import SkyquakeRBAC from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
 
 import TextInput from 'widgets/form_controls/textInput.jsx';
 import Input from 'widgets/form_controls/input.jsx';
@@ -20,13 +20,15 @@ import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../node_modules/open-iconic/svg/trash.svg';
 
+import ROLES from 'utils/roleConstants.js';
+const PLATFORM = ROLES.PLATFORM;
+
 class UserManagementDashboard extends React.Component {
     constructor(props) {
         super(props);
         this.Store = this.props.flux.stores.hasOwnProperty('UserManagementStore') ? this.props.flux.stores.UserManagementStore : this.props.flux.createStore(UserManagementStore);
        this.state = this.Store.getState();
        this.actions = this.state.actions;
-
     }
     componentDidUpdate() {
         let self = this;
@@ -212,10 +214,11 @@ class UserManagementDashboard extends React.Component {
                                 )
                             )
         }
-
         html = (
             <PanelWrapper column>
-                <AppHeader nav={[{name: 'PLATFORM ROLE MANAGEMENT', onClick: this.context.router.push.bind(this, {pathname: '/platform'})}]}/>
+                <SkyquakeRBAC allow={[PLATFORM.SUPER, PLATFORM.ADMIN]} >
+                    <AppHeader nav={[{name: 'PLATFORM ROLE MANAGEMENT', onClick: this.context.router.push.bind(this, {pathname: '/platform'})}]}/>
+                </SkyquakeRBAC>
                 <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'flexDirection': 'row'}} >
                     <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded ${this.state.userOpen ? 'collapsed ' : ' '} ${this.state.hideColumns ? 'hideColumns ' : ' '}`}>
                         <Panel title="User List" style={{marginBottom: 0}} no-corners>
@@ -250,9 +253,11 @@ class UserManagementDashboard extends React.Component {
                                 )
                             })}
                         </Panel>
-                        <ButtonGroup  className="buttonGroup" style={{margin: '0 0.5rem 0.5rem', background: '#ddd', paddingBottom: '0.5rem'}}>
-                            <Button label="Add User" onClick={this.addUser} />
+                        <SkyquakeRBAC allow={[PLATFORM.SUPER, PLATFORM.ADMIN]} className="rbacButtonGroup">
+                            <ButtonGroup  className="buttonGroup">
+                                <Button label="Add User" onClick={this.addUser} />
                         </ButtonGroup>
+                        </SkyquakeRBAC>
                     </PanelWrapper>
                     <PanelWrapper onKeyUp={this.evaluateSubmit}
                         className={`userAdmin column`}>
@@ -291,7 +296,9 @@ class UserManagementDashboard extends React.Component {
                             {passwordSectionHTML}
 
                         </Panel>
+                        <SkyquakeRBAC allow={[PLATFORM.SUPER, PLATFORM.ADMIN]} className="rbacButtonGroup">
                             {formButtonsHTML}
+                        </SkyquakeRBAC>
                     </PanelWrapper>
                 </PanelWrapper>
             </PanelWrapper>

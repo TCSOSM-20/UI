@@ -4,6 +4,7 @@
     "dashboard": "./dashboard/dashboard.jsx",
     "order": 1,
     "priority":1,
+    "allow": ["rw-rbac-platform:super-admin", "rw-rbac-platform:platform-admin", "rw-rbac-platform:platform-oper"],
     "routes": [
     {
         "label": "User Management Dashboard",
@@ -14,7 +15,7 @@
         "label": "Platform Role Management",
         "route": "platform",
         "component": "./platformRoleManagement/platformRoleManagement.jsx",
-        "type": "internal"
+        "type": "external"
     },
       {
         "label": "User Profile",

@@ -59,7 +59,7 @@ export default class ProjectManagementStore {
         let project = data[0];
         let projectIndex = data[1];
 
-        let ProjectUser = {
+        let ProjectData = {
             'name': project['name'],
             'description': project['description'],
             'projectUsers': project['project-config'] && project['project-config']['user'] || []
@@ -69,7 +69,7 @@ export default class ProjectManagementStore {
             projectOpen: true,
             isEdit: true,
             isReadOnly: true
-        }, ProjectUser);
+        }, ProjectData);
         this.setState(state)
     }
     editProject(isEdit) {

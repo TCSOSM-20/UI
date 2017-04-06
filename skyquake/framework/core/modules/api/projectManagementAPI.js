@@ -178,14 +178,18 @@ ProjectManagement.delete = function(req) {
 }
 
 
-ProjectManagement.getPlatform = function(req) {
+ProjectManagement.getPlatform = function(req, userId) {
     var self = this;
     var api_server = req.query['api_server'];
-
+    var user = req.params['userId'] || userId;
     return new Promise(function(resolve, reject) {
+        var url = utils.confdPort(api_server) + '/api/operational/rbac-platform-config';
+        if(user) {
+            url = url + '/user/' + user;
+        }
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operational/rbac-platform-config',
+                uri: url,
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization
@@ -198,7 +202,11 @@ ProjectManagement.getPlatform = function(req) {
             var response = {};
             response['data'] = {};
             if (result[0].body) {
-                response['data']['platform'] = JSON.parse(result[0].body)['rw-rbac-platform:rbac-platform-config'];
+                if(user) {
+                    response['data']['platform'] = JSON.parse(result[0].body)['rw-rbac-platform:user'];
+                } else {
+                    response['data']['platform'] = JSON.parse(result[0].body)['rw-rbac-platform:rbac-platform-config'];
+                }
             }
             response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
 

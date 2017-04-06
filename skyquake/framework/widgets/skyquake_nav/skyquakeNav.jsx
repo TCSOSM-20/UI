@@ -25,6 +25,7 @@ import 'style/common.scss';
 import './skyquakeNav.scss';
 import SelectOption from '../form_controls/selectOption.jsx';
 import {FormSection} from '../form_controls/formControls.jsx';
+import SkyquakeRBAC from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
 
 //Temporary, until api server is on same port as webserver
 var rw = require('utils/rw.js');
@@ -298,14 +299,14 @@ export function buildNav(nav, currentPlugin, props) {
             navItem.priority = nav[k].priority;
             navItem.order = nav[k].order;
             navItem.html = (
-                <div key={k} className={navClass}>
+                <SkyquakeRBAC allow={nav[k].allow || ['*']} key={k} className={navClass}>
                     <h2>{dashboardLink} {self.hasSubNav[k] ? <span className="oi" data-glyph="caret-bottom"></span> : ''}</h2>
                     <ul className="menu">
                         {
                             NavList
                         }
                     </ul>
-                </div>
+                </SkyquakeRBAC>
             );
             navList.push(navItem)
         }

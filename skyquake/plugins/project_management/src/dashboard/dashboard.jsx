@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 import AppHeader from 'widgets/header/header.jsx';
 import ProjectManagementStore from './projectMgmtStore.js';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
+import SkyquakeRBAC from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
 import 'style/layout.scss';
 import './projectMgmt.scss';
 import {Panel, PanelWrapper} from 'widgets/panel/panel';
@@ -19,6 +20,10 @@ import SelectOption from 'widgets/form_controls/selectOption.jsx';
 import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../node_modules/open-iconic/svg/trash.svg'
+
+import ROLES from 'utils/roleConstants.js';
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 
 class ProjectManagementDashboard extends React.Component {
     constructor(props) {
@@ -103,7 +108,6 @@ class ProjectManagementDashboard extends React.Component {
             'name': projectName,
             'description': self.state.description,
             'project-config' : {
-                'name-ref': projectName,
                 'user': cleanUsers
             }
         });
@@ -121,7 +125,6 @@ class ProjectManagementDashboard extends React.Component {
             'name': projectName,
             'description': self.state.description,
             'project-config' : {
-                'name-ref': projectName,
                 'user': cleanUsers
             }
         }));
@@ -214,9 +217,9 @@ class ProjectManagementDashboard extends React.Component {
         let state = this.state;
         let passwordSectionHTML = null;
         let formButtonsHTML = (
-            <ButtonGroup className="buttonGroup">
-                <Button label="EDIT" type="submit" onClick={this.editProject} />
-            </ButtonGroup>
+                <ButtonGroup className="buttonGroup">
+                    <Button label="EDIT" type="submit" onClick={this.editProject} />
+                </ButtonGroup>
         );
         let projectUsers = [];
         self.state.projectUsers.map((u) => {
@@ -282,9 +285,11 @@ class ProjectManagementDashboard extends React.Component {
                             )
                         })}
                     </Panel>
-                    <ButtonGroup  className="buttonGroup" style={{margin: '0 0.5rem 0.5rem', background: '#ddd', paddingBottom: '0.5rem'}}>
-                        <Button label="Add Project" onClick={this.addProject} />
-                    </ButtonGroup>
+                    <SkyquakeRBAC className="rbacButtonGroup">
+                        <ButtonGroup  className="buttonGroup">
+                            <Button label="Add Project" onClick={this.addProject} />
+                        </ButtonGroup>
+                    </SkyquakeRBAC>
                 </PanelWrapper>
                 <PanelWrapper onKeyUp={this.evaluateSubmit}
                     className={`ProjectAdmin column`}>
@@ -368,8 +373,9 @@ class ProjectManagementDashboard extends React.Component {
                         </FormSection>
 
                     </Panel>
+                     <SkyquakeRBAC allow={[PROJECT_ROLES.PROJECT_ADMIN]} project={this.state.name} className="rbacButtonGroup">
                         {formButtonsHTML}
-
+                     </SkyquakeRBAC>
                 </PanelWrapper>
 
 

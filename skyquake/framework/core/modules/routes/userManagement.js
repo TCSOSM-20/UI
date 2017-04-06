@@ -50,6 +50,13 @@ Router.get('/user-profile', cors(), function(req, res) {
         utils.sendErrorResponse(error, res);
     });
 });
+Router.get('/user-data/:userId/:domain?', cors(), function(req, res) {
+    UserManagementAPI.getUserInfo(req).then(function(response) {
+        utils.sendSuccessResponse(response, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
 Router.post('/user', cors(), function(req, res) {
     UserManagementAPI.create(req).then(function(response) {
         utils.sendSuccessResponse(response, res);

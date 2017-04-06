@@ -68,6 +68,13 @@ function addLabel(plugin_name, label) {
 	NAVIGATION[plugin_name].label = label || 'RW.UI Plugin';
 }
 
+function addAllow(plugin_name, allow) {
+	if (!NAVIGATION[plugin_name]) {
+		NAVIGATION[plugin_name] = {};
+	}
+	NAVIGATION[plugin_name].allow = allow || '*';
+}
+
 function getNavigation() {
 	return NAVIGATION;
 }
@@ -81,6 +88,7 @@ function onNavigationDiscovered(plugin_name, plugin) {
 	addOrder(plugin_name, plugin.order);
 	addPriority(plugin_name, plugin.priority);
 	addLabel(plugin_name, plugin.name);
+	addAllow(plugin_name, plugin.allow);
 }
 
 function init() {

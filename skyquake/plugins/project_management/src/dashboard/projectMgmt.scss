@@ -88,12 +88,15 @@
 
         }
     }
-    .buttonGroup {
+    .rbacButtonGroup {
         margin: 0 0.5rem 0.5rem;
         background: #ddd;
         padding-bottom: 0.5rem;
         padding: 0.5rem 0;
+    }
+    .buttonGroup {
         border-top: #d3d3d3 1px solid;
+        padding-top:0.5rem;
     }
     .addUser {
         display:-ms-flexbox;
