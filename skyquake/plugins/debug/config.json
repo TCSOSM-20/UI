@@ -4,6 +4,7 @@
     "dashboard": "./crash.jsx",
     "order": 100,
     "priority":2,
+    "admin_link": true,
     "routes" : [{
         "label": "Debug",
         "route": "/",

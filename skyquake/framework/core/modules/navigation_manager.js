@@ -75,6 +75,13 @@ function addAllow(plugin_name, allow) {
 	NAVIGATION[plugin_name].allow = allow || '*';
 }
 
+function addAdminFlag(plugin_name, admin_link) {
+	if (!NAVIGATION[plugin_name]) {
+		NAVIGATION[plugin_name] = {};
+	}
+	NAVIGATION[plugin_name].admin_link = admin_link || false;
+}
+
 function getNavigation() {
 	return NAVIGATION;
 }
@@ -89,6 +96,7 @@ function onNavigationDiscovered(plugin_name, plugin) {
 	addPriority(plugin_name, plugin.priority);
 	addLabel(plugin_name, plugin.name);
 	addAllow(plugin_name, plugin.allow);
+	addAdminFlag(plugin_name, plugin.admin_link);
 }
 
 function init() {

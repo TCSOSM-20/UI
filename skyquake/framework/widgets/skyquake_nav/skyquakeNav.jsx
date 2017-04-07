@@ -113,7 +113,7 @@ class UserNav extends React.Component {
         return (
             <div className="app">
                 <h2>
-                    {userProfileLink}
+                    USER: {userProfileLink}
                     <span className="oi" data-glyph="caret-bottom"></span>
                 </h2>
                 <ul className="menu">
@@ -257,11 +257,24 @@ export function buildNav(nav, currentPlugin, props) {
     let navList = [];
     let navListHTML = [];
     let secondaryNav = [];
+    let adminNav = [];
     let self = this;
     self.hasSubNav = {};
     let secondaryNavHTML = (
         <div className="secondaryNav" key="secondaryNav">
             {secondaryNav}
+            <div className="app admin">
+                <h2>
+                    <a>
+                        ADMIN <span className="oi" data-glyph="caret-bottom"></span>
+                    </a>
+                </h2>
+                <ul className="menu">
+                    {
+                        adminNav
+                    }
+                </ul>
+            </div>
             <SelectProject
                 onSelectProject={props.store.selectActiveProject}
                 projects={props.projects}
@@ -298,7 +311,14 @@ export function buildNav(nav, currentPlugin, props) {
             NavList = nav[k].routes.map(buildNavListItem.bind(self, k));
             navItem.priority = nav[k].priority;
             navItem.order = nav[k].order;
-            navItem.html = (
+            if(nav[k].admin_link) {
+                adminNav.push((
+                    <li key={nav[k].name}>
+                        {dashboardLink}
+                    </li>
+                ))
+            } else {
+                            navItem.html = (
                 <SkyquakeRBAC allow={nav[k].allow || ['*']} key={k} className={navClass}>
                     <h2>{dashboardLink} {self.hasSubNav[k] ? <span className="oi" data-glyph="caret-bottom"></span> : ''}</h2>
                     <ul className="menu">
@@ -309,6 +329,8 @@ export function buildNav(nav, currentPlugin, props) {
                 </SkyquakeRBAC>
             );
             navList.push(navItem)
+            }
+
         }
     }
     //Sorts nav items by order and returns only the markup

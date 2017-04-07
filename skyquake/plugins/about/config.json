@@ -4,6 +4,7 @@
     "dashboard": "./about.jsx",
     "order": 99,
     "priority":2,
+    "admin_link": true,
      "routes" : [{
         "label": "Dashboard",
         "route": "/",

@@ -4,6 +4,7 @@
     "dashboard": "./loggingGeneral.jsx",
     "order": 101,
     "priority":2,
+    "admin_link": true,
     "routes": [
         {
             "label": "Logging",
