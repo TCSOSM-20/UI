@@ -23,6 +23,7 @@ var constants = require('../../framework/core/api_utils/constants.js');
 var C = require('./api/composer.js');
 var Composer = C.Composer;
 var FileManager = C.FileManager;
+var PackageManager = C.PackageManager;
 var multer = require('multer');
 var fs = require('fs');
 var path = require('path');
@@ -103,28 +104,9 @@ router.put('/api/catalog/:catalogType/:id', cors(), function(req, res) {
         res.send(error.errorMessage);
     });
 });
-router.post('/upload', cors(), upload.single('package'), function (req, res, next) {
-    Composer.upload(req).then(function(data) {
-        utils.sendSuccessResponse(data, res);
-    }, function(error) {
-        utils.sendErrorResponse(error, res);
-    });
-});
-router.use('/upload', cors(), express.static('upload/packages'));
-
-router.post('/update', cors(), upload.single('package'), function (req, res, next) {
-    Composer.update(req).then(function(data) {
-        utils.sendSuccessResponse(data, res);
-    }, function(error) {
-        utils.sendErrorResponse(error, res);
-    });
-});
-router.use('/update', cors(), express.static('upload/packages'));
-
-
 
 router.post('/api/file-manager', cors(), upload.single('package'), function (req, res, next) {
-    Composer.addFile(req).then(function(data) {
+    FileManager.addFile(req).then(function(data) {
         utils.sendSuccessResponse(data, res);
     }, function(error) {
         utils.sendErrorResponse(error, res);
@@ -153,8 +135,42 @@ router.delete('/api/file-manager', cors(), function(req, res) {
     });
 });
 
+// Catalog operations via package manager
+
+router.post('/upload', cors(), upload.single('package'), function (req, res, next) {
+    PackageManager.upload(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.use('/upload', cors(), express.static('upload/packages'));
+
+router.post('/update', cors(), upload.single('package'), function (req, res, next) {
+    PackageManager.update(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.use('/update', cors(), express.static('upload/packages'));
+
 router.post('/api/package-export', cors(), function (req, res, next) {
-    Composer.exportPackage(req).then(function(data) {
+    PackageManager.export(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.post('/api/package-copy', cors(), function (req, res, next) {
+    PackageManager.copy(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.get('/api/package-manager/jobs/:id', cors(), function (req, res, next) {
+    PackageManager.getJobStatus(req).then(function(data) {
         utils.sendSuccessResponse(data, res);
     }, function(error) {
         utils.sendErrorResponse(error, res);

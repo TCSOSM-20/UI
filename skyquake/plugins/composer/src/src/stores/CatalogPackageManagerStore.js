@@ -32,8 +32,21 @@ import CatalogDataSource from '../sources/CatalogDataSource'
 import imgDownload from '../../../node_modules/open-iconic/svg/cloud-download.svg'
 import imgOnboard from '../../../node_modules/open-iconic/svg/cloud-upload.svg'
 import imgUpdate from '../../../node_modules/open-iconic/svg/data-transfer-upload.svg'
+import imgCopy from '../../../node_modules/open-iconic/svg/layers.svg'
 
 const defaults = {
+	operation: {
+		id: '',
+		name: '',
+		icon: '',
+		transactionId: '',
+		progress: 0,
+		message: 'Requested',
+		args: {},
+		pending: false,
+		success: false,
+		error: false,
+	},
 	downloadPackage: {
 		id: '',
 		name: '',
@@ -60,13 +73,13 @@ function getCatalogPackageManagerServerOrigin() {
 	return utils.getSearchParams(window.location).upload_server + ':4567';
 }
 
-function delayStatusCheck(statusCheckFunction, catalogPackage) {
-	if (!catalogPackage.checkStatusTimeoutId) {
+function delayStatusCheck(statusCheckFunction, operation) {
+	if (!operation.checkStatusTimeoutId) {
 		const delayCallback = function () {
-			delete catalogPackage.checkStatusTimeoutId;
-			statusCheckFunction(catalogPackage).catch(exception);
+			delete operation.checkStatusTimeoutId;
+			statusCheckFunction(operation).catch(exception);
 		};
-		catalogPackage.checkStatusTimeoutId = _delay(delayCallback, defaults.checkStatusDelayInSeconds * 1000);
+		operation.checkStatusTimeoutId = _delay(delayCallback, defaults.checkStatusDelayInSeconds * 1000);
 	}
 }
 
@@ -74,52 +87,76 @@ class CatalogPackageManagerStore {
 
 	constructor() {
 
-		this.packages = [];
+		this.operations = [];
 
 		this.registerAsync(CatalogDataSource);
 		this.registerAsync(CatalogPackageManagerSource);
-		this.bindAction(CatalogPackageManagerActions.REMOVE_CATALOG_PACKAGE, this.removeCatalogPackage);
+		this.bindAction(CatalogPackageManagerActions.REMOVE_CATALOG_OPERATION, this.removeCatalogOperation);
 		this.bindAction(CatalogPackageManagerActions.DOWNLOAD_CATALOG_PACKAGE, this.downloadCatalogPackage);
 		this.bindAction(CatalogPackageManagerActions.DOWNLOAD_CATALOG_PACKAGE_STATUS_UPDATED, this.onDownloadCatalogPackageStatusUpdated);
 		this.bindAction(CatalogPackageManagerActions.DOWNLOAD_CATALOG_PACKAGE_ERROR, this.onDownloadCatalogPackageError);
 		this.bindAction(CatalogPackageManagerActions.UPLOAD_CATALOG_PACKAGE, this.uploadCatalogPackage);
 		this.bindAction(CatalogPackageManagerActions.UPLOAD_CATALOG_PACKAGE_STATUS_UPDATED, this.onUploadCatalogPackageStatusUpdated);
 		this.bindAction(CatalogPackageManagerActions.UPLOAD_CATALOG_PACKAGE_ERROR, this.onUploadCatalogPackageError);
-
+		this.bindAction(CatalogPackageManagerActions.COPY_CATALOG_PACKAGE, this.copyCatalogPackage);
+		this.bindAction(CatalogPackageManagerActions.UPDATE_STATUS, this.updateOperationStatus);
 	}
 
-	addPackage(catalogPackage) {
-		const packages = [catalogPackage].concat(this.packages);
-		this.setState({packages: packages});
+	addOperation(operation) {
+		const operations = [operation].concat(this.operations);
+		this.setState({operations});
 	}
 
-	updatePackage(catalogPackage) {
-		const packages = this.packages.map(d => {
-			if (d.id === catalogPackage.id) {
-				return Object.assign({}, d, catalogPackage);
+	updateOperation(operation) {
+		const operations = this.operations.map(d => {
+			if (d.id === operation.id) {
+				return Object.assign({}, d, operation);
 			}
 			return d;
 		});
-		this.setState({packages: packages});
+		this.setState({operations});
 	}
 
-	removeCatalogPackage(catalogPackage) {
-		const packages = this.packages.filter(d => d.id !== catalogPackage.id);
-		this.setState({packages: packages});
+	removeCatalogOperation(operation) {
+		const operations = this.operations.filter(d => d.id !== operation.id);
+		this.setState({operations});
+	}
+
+	copyCatalogPackage(sourcePackage) {
+		let operationInfo = Object.assign({}, defaults.operation);
+		operationInfo.name =  "Duplication of " + sourcePackage.name;
+		operationInfo.id = guid();
+		operationInfo.icon = imgCopy;
+		operationInfo.type = 'copy';
+		operationInfo.message = 'Requesting package duplication.';
+		operationInfo.args.packageType = sourcePackage['uiState']['type'].toUpperCase();
+		operationInfo.args.id =  sourcePackage.id;
+		operationInfo.args.name =  sourcePackage.name + ' copy';
+
+		this.addOperation(operationInfo);
+		this.getInstance().requestCatalogPackageCopy(operationInfo, sourcePackage);
+	}
+
+	updateOperationStatus(operation) {
+		console.debug('package manager operation status update', operation);
+		this.updateOperation(operation);
+		if (operation.pending) {
+			delayStatusCheck(this.getInstance().requestCatalogPackageCopyStatus, operation);
+		}
 	}
 
 	uploadCatalogPackage(file) {
 		file.id = file.id || guid();
-		const catalogPackage = _pick(file, packagePropertyNames);
-		catalogPackage.icon = file.riftAction === 'onboard' ? imgOnboard : imgUpdate;
-		catalogPackage.type = 'upload';
-		this.addPackage(catalogPackage);
+		const operation = _pick(file, packagePropertyNames);
+		operation.icon = file.riftAction === 'onboard' ? imgOnboard : imgUpdate;
+		operation.type = 'upload';
+		this.addOperation(operation);
 		// note DropZone.js handles the async upload so we don't have to invoke any async action creators
 	}
 
 	onUploadCatalogPackageStatusUpdated(response) {
 		const upload = updateStatusInfo(response);
-		this.updatePackage(upload);
+		this.updateOperation(upload);
 		console.log('updating package upload')
 		// if pending with no transaction id - do nothing
 		// bc DropZone.js will notify upload progress
@@ -134,8 +171,8 @@ class CatalogPackageManagerStore {
 
 	onUploadCatalogPackageError(response) {
 		console.warn('onUploadCatalogPackageError', response);
-		const catalogPackage = updateStatusInfo(response);
-		this.updatePackage(catalogPackage);
+		const operation = updateStatusInfo(response);
+		this.updateOperation(operation);
 	}
 
 	downloadCatalogPackage(data) {
@@ -144,22 +181,22 @@ class CatalogPackageManagerStore {
 		let grammar = data['selectedGrammar'] || 'osm';
 		let format = "YAML";
 		if (catalogItems.length) {
-			const catalogPackage = Object.assign({}, defaults.downloadPackage, {id: guid()});
-			catalogPackage.name = catalogItems[0].name;
-			catalogPackage.type = 'download';
+			const operation = Object.assign({}, defaults.downloadPackage, {id: guid()});
+			operation.name = catalogItems[0].name;
+			operation.type = 'download';
 			if (catalogItems.length > 1) {
-				catalogPackage.name += ' (' + catalogItems.length + ' items)';
+				operation.name += ' (' + catalogItems.length + ' items)';
 			}
-			catalogPackage.ids = catalogItems.map(d => d.id).sort().toString();
-			catalogPackage.catalogItems = catalogItems;
-			this.addPackage(catalogPackage);
-			this.getInstance().requestCatalogPackageDownload(catalogPackage, format, grammar, schema).catch(exception);
+			operation.ids = catalogItems.map(d => d.id).sort().toString();
+			operation.catalogItems = catalogItems;
+			this.addOperation(operation);
+			this.getInstance().requestCatalogPackageDownload(operation, format, grammar, schema).catch(exception);
 		}
 	}
 
 	onDownloadCatalogPackageStatusUpdated(response) {
 		const download = updateStatusInfo(response);
-		this.updatePackage(download);
+		this.updateOperation(download);
 		if (download.pending) {
 			delayStatusCheck(this.getInstance().requestCatalogPackageDownloadStatus, download);
 		}
@@ -167,8 +204,8 @@ class CatalogPackageManagerStore {
 
 	onDownloadCatalogPackageError(response) {
 		console.warn('onDownloadCatalogPackageError', response);
-		const catalogPackage = updateStatusInfo(response);
-		this.updatePackage(catalogPackage);
+		const operation = updateStatusInfo(response);
+		this.updateOperation(operation);
 	}
 
 }
@@ -188,26 +225,26 @@ function calculateUploadProgressMessage(size = 0, progress = 0, bytesSent = 0) {
 }
 
 function updateStatusInfo(response) {
-	// returns the catalogPackage object with the status fields updated based on the server response
+	// returns the operation object with the status fields updated based on the server response
 	const statusInfo = {
 		pending: false,
 		success: false,
 		error: false
 	};
 	const responseData = (response.data.output) ? response.data.output :  response.data;
-	const catalogPackage = response.state;
+	const operation = response.state;
 	if ( typeof response.data.status !== "number" ) {
 		switch(response.data.status) {
 		case 'upload-progress':
 			statusInfo.pending = true;
 			statusInfo.progress = parseFloat(responseData.progress) || 0;
-			statusInfo.message = calculateUploadProgressMessage(catalogPackage.size, responseData.progress, responseData.bytesSent);
+			statusInfo.message = calculateUploadProgressMessage(operation.size, responseData.progress, responseData.bytesSent);
 			break;
 		case 'upload-success':
 			statusInfo.pending = true;
 			statusInfo.progress = 100;
 			statusInfo.message = 'Upload completed.';
-			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id'] || catalogPackage.transactionId;
+			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id'] || operation.transactionId;
 			break;
 		case 'upload-error':
 			statusInfo.error = true;
@@ -216,7 +253,7 @@ function updateStatusInfo(response) {
 		case 'download-requested':
 			statusInfo.pending = true;
 			statusInfo.progress = 25;
-			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id']  || catalogPackage.transactionId;
+			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id']  || operation.transactionId;
 			break;
 		case 'pending':
 			statusInfo.pending = true;
@@ -227,12 +264,12 @@ function updateStatusInfo(response) {
 			statusInfo.success = true;
 			statusInfo.progress = 100;
 			statusInfo.message = responseData.events[responseData.events.length - 1].text;
-			if (catalogPackage.type === 'download') {
+			if (operation.type === 'download') {
 				statusInfo.urlValidUntil = moment().add(defaults.downloadUrlTimeToLiveInMinutes, 'minutes').toISOString();
 				if (responseData.filename) {
 					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + responseData.filename;
 				} else {
-					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + catalogPackage.transactionId + '.tar.gz';
+					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + operation.transactionId + '.tar.gz';
 				}
 			}
 			break;
@@ -248,7 +285,7 @@ function updateStatusInfo(response) {
 		statusInfo.error = true;
 		statusInfo.message = responseData.statusText || 'Error';
 	}
-	return Object.assign({}, catalogPackage, statusInfo);
+	return Object.assign({}, operation, statusInfo);
 }
 
 export default alt.createStore(CatalogPackageManagerStore, 'CatalogPackageManagerStore');
