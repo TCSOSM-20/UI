@@ -38,7 +38,6 @@ class UserProfileDashboard extends React.Component {
     }
     componentWillMount() {
         this.Store.listen(this.updateState);
-        this.Store.getUsers();
     }
     componentWillUnmount() {
         this.Store.unlisten(this.updateState);
@@ -173,6 +172,7 @@ class UserProfileDashboard extends React.Component {
     render() {
 
         let self = this;
+        const User = this.context.userProfile || {};
         let html;
         let props = this.props;
         let state = this.state;
@@ -182,74 +182,62 @@ class UserProfileDashboard extends React.Component {
                 <Button label="EDIT" type="submit" onClick={this.editUser} />
             </ButtonGroup>
         );
-        const User = this.context.userProfile || {};
-            passwordSectionHTML = (
-                                        (
-                                            <FormSection title="PASSWORD CHANGE">
-                                                <Input label="NEW PASSWORD" type="password" value={state['new-password']}  onChange={this.updateInput.bind(null, 'new-password')}/>
-                                                <Input label="REPEAT NEW PASSWORD" type="password"  value={state['confirm-password']}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
-                                            </FormSection>
-                                        )
-                                    );
-            formButtonsHTML = (
-
-
-                                    <ButtonGroup className="buttonGroup">
-                                        <Button label="Update" type="submit" onClick={this.updateUser} />
-                                    </ButtonGroup>
-
-
-                            )
+        passwordSectionHTML = (
+            (
+                <FormSection title="PASSWORD CHANGE">
+                    <Input label="NEW PASSWORD" type="password" value={state['new-password']}  onChange={this.updateInput.bind(null, 'new-password')}/>
+                    <Input label="REPEAT NEW PASSWORD" type="password"  value={state['confirm-password']}  onChange={this.updateInput.bind(null, 'confirm-password')}/>
+                </FormSection>
+            )
+        );
+        formButtonsHTML = (
+                <ButtonGroup className="buttonGroup">
+                    <Button label="Update" type="submit" onClick={this.updateUser} />
+                </ButtonGroup>
+        )
 
         html = (
             <PanelWrapper column>
                 <PanelWrapper className={`row userManagement ${!this.state.userOpen ? 'userList-open' : ''}`} style={{'flexDirection': 'row'}} >
                     <PanelWrapper ref={(div) => { this.UserList = div}} className={`column userList expanded hideColumns`}>
                         <Panel title={User.userId} style={{marginBottom: 0}} no-corners>
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <td>User Name</td>
+                            <FormSection title="USER INFO">
+                                <table className="userProfile-table">
+                                    <thead>
+                                        <tr>
+                                            <td>Project</td>
+                                            <td>Role</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                         {
-                                            state.roles.map((r,i) => {
-                                                return <td key={i}>{r}</td>
+                                            User.data && User.data.projectId && User.data.projectId.map((p,i)=> {
+                                                let project = User.data.project[p];
+                                                let projectConfig = project && project.data['project-config'];
+                                                let userRoles = [];
+                                                return (
+                                                    <tr key={i}>
+                                                        <td>
+                                                            {p}
+                                                        </td>
+                                                        <td>
+                                                            {
+                                                                project && Object.keys(project.role).map(function(k) {
+                                                                    return <div>{k}</div>
+                                                                })
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                )
                                             })
                                         }
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        User.projects && User.projects.map((p,i)=> {
-                                            let projectConfig = p['project-config'];
-                                            let userRoles = [];
-                                            if(projectConfig && projectConfig.user) {
-                                                projectConfig.user.map((u) => {
-                                                    if(u['user-name'] == User.userId) {
-                                                        userRoles = u.role && u.role.map((r) => {
-                                                            return r.role;
-                                                        })
-                                                    }
-                                                })
-                                            }
-                                            return (
-                                                <tr key={i}>
-                                                    <td>
-                                                        {p.name}
-                                                    </td>
-                                                    {
-                                                        state.roles.map((r,j) => {
-                                                            return <td key={j}><Input readonly={state.isReadOnly} type="checkbox" checked={(userRoles.indexOf(r) > -1)} /></td>
-                                                        })
-                                                    }
-                                                </tr>
-                                            )
-                                        })
-                                    }
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </FormSection>
                             {passwordSectionHTML}
+
                         </Panel>
-                        {formButtonsHTML}
+                         {formButtonsHTML}
                     </PanelWrapper>
 
                 </PanelWrapper>

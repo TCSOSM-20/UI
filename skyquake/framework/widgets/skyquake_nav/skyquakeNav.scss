@@ -22,15 +22,21 @@
                 justify-content: flex-end;
         }
         .app {
+            display: -ms-flexbox;
+            display: block;
             position:relative;
             margin: auto 0.5rem;
+            min-width: 140px;
             h2 {
                 font-size:0.75rem;
                 border-right: 1px solid black;
                 display: -ms-flexbox;
                 display: flex;
+                -ms-flex-pack: start;
+                -ms-flex-pack: start;
+                justify-content: flex-start;
                 -ms-flex-align: center;
-                    align-items: center;
+                align-items: center;
                 .oi {
                     padding-right: 0.5rem;
                 }
@@ -40,6 +46,9 @@
                 display:none;
                 z-index:2;
                 width: 100%;
+                li {
+                    text-align:left;
+                }
             }
             &:first-child{
                 h2 {
@@ -77,7 +86,7 @@
             padding:0.5rem 1rem;
             text-decoration:none;
             text-transform:uppercase;
-            text-align:center;
+            text-align:left;
             color:white;
         }
         &:before {
@@ -94,7 +103,7 @@
             align-items:center;
             padding-left: 1rem;
             text-transform:uppercase;
-            text-align: center;
+            text-align: left;
             border-left:1px solid white;
             .projectSelect {
                 padding: 0 0.5rem;

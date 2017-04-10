@@ -4,6 +4,7 @@
     "dashboard": "./dashboard/dashboard.jsx",
     "order": 1,
     "priority":1,
+    "admin_link": true,
     "allow": ["rw-rbac-platform:super-admin", "rw-rbac-platform:platform-admin", "rw-rbac-platform:platform-oper"],
     "routes": [
     {

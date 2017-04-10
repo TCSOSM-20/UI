@@ -4,6 +4,7 @@
     "dashboard": "./dashboard/dashboard.jsx",
     "order": 1,
     "priority":1,
+    "admin_link": true,
     "routes": [
     {
         "label": "Configuration Dashboard",

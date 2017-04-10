@@ -3,7 +3,8 @@
     "name": "Project Management",
     "dashboard": "./dashboard/dashboard.jsx",
     "order": 1,
-    "priority":1,
+    "priority":2,
+    "admin_link": true,
     "routes": [
     {
         "label": "Project Management Dashboard",

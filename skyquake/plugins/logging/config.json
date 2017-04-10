@@ -2,7 +2,7 @@
     "root": "public",
     "name": "Logging",
     "dashboard": "./loggingGeneral.jsx",
-    "order": 101,
+    "order": 1,
     "priority":2,
     "admin_link": true,
     "routes": [

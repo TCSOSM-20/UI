@@ -107,6 +107,8 @@ UserManagement.getUserInfo = function(req, userId, domain) {
 
                         }
                     },
+                    //id/key values for each project
+                    projectId:[],
                     project: {
                         /**
                          *  [projectId] : {
@@ -123,6 +125,7 @@ UserManagement.getUserInfo = function(req, userId, domain) {
                 var userProjects = [];
                 projects && projects.map(function(p, i) {
                     var users = p['project-config'] && p['project-config'].user;
+                    userData.projectId.push(p.name);
                     users && users.map(function(u) {
                         if(u['user-name'] == id) {
                             userData.project[p.name] = {
