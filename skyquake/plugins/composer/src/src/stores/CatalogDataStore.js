@@ -460,27 +460,10 @@ class CatalogDataStore {
 	}
 
 	duplicateSelectedCatalogItem() {
-		const item = this.getFirstSelectedCatalogItem();
-		if (item) {
-			const newItem = _cloneDeep(item);
-			newItem.name = newItem.name + ' Copy';
-			newItem.id = guid();
-			UID.assignUniqueId(newItem.uiState);
-			const nsd = this.addNewItemToCatalog(newItem);
-			this.selectCatalogItem(nsd);
-			nsd.uiState.isNew = true;
-			nsd.uiState.modified = true;
-			nsd.uiState['instance-ref-count'] = 0;
-			// note duplicated items get a new id, map the layout position
-			// of the old id to the new id in order to preserve the layout
-			if (nsd.uiState.containerPositionMap) {
-				nsd.uiState.containerPositionMap[nsd.id] = nsd.uiState.containerPositionMap[item.id];
-				delete nsd.uiState.containerPositionMap[item.id];
-			}
-			setTimeout(() => {
-				this.selectCatalogItem(nsd);
-				CatalogItemsActions.editCatalogItem.defer(nsd);
-			}, 200);
+		// make request to backend to duplicate an item
+		const srcItem = this.getFirstSelectedCatalogItem();
+		if (srcItem) {
+			CatalogPackageManagerActions.copyCatalogPackage.defer(srcItem);
 		}
 	}
 
