@@ -106,8 +106,8 @@ class Account extends React.Component {
             self.props.router.push({pathname:'accounts'});
             self.props.flux.actions.global.hideScreenLoader.defer();
         },
-         function() {
-            self.props.flux.actions.global.showNotification("There was an error creating your account. Please contact your system administrator.");
+         function(error) {
+            self.props.flux.actions.global.showNotification(error);
             self.props.flux.actions.global.hideScreenLoader.defer();
          });
     }
