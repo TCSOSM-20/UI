@@ -5,6 +5,10 @@
     "name": "Catalog",
     "dashboard" : "./src/components/ComposerApp.js",
     "order": 2,
+    "allow": [
+        "rw-rbac-platform:super-admin",
+        "rw-project-mano:catalog-oper",
+        "rw-project-mano:catalog-admin"],
     "routes" : [{
         "label": "Catalog",
         "route": "/",

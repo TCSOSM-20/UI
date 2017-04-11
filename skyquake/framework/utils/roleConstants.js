@@ -7,8 +7,12 @@ c.PLATFORM = {
 }
 
 c.PROJECT = {
-    MANO_OPER: "rw-project-mano:mano-oper",
-    MANO_ADMIN: "rw-project-mano:mano-admin",
+    CATALOG_OPER: "rw-project-mano:catalog-oper",
+    CATALOG_ADMIN: "rw-project-mano:catalog-admin",
+    LCM_OPER: "rw-project-mano:lcm-oper",
+    LCM_ADMIN: "rw-project-mano:lcm-admin",
+    ACCOUNT_OPER: "rw-project-mano:account-oper",
+    ACCOUNT_ADMIN: "rw-project-mano:account-admin",
     PROJECT_ADMIN: "rw-project:project-admin",
     PROJECT_OPER: "rw-project:project-oper",
 }

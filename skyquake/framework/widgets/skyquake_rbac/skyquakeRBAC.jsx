@@ -26,15 +26,16 @@ export default class SkyquakeRBAC extends React.Component {
         super(props);
     }
     render() {
-      const User = this.context.userProfile.data;
+      const User = this.context.userProfile;
+      const UserData = User.data;
       let HTML = null;
       // If user object has platform property then it has been populated by the back end.
-      if(User) {
-        const PlatformRole = User.platform.role;
+      if(UserData) {
+        const PlatformRole = UserData.platform.role;
         const isPlatformSuper = PlatformRole[PLATFORM.SUPER];
         const isPlatformAdmin = PlatformRole[PLATFORM.ADMIN];
         const isPlatformOper = PlatformRole[PLATFORM.OPER];
-        const hasRoleAccess =  checkForRoleAccess(User.project[this.props.project], PlatformRole, this.props.allow)//false//(this.props.roles.indexOf(userProfile.projectRole) > -1)
+        const hasRoleAccess =  checkForRoleAccess(UserData.project[User.projectId], PlatformRole, this.props.allow)//false//(this.props.roles.indexOf(userProfile.projectRole) > -1)
         if (isPlatformSuper) {
           HTML = this.props.children;
         } else {

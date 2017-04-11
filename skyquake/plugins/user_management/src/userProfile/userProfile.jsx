@@ -237,7 +237,9 @@ class UserProfileDashboard extends React.Component {
                             {passwordSectionHTML}
 
                         </Panel>
-                         {formButtonsHTML}
+                        <div  className="buttonSection">
+                            {formButtonsHTML}
+                        </div>
                     </PanelWrapper>
 
                 </PanelWrapper>

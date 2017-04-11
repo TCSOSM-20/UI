@@ -4,6 +4,7 @@
     "dashboard": "./launchpad.jsx",
     "order": 1,
     "priority":1,
+    "allow": ["rw-rbac-platform:super-admin", "rw-project-mano:lcm-oper", "rw-project-mano:lcm-admin"],
     "routes": [
     {
         "label": "Dashboard",

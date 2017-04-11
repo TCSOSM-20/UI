@@ -3,6 +3,7 @@
  */
 import ProjectManagementActions from './projectMgmtActions.js';
 import ProjectManagementSource from './projectMgmtSource.js';
+import ROLES from 'utils/roleConstants.js';
 import _ from 'lodash';
 export default class ProjectManagementStore {
     constructor() {
@@ -15,8 +16,10 @@ export default class ProjectManagementStore {
         this.projectUsers = [];
         this.selectedUser = null;
         this.selectedRole = null;
-        this.roles = ['rw-project:project-admin', 'rw-project:project-oper', 'rw-project:project-create'
-        ];
+        this.roles = Object.keys(ROLES.PROJECT).map((p) => {
+            return ROLES.PROJECT[p];
+        })
+        // this.roles = ['rw-project:project-admin', 'rw-project:project-oper', 'rw-project:project-create'];
         this.users = [];
         this.activeIndex = null;
         this.isReadOnly = true;

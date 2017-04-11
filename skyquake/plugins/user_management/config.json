@@ -11,7 +11,8 @@
         "label": "User Management Dashboard",
         "route": "user-management",
         "component": "./dashboard/dashboard.jsx",
-        "type": "internal"
+        "type": "internal",
+        "allow": ["rw-rbac-platform:super-admin", "rw-rbac-platform:platform-admin", "rw-rbac-platform:platform-oper"]
     },{
         "label": "Platform Role Management",
         "route": "platform",

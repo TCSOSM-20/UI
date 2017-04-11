@@ -4,6 +4,7 @@
     "dashboard": "./account/accountsDashboard.jsx",
     "order": 3,
     "priority":1,
+    "allow": ["rw-rbac-platform:super-admin", "rw-project-mano:account-oper", "rw-project-mano:account-admin"],
     "routes": [
     {
         "label": "Accounts Dashboard",
