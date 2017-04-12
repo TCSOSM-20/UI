@@ -21,6 +21,7 @@ import AccountSource from './accountSource.js';
 var Utils = require('utils/utils.js');
 var rw = require('utils/rw.js');
 var altImage = rw.getSearchParams(window.location).alt_image;
+var _ = require('lodash');
 
 let Params = {
     //Config Agent
@@ -291,7 +292,7 @@ export default class AccountStore {
                 if(self.currentAccount) {
                     let Account = self.getAccountFromStream(data[self.currentAccount.type].data, self.currentAccount.name);
                     newState.account = self.account;
-                    newState.account['connection-status'] = Account['connection-status']
+                    newState.account['connection-status'] = Account && Account['connection-status']
                 }
                 self.setState(newState)
             } catch(error) {
@@ -332,7 +333,7 @@ export default class AccountStore {
     }
     getAccountFromStream(data, name) {
         let result = null;
-        data.map(function(a) {
+        data && _.isArray(data) && data.map(function(a) {
             if(a.name == name) {
                 result = a;
             }
@@ -342,7 +343,7 @@ export default class AccountStore {
     viewAccount = ({type, name}) => {
         var data = null;
         var accounts = null;
-        if(this && this[type].length) {
+        if(this && this[type] && this[type].length) {
             accounts = this[type];
             data = this.getAccountFromStream(accounts, name);
             if(data) {
@@ -364,7 +365,7 @@ export default class AccountStore {
     }
     generateOptionsByName(data) {
         let results = [];
-        if (data && data.constructor.name == "Array") {
+        if (data && _.isArray(data)) {
           data.map(function(d) {
               results.push({
                   label: d.name,

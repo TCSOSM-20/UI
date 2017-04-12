@@ -50,8 +50,17 @@ var confdPort = function(api_server) {
 };
 
 var projectContextUrl = function(req, url) {
-	if (req.session && req.session.projectId) {
-		return url.replace(/(\/api\/operational\/|\/api\/config\/|\/api\/operations\/)(.*)/, '$1project/' + req.session.projectId + '/$2');
+	//NOTE: We need to go into the sessionStore because express-session
+	// does not reliably update the session.
+	// See https://github.com/expressjs/session/issues/450
+	var projectId = (req.session &&
+					 req.sessionStore &&
+					 req.sessionStore.sessions &&
+					 req.sessionStore.sessions[req.session.id] &&
+					 JSON.parse(req.sessionStore.sessions[req.session.id])['projectId']) ||
+					 (null);
+	if (projectId) {
+		return url.replace(/(\/api\/operational\/|\/api\/config\/|\/api\/operations\/)(.*)/, '$1project/' + projectId + '/$2');
 
 	}
 	return url;
