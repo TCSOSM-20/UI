@@ -20,11 +20,11 @@
  *
  * This class generates the form fields used to edit the CONFD JSON model.
  */
-'use strict';
 
 import _includes from 'lodash/includes'
 import _isArray from 'lodash/isArray'
 import _cloneDeep from 'lodash/cloneDeep'
+import _debounce from 'lodash/debounce';
 import utils from '../libraries/utils'
 import React from 'react'
 import ClassNames from 'classnames'
@@ -168,17 +168,7 @@ export default function EditDescriptorModelProperties(props) {
 		);
 	}
 
-	function onFormFieldValueChanged(event) {
-		if (DescriptorModelFactory.isContainer(this)) {
-			event.preventDefault();
-			const name = event.target.name;
-			const value = event.target.value;
-			utils.assignPathValue(this.model, name, value);
-			CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
-		}
-	}
-
-	function buildField(container, property, path, value, fieldId) {
+	function buildField(container, property, path, value, fieldKey) {
 		let cds = CatalogDataStore;
 		let catalogs = cds.getTransientCatalogs();
 
@@ -186,13 +176,35 @@ export default function EditDescriptorModelProperties(props) {
 		const isEditable = true;
 		const isGuid = Property.isGuid(property);
 		const isBoolean = Property.isBoolean(property);
-		const onChange = onFormFieldValueChanged.bind(container);
 		const isEnumeration = Property.isEnumeration(property);
 		const isLeafRef = Property.isLeafRef(property);
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 		const placeholder = changeCase.title(property.name);
 		const className = ClassNames(property.name + '-input', {'-is-guid': isGuid});
 		const fieldValue = value ? (value.constructor.name != "Object") ? value : '' : (isNaN(value) ? undefined : value);
+
+		// process the named field value change
+		function processFieldValueChange(name, value) {
+			console.debug('processed change for -- ' + name + ' -- with value -- ' + value);
+			// this = the container being edited
+			if (DescriptorModelFactory.isContainer(this)) {
+				utils.assignPathValue(this.model, name, value);
+				CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
+			}
+		}
+
+		// change handler used for onChange event
+		const changeHandler = (handleValueChange, event) => {
+			event.preventDefault();
+			console.debug(event.target.value);
+			handleValueChange(event.target.value);
+		};
+		// create an onChange event handler for a text field for the specified field path (debounced to accumulate chars)
+		const onTextChange = changeHandler.bind(null, _debounce(
+			processFieldValueChange.bind(container, pathToProperty), 2000, {maxWait: 5000})); // max wait for short-name
+		// create an onChange event handler for a select field for the specified field path
+		const onSelectChange = changeHandler.bind(null, processFieldValueChange.bind(container, pathToProperty));
+		
 		if (isEnumeration) {
 			const enumeration = Property.getEnumeration(property, value);
 			const options = enumeration.map((d, i) => {
@@ -209,13 +221,12 @@ export default function EditDescriptorModelProperties(props) {
 			}
 			return (
 				<select 
-					key={fieldId} 
-					id={fieldId}
-					name={pathToProperty} 
+					key={fieldKey} 
+					id={fieldKey}
 					className={ClassNames({'-value-not-set': !isValueSet})} 
-					value={value} 
+					defaultValue={value} 
 					title={pathToProperty} 
-					onChange={onChange} 
+					onChange={onSelectChange} 
 					onFocus={onFocus} 
 					onBlur={endEditing} 
 					onMouseDown={startEditing} 
@@ -245,13 +256,12 @@ export default function EditDescriptorModelProperties(props) {
 			}
 			return (
 				<select 
-					key={fieldId} 
-					id={fieldId} 
-					name={pathToProperty}
+					key={fieldKey} 
+					id={fieldKey} 
 					className={ClassNames({'-value-not-set': !isValueSet})} 
-					value={value} 
+					defaultValue={value} 
 					title={pathToProperty} 
-					onChange={onChange} 
+					onChange={onSelectChange} 
 					onFocus={onFocus} 
 					onBlur={endEditing} 
 					onMouseDown={startEditing} 
@@ -279,12 +289,12 @@ export default function EditDescriptorModelProperties(props) {
 			const isValueSet = (val != '' && val)
 			return (
 				<select 
-					key={fieldId} 
-					id={fieldId} 
-					name={pathToProperty}
+					key={fieldKey} 
+					id={fieldKey} 
 					className={ClassNames({'-value-not-set': !isValueSet})} 
-					value={val && val.toUpperCase()} title={pathToProperty} 
-					onChange={onChange} onFocus={onFocus} 
+					defaultValue={val && val.toUpperCase()} title={pathToProperty} 
+					onChange={onSelectChange} 
+					onFocus={onFocus} 
 					onBlur={endEditing} 
 					onMouseDown={startEditing} 
 					onMouseOver={startEditing} 
@@ -297,13 +307,12 @@ export default function EditDescriptorModelProperties(props) {
 		if (property['preserve-line-breaks']) {
 			return (
 				<textarea 
-					key={fieldId} 
+					key={fieldKey} 
 					cols="5" 
-					id={fieldId} 
-					name={pathToProperty}
-					value={value} 
+					id={fieldKey} 
+					defaultValue={value} 
 					placeholder={placeholder} 
-					onChange={onChange} 
+					onChange={onTextChange} 
 					onFocus={onFocus} 
 					onBlur={endEditing} 
 					onMouseDown={startEditing} 
@@ -316,14 +325,13 @@ export default function EditDescriptorModelProperties(props) {
 
 		return (
 			<input 
-				key={fieldId}
-				id={fieldId}
-				name={pathToProperty}
+				key={fieldKey}
+				id={fieldKey}
 				type="text"
-				value={fieldValue}
+				defaultValue={fieldValue}
 				className={className}
 				placeholder={placeholder}
-				onChange={onChange}
+				onChange={onTextChange}
 				onFocus={onFocus}
 				onBlur={endEditing}
 				onMouseDown={startEditing}
@@ -351,15 +359,10 @@ export default function EditDescriptorModelProperties(props) {
 		});
 	}
 
-	function buildChoice(container, property, path, value, fieldId) {
-		function onFormFieldValueChanged(event) {
+	function buildChoice(container, property, path, value, key) {
+
+		function processChoiceChange(name, value) {
 			if (DescriptorModelFactory.isContainer(this)) {
-
-				event.preventDefault();
-
-				let name = event.target.name;
-				const value = event.target.value;
-
 
 				/*
 					Transient State is stored for convenience in the uiState field.
@@ -419,7 +422,6 @@ export default function EditDescriptorModelProperties(props) {
 					utils.assignPathValue(this.model, [value].join('.'), newChoiceObject)
 				}
 
-
 				// update the selected name
 				utils.assignPathValue(this.model, statePath.concat('selected').join('.'), value);
 
@@ -427,9 +429,15 @@ export default function EditDescriptorModelProperties(props) {
 			}
 		}
 
+		const pathToChoice = path.join('.');
 		const caseByNameMap = {};
 
-		const onChange = onFormFieldValueChanged.bind(container);
+		const choiceChangeHandler = processChoiceChange.bind(container, pathToChoice);
+		const onChange = ((handleChoiceChange, event) => {
+			event.preventDefault();
+			handleChoiceChange(event.target.value);
+		}).bind(null, choiceChangeHandler);
+
 
 		const cases = property.properties.map(d => {
 			if (d.type === 'case') {
@@ -455,30 +463,29 @@ export default function EditDescriptorModelProperties(props) {
 			);
 		});
 
-		const selectName = path.join('.');
-		let selectedOptionPath = ['uiState.choice', selectName, 'selected'].join('.');
+		let selectedOptionPath = ['uiState.choice', pathToChoice, 'selected'].join('.');
 		//Currently selected choice/case statement on UI model
 		let selectedOptionValue = utils.resolvePath(container.model, selectedOptionPath);
 		//If first time loaded, and none is selected, check if there is a value corresponding to a case statement in the container model
 		if(!selectedOptionValue) {
 			//get field properties for choice on container model
-			let fieldProperties = utils.resolvePath(container.model, selectName);
+			let fieldProperties = utils.resolvePath(container.model, pathToChoice);
 			if(fieldProperties) {
 				//Check each case statement in model and see if it is present in container model.
 				cases.map(function(c){
 					if(fieldProperties.hasOwnProperty(c.optionValue.split('.')[1])) {
-						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), c.optionValue);
+						utils.assignPathValue(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'), c.optionValue);
 					}
 				});
-				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
+				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'));
 			} else {
 				property.properties.map(function(p) {
 					let pname = p.properties[0].name;
 					if(container.model.hasOwnProperty(pname)) {
-						utils.assignPathValue(container.model, ['uiState.choice', selectName, 'selected'].join('.'), [p.name, pname].join('.'));
+						utils.assignPathValue(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'), [p.name, pname].join('.'));
 					}
 				})
-				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', selectName, 'selected'].join('.'));
+				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'));
 			}
 		}
 		//If selectedOptionValue is present, take first item in string which represents the case name.
@@ -502,8 +509,19 @@ export default function EditDescriptorModelProperties(props) {
 		const onFocus = onFocusPropertyFormInputElement.bind(container, property, path, value);
 
 		return (
-			<div key={fieldId} className="choice">
-				<select id={fieldId} className={ClassNames({'-value-not-set': !selectedOptionValue})} name={selectName} value={selectedOptionValue} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing}>
+			<div key={key} className="choice">
+				<select 
+					key={Date.now()} 
+					className={ClassNames({'-value-not-set': !selectedOptionValue})} 
+					defaultValue={selectedOptionValue} 
+					onChange={onChange} 
+					onFocus={onFocus} 
+					onBlur={endEditing} 
+					onMouseDown={startEditing} 
+					onMouseOver={startEditing} 
+					onMouseOut={endEditing} 
+					onMouseLeave={endEditing}
+				>
 					{options}
 				</select>
 				{valueResponse}
@@ -540,7 +558,7 @@ export default function EditDescriptorModelProperties(props) {
 		);
 	}
 
-	function buildLeafListItem(container, property, valuePath, value, index) {
+	function buildLeafListItem(container, property, valuePath, value, uniqueId, index) {
 		// look at the type to determine how to parse the value
 		return (
 			<div key={uniqueId}>
@@ -638,7 +656,7 @@ export default function EditDescriptorModelProperties(props) {
 				event.preventDefault();
 				event.stopPropagation();
 				this.getRoot().uiState.focusedPropertyPath = path.join('.');
-				console.log('property selected', path.join('.'));
+				console.debug('property selected', path.join('.'));
 				ComposerAppActions.propertySelected([path.join('.')]);
 			}
 
@@ -767,5 +785,5 @@ export default function EditDescriptorModelProperties(props) {
 			{buildAdvancedGroup()}
 		</div>
 	);
+};
 
-}
