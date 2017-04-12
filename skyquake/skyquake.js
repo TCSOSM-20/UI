@@ -110,7 +110,7 @@ if (cluster.isMaster && clusteredLaunch) {
 
 	app.use(session({
 	  secret: 'ritio rocks',
-	  resave: true,
+	  resave: false,
 	  saveUninitialized: true
 	}));
 	app.use(bodyParser.json());

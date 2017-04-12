@@ -33,10 +33,11 @@ var base64 = require('base-64');
 var APIVersion = '/v2';
 var configurationAPI = require('./configuration');
 
-function logAndReject(mesg, reject) {
+function logAndReject(mesg, reject, errCode) {
     res.errorMessage = {
         error: mesg
     }
+    res.statusCode = errCode || constants.HTTP_RESPONSE_CODES.ERROR.BAD_REQUEST;
     console.log(mesg);
     reject(res);
 }
@@ -116,8 +117,8 @@ sessionsAPI.create = function(req, res) {
                 username: username,
                 // project: req.session.projectId
             };
-            var successMsg = 'User =>' + username + ' successfully logged in.';
-            successMsg += req.session.projectId ? 'Project =>' + req.session.projectId + ' set as default.' : '';
+            var successMsg = 'User => ' + username + ' successfully logged in.';
+            successMsg += req.session.projectId ? 'Project => ' + req.session.projectId + ' set as default.' : '';
 
             console.log(successMsg);
 
@@ -127,6 +128,13 @@ sessionsAPI.create = function(req, res) {
                     status: successMsg
                 })
             };
+
+            req.session.save(function(err) {
+                if (err) {
+                    console.log('Error saving session to store', err);
+                }
+            })
+
             resolve(response);
 
         }).catch(function(error) {
@@ -142,19 +150,24 @@ sessionsAPI.addProjectToSession = function(req, res) {
     return new Promise(function(resolve, reject) {
         if (req.session && req.session.loggedIn == true) {
             req.session.projectId = req.params.projectId;
-            var successMsg = 'Added project' + req.session.projectId + ' to session' + req.sessionID;
-            console.log(successMsg);
+            req.session.save(function(err) {
+                if (err) {
+                    console.log('Error saving session to store', err);
+                }
+                var successMsg = 'Added project ' + req.session.projectId + ' to session ' + req.sessionID;
+                console.log(successMsg);
 
-            return resolve ({
-                statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
-                data: JSON.stringify({
-                    status: successMsg
-                })
+                return resolve ({
+                    statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
+                    data: JSON.stringify({
+                        status: successMsg
+                    })
+                });
+
+                var errorMsg = 'Session does not exist or not logged in';
+                logAndReject(errorMsg, reject, constants.HTTP_RESPONSE_CODES.ERROR.NOT_FOUND);
             });
         }
-
-        var errorMsg = 'Session does not exist or not logged in';
-        logAndReject(errorMsg, reject);
     });
 }
 
