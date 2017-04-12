@@ -21,6 +21,25 @@ import React from 'react';
 import ROLES from 'utils/roleConstants.js';
 const PLATFORM = ROLES.PLATFORM;
 
+export function isRBACValid(User, allow){
+  const UserData = User.data;
+  if(UserData) {
+      const PlatformRole = UserData.platform.role;
+      const isPlatformSuper = PlatformRole[PLATFORM.SUPER];
+      const isPlatformAdmin = PlatformRole[PLATFORM.ADMIN];
+      const isPlatformOper = PlatformRole[PLATFORM.OPER];
+      const hasRoleAccess =  checkForRoleAccess(UserData.project[User.projectId], PlatformRole, allow)//false//(this.props.roles.indexOf(userProfile.projectRole) > -1)
+      if (isPlatformSuper) {
+        return true;
+      } else {
+        if (hasRoleAccess) {
+          return true;
+        }
+      }
+    }
+  return false;
+}
+
 export default class SkyquakeRBAC extends React.Component {
     constructor(props, context) {
         super(props);
@@ -30,19 +49,8 @@ export default class SkyquakeRBAC extends React.Component {
       const UserData = User.data;
       let HTML = null;
       // If user object has platform property then it has been populated by the back end.
-      if(UserData) {
-        const PlatformRole = UserData.platform.role;
-        const isPlatformSuper = PlatformRole[PLATFORM.SUPER];
-        const isPlatformAdmin = PlatformRole[PLATFORM.ADMIN];
-        const isPlatformOper = PlatformRole[PLATFORM.OPER];
-        const hasRoleAccess =  checkForRoleAccess(UserData.project[User.projectId], PlatformRole, this.props.allow)//false//(this.props.roles.indexOf(userProfile.projectRole) > -1)
-        if (isPlatformSuper) {
-          HTML = this.props.children;
-        } else {
-          if (hasRoleAccess) {
-            HTML = this.props.children;
-          }
-        }
+      if(isRBACValid(User, this.props.allow)) {
+        HTML = this.props.children;
       }
       return (<div className={this.props.className} style={this.props.style}>{HTML}</div>)
     }

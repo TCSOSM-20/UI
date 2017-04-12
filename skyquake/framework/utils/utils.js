@@ -26,6 +26,7 @@ var SockJS = require('sockjs-client');
 var Utils = {};
 
 Utils.DescriptorModelMeta = null;
+// Utils.DescriptorModelMeta = require('./../../plugins/composer/src/src/libraries/model/DescriptorModelMeta.json');
 
 var INACTIVITY_TIMEOUT = 600000;
 

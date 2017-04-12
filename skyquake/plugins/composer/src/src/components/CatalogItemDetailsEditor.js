@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +20,10 @@
 import React from 'react'
 import PureRenderMixin from 'react-addons-pure-render-mixin'
 import EditDescriptorModelProperties from './EditDescriptorModelProperties'
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 
 const CatalogItemDetailsEditor = React.createClass({
 	mixins: [PureRenderMixin],
@@ -32,6 +36,10 @@ const CatalogItemDetailsEditor = React.createClass({
 			width: 0
 		};
 	},
+	contextTypes: {
+	    router: React.PropTypes.object,
+	    userProfile: React.PropTypes.object
+	},
 	componentWillMount() {
 	},
 	componentDidMount() {
@@ -41,6 +49,7 @@ const CatalogItemDetailsEditor = React.createClass({
 	componentWillUnmount() {
 	},
 	render() {
+      	const User = this.context.userProfile;
 
 		const container = this.props.container || {model: {}, uiState: {}};
 		if (!(container && container.model && container.uiState)) {
@@ -51,7 +60,11 @@ const CatalogItemDetailsEditor = React.createClass({
 			<div className="CatalogItemDetailsEditor">
 				<form name="details-descriptor-editor-form">
 					<div className="properties-group">
-						<EditDescriptorModelProperties container={this.props.container} width={this.props.width} />
+					{
+						isRBACValid(User, [PROJECT_ROLES.CAT_ADMIN]) ?
+							<EditDescriptorModelProperties container={this.props.container} width={this.props.width} />
+						: <EditDescriptorModelProperties container={this.props.container} width={this.props.width} readonly={true} />
+					}
 					</div>
 				</form>
 			</div>
@@ -60,4 +73,8 @@ const CatalogItemDetailsEditor = React.createClass({
 	}
 });
 
+CatalogItemDetailsEditor.contextTypes = {
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
+};
 export default CatalogItemDetailsEditor;

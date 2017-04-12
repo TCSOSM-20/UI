@@ -25,7 +25,7 @@ import 'style/common.scss';
 import './skyquakeNav.scss';
 import SelectOption from '../form_controls/selectOption.jsx';
 import {FormSection} from '../form_controls/formControls.jsx';
-import SkyquakeRBAC from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import {isRBACValid, SkyquakeRBAC} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
 
 //Temporary, until api server is on same port as webserver
 var rw = require('utils/rw.js');
@@ -190,6 +190,9 @@ export default class skyquakeNav extends React.Component {
 skyquakeNav.defaultProps = {
     nav: {}
 }
+skyquakeNav.contextTypes = {
+  userProfile: React.PropTypes.object
+};
 /**
  * Returns a React Component
  * @param  {object} link  Information about the nav link
@@ -259,6 +262,7 @@ export function buildNav(nav, currentPlugin, props) {
     let secondaryNav = [];
     let adminNav = [];
     let self = this;
+    const User = this.context.userProfile;
     self.hasSubNav = {};
     let secondaryNavHTML = (
         <div className="secondaryNav" key="secondaryNav">
@@ -318,16 +322,19 @@ export function buildNav(nav, currentPlugin, props) {
                     </li>
                 ))
             } else {
-                            navItem.html = (
-                <SkyquakeRBAC allow={nav[k].allow || ['*']} key={k} className={navClass}>
-                    <h2>{dashboardLink} {self.hasSubNav[k] ? <span className="oi" data-glyph="caret-bottom"></span> : ''}</h2>
-                    <ul className="menu">
-                        {
-                            NavList
-                        }
-                    </ul>
-                </SkyquakeRBAC>
-            );
+                let shouldAllow = nav[k].allow || ['*'];
+                if (isRBACValid(User, shouldAllow) ){
+                    navItem.html = (
+                        <div  key={k} className={navClass}>
+                            <h2>{dashboardLink} {self.hasSubNav[k] ? <span className="oi" data-glyph="caret-bottom"></span> : ''}</h2>
+                            <ul className="menu">
+                                {
+                                    NavList
+                                }
+                            </ul>
+                        </div>
+                    );
+                }
             navList.push(navItem)
             }
 

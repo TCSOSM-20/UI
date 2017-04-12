@@ -74,7 +74,7 @@ function getTitle(model = {}) {
 export default function EditDescriptorModelProperties(props) {
 
 	const container = props.container;
-
+	const readonly = props.readonly;
 	if (!(DescriptorModelFactory.isContainer(container))) {
 		return
 	}
@@ -141,6 +141,9 @@ export default function EditDescriptorModelProperties(props) {
 			}
 			CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
 		}
+		if(readonly) {
+			return null;
+		}
 		return (
 				<Button className="inline-hint" onClick={onClickAddProperty.bind(container, property, path)} label="Add" src={imgAdd} />
 		);
@@ -157,6 +160,9 @@ export default function EditDescriptorModelProperties(props) {
 				utils.removePathValue(this.model, name);
 			}
 			CatalogItemsActions.catalogItemDescriptorChanged(this.getRoot());
+		}
+		if(readonly) {
+			return null;
 		}
 		return (
 			<Button className="remove-property-action inline-hint" title="Remove" onClick={onClickRemoveProperty.bind(container, property, path)} label="Remove" src={imgRemove}/>
@@ -178,7 +184,7 @@ export default function EditDescriptorModelProperties(props) {
 		let catalogs = cds.getTransientCatalogs();
 
 		const name = path.join('.');
-		const isEditable = true;
+		const isEditable = !readonly; //true
 		const isGuid = Property.isGuid(property);
 		const isBoolean = Property.isBoolean(property);
 		const onChange = onFormFieldValueChanged.bind(container);
@@ -202,7 +208,7 @@ export default function EditDescriptorModelProperties(props) {
 				const noValueDisplayText = changeCase.title(property.name);
 				options.unshift(<option key={'(value-not-in-enum)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} disabled={!isEditable}>{options}</select>;
 		}
 
 		if (isLeafRef) {
@@ -222,7 +228,7 @@ export default function EditDescriptorModelProperties(props) {
 				const noValueDisplayText = changeCase.title(property.name);
 				options.unshift(<option key={'(value-not-in-leafref)' + fieldKey.toString()} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={value} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} disabled={!isEditable}>{options}</select>;
 		}
 
 		if (isBoolean) {
@@ -247,28 +253,29 @@ export default function EditDescriptorModelProperties(props) {
 				val = value ? "TRUE" : "FALSE"
 			}
 			const isValueSet = (val != '' && val)
-			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={val && val.toUpperCase()} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} readOnly={!isEditable}>{options}</select>;
+			return <select key={fieldKey.toString()} id={fieldKey.toString()} className={ClassNames({'-value-not-set': !isValueSet})} name={name} value={val && val.toUpperCase()} title={name} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} disabled={!isEditable}>{options}</select>;
 		}
 
 		if (property['preserve-line-breaks']) {
-			return <textarea key={fieldKey.toString()} cols="5" id={fieldKey.toString()} name={name} value={value} placeholder={placeholder} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing} readOnly={!isEditable} />;
+			return <textarea key={fieldKey.toString()} cols="5" id={fieldKey.toString()} name={name} value={value} placeholder={placeholder} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing} readOnly={!!isEditable} />;
 		}
 
-		return <input key={fieldKey.toString()}
-					  id={fieldKey.toString()}
-					  type="text"
-					  name={name}
-					  value={fieldValue}
-					  className={className}
-					  placeholder={placeholder}
-					  onChange={onChange}
-					  onFocus={onFocus}
-					  onBlur={endEditing}
-					  onMouseDown={startEditing}
-					  onMouseOver={startEditing}
-					  onMouseOut={endEditing}
-					  onMouseLeave={endEditing}
-					  readOnly={!isEditable}
+		return <input
+					key={fieldKey.toString()}
+					id={fieldKey.toString()}
+					type="text"
+					name={name}
+					value={fieldValue}
+					className={className}
+					placeholder={placeholder}
+					onChange={onChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
+					onMouseOut={endEditing}
+					onMouseLeave={endEditing}
+					readOnly={!isEditable}
 		/>;
 
 	}
@@ -438,7 +445,7 @@ export default function EditDescriptorModelProperties(props) {
 
 		return (
 			<div key={key} className="choice">
-				<select key={Date.now()} className={ClassNames({'-value-not-set': !selectedOptionValue})} name={selectName} value={selectedOptionValue} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing}>
+				<select key={Date.now()} className={ClassNames({'-value-not-set': !selectedOptionValue})} name={selectName} value={selectedOptionValue} onChange={onChange} onFocus={onFocus} onBlur={endEditing} onMouseDown={startEditing} onMouseOver={startEditing} onMouseOut={endEditing} onMouseLeave={endEditing} readOnly={!isEditable}>
 					{options}
 				</select>
 				{valueResponse}

@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,5 +72,10 @@ const DetailsPanel = React.createClass({
 		);
 	}
 });
+
+DetailsPanel.contextTypes = {
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
+};
 
 export default DetailsPanel;

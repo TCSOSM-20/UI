@@ -48,6 +48,9 @@ import TooltipManager from '../libraries/TooltipManager'
 import CatalogItemsActions from '../actions/CatalogItemsActions'
 import CommonUtils from 'utils/utils.js'
 import FileManagerActions from './filemanager/FileManagerActions';
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+
 import 'normalize.css'
 import '../styles/AppRoot.scss'
 import 'style/layout.scss'
@@ -60,6 +63,8 @@ const clearLocalStorage = utils.getSearchParams(window.location).hasOwnProperty(
 const preventDefault = e => e.preventDefault();
 const clearDragState = () => ComposerAppActions.setDragState(null);
 
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 
 const ComposerApp = React.createClass({
 	mixins: [PureRenderMixin],
@@ -68,6 +73,10 @@ const ComposerApp = React.createClass({
 	},
 	getDefaultProps() {
 		return {};
+	},
+	contextTypes: {
+	    router: React.PropTypes.object,
+	    userProfile: React.PropTypes.object
 	},
 	componentWillMount() {
 		if (clearLocalStorage) {
@@ -147,6 +156,7 @@ const ComposerApp = React.createClass({
 	render() {
 		let html = null;
 		let self = this;
+		const User = this.context.userProfile || {};
 		if(this.state.hasModel) {
 
 			function onClickUpdateSelection(event) {
@@ -225,7 +235,7 @@ const ComposerApp = React.createClass({
 												isEditingVNFD={isEditingVNFD}
 												isModified={isModified}
 												isNew={isNew}
-												disabled={!hasItem}
+												disabled={!hasItem || !isRBACValid(User, [PROJECT_ROLES.CAT_ADMIN])}
 												onClick={event => event.stopPropagation()}
 												panelTabShown={self.state.panelTabShown}/>
 						</div>
@@ -269,5 +279,6 @@ const ComposerApp = React.createClass({
 	}
 
 });
+
 
 export default ComposerApp;
