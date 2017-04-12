@@ -267,14 +267,12 @@ class UserManagementDashboard extends React.Component {
                             hasCloseButton={this.closePanel}
                             no-corners>
                             <FormSection title="USER INFO">
-                            {
-                                this.state.isEdit ?
-                                    null
-                                    : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
-                            }
+                                {
+                                    this.state.isEdit ?
+                                        null
+                                        : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
+                                }
                                 <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
-
-                                <Input type="radiogroup" readonly={state.isReadOnly} label="Disabled" value={state.disabled} options={[{value: true, label: 'YES'}, {value: false, label: 'NO'}]}  onChange={this.disableChange} />
                             </FormSection>
                             <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
                                 <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />
