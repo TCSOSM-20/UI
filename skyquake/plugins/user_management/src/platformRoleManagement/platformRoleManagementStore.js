@@ -173,7 +173,7 @@ export default class PlatformRoleManagementStore {
             })
         } else {
             let role = platformUsers[userIndex].role;
-            platformUsers[userIndex].role.splice(roleIndex, 1)
+            platformUsers[userIndex].role.splice(_.findIndex(role, function(r) { return r.role == selectedRole; }), 1)
         }
        self.setState({platformUsers});
 

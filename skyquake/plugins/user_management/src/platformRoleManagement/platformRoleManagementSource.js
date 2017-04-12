@@ -80,6 +80,7 @@ module.exports = function(Alt) {
                   url: `/platform?api_server=${API_SERVER}`,
                   type: 'PUT',
                   data: project,
+                  dataType: 'json',
                   beforeSend: Utils.addAuthorizationStub,
                   success: function(data, textStatus, jqXHR) {
                     resolve(data);

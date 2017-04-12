@@ -228,6 +228,7 @@ ProjectManagement.updatePlatform = function(req) {
     var api_server = req.query['api_server'];
     var bodyData = req.body;
     data = bodyData;
+    data.user = JSON.parse(data.user)
     var updateTasks = [];
 
     var updateUser = rp({

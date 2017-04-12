@@ -94,7 +94,7 @@ class PlatformRoleManagement extends React.Component {
 
 
         this.Store.updatePlatform({
-                'user': platformUsers
+                'user': JSON.stringify(platformUsers)
             }
         );
     }
