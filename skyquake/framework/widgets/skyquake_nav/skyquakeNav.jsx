@@ -309,6 +309,7 @@ export function buildNav(nav, currentPlugin, props) {
                 label: nav[k].label || k,
                 route: route
             });
+            let shouldAllow = nav[k].allow || ['*'];
             if (nav[k].pluginName == currentPlugin) {
                 navClass += " active";
             }
@@ -316,13 +317,15 @@ export function buildNav(nav, currentPlugin, props) {
             navItem.priority = nav[k].priority;
             navItem.order = nav[k].order;
             if(nav[k].admin_link) {
-                adminNav.push((
-                    <li key={nav[k].name}>
-                        {dashboardLink}
-                    </li>
-                ))
+
+                if (isRBACValid(User, shouldAllow) ){
+                    adminNav.push((
+                        <li key={nav[k].name}>
+                            {dashboardLink}
+                        </li>
+                    ))
+                }
             } else {
-                let shouldAllow = nav[k].allow || ['*'];
                 if (isRBACValid(User, shouldAllow) ){
                     navItem.html = (
                         <div  key={k} className={navClass}>

@@ -5,6 +5,7 @@
     "order": 1,
     "priority":2,
     "admin_link": true,
+    "allow": ["rw-rbac-platform:super-admin", "rw-rbac-platform:platform-admin", "rw-rbac-platform:platform-oper", "rw-project:project-admin", "rw-project:project-oper"],
     "routes": [
     {
         "label": "Project Management Dashboard",
