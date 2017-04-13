@@ -91,9 +91,11 @@ class ProjectManagementDashboard extends React.Component {
     deleteProject = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.Store.deleteProject({
+        if (confirm('Are you sure you want to delete this project?')) {
+            this.Store.deleteProject({
                 'name': this.state['name']
             });
+        }
     }
     createProject = (e) => {
         let self = this;

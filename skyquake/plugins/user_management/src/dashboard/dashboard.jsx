@@ -93,10 +93,13 @@ class UserManagementDashboard extends React.Component {
     deleteUser = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        this.Store.deleteUser({
+        if (confirm('Are you sure you want to delete this user?')) {
+            this.Store.deleteUser({
                 'user-name': this.state['user-name'],
                 'user-domain': this.state['user-domain']
             });
+        }
+
     }
     createUser = (e) => {
         e.preventDefault();

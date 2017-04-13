@@ -23,6 +23,7 @@ import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx'
 import Crouton from 'react-crouton';
 import TextInput from 'widgets/form_controls/textInput.jsx';
 import {AccountConnectivityStatus} from '../account_sidebar/accountSidebar.jsx';
+
 import 'style/common.scss';
 import './account.scss';
 class Account extends React.Component {
@@ -263,7 +264,16 @@ class Account extends React.Component {
                     value = Account.params[node.ref];
                 }
                 paramsStack.push(
-                    <TextInput key={node.label} className="accountForm-input" label={node.label} required={!node.optional}  onChange={this.props.store.handleParamChange(node)} value={value} />
+                    <TextInput
+                        key={node.label}
+                        className="accountForm-input"
+                        label={node.label}
+                        required={!node.optional}
+                        onChange={this.props.store.handleParamChange(node)}
+                        value={value}
+                        readonly={self.props.readonly}
+
+                        />
                 );
             }
 
@@ -287,7 +297,16 @@ class Account extends React.Component {
                     //     </label>
                     // );
                     nestedParamsStack.push(
-                          <TextInput key={node.label} label={node.label} required={!node.optional} className="create-fleet-pool-input" type="text" onChange={this.props.store.handleNestedParamChange(Account.nestedParams['container-name'], node)} value={value}/>
+                          <TextInput
+                            key={node.label}
+                            label={node.label}
+                            required={!node.optional}
+                            className="create-fleet-pool-input"
+                            type="text"
+                            onChange={this.props.store.handleNestedParamChange(Account.nestedParams['container-name'], node)}
+                            value={value}
+                            readonly={self.props.readonly}
+                            />
                     );
                 }
             }
@@ -330,7 +349,7 @@ class Account extends React.Component {
                             <AccountConnectivityStatus status={Account['connection-status'].status} />
                             {Account['connection-status'] && Account['connection-status'].status &&  Account['connection-status'].status.toUpperCase()}
                         </div>
-                            <Button className="refreshList light" onClick={this.props.store.refreshAccount.bind(this, Account.name, AccountType)} label="REFRESH STATUS"></Button>
+                            <Button is-disabled={self.props.readonly} className="refreshList light" onClick={this.props.store.refreshAccount.bind(this, Account.name, AccountType)} label="REFRESH STATUS"></Button>
                     </div>
                     {
                         (Account['connection-status'] && Account['connection-status'].status && Account['connection-status'].status.toUpperCase()) === 'FAILURE' ?
@@ -387,12 +406,17 @@ class Account extends React.Component {
                       {params}
                   </ol>
                   <div className="form-actions">
-                      {buttons}
+                      {!self.props.readonly ? buttons : null}
                   </div>
               </form>
         )
         return html;
     }
+}
+
+Account.contextTypes = {
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 }
 
 function displayFailureMessage(msg) {

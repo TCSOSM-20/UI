@@ -42,6 +42,7 @@ class AccountSidebar extends React.Component{
     }
     render() {
         let html;
+        let self = this;
         let {store, ...props} = this.props;
         //[this.props.cloud,this.props.sdn,this.props['config-agent']]
         let AccountData = [
@@ -128,42 +129,53 @@ class AccountSidebar extends React.Component{
                     <div>
                         <h1>VIM Accounts</h1>
                         {cloudAccounts}
-                        <DashboardCard className="accountSidebarCard">
-                                <Link
-                                to={{pathname: '/accounts/cloud/create'}}
-                                title="Create Cloud Account"
-                                className={'accountSidebarCard_create'}
-                            >
-                                    Add VIM Account
-                                    <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                                </Link>
-                        </DashboardCard>
+                        {
+                            !self.props.readonly ?
+                                <DashboardCard className="accountSidebarCard">
+                                    <Link
+                                        to={{pathname: '/accounts/cloud/create'}}
+                                        title="Create Cloud Account"
+                                        className={'accountSidebarCard_create'} >
+                                            Add VIM Account
+                                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                                    </Link>
+                                </DashboardCard>
+                            :  <div style={{margin:'1rem'}}></div>
+                        }
                     </div>)
                 : null}
                 <h1>SDN Accounts</h1>
                 {sdnAccounts}
-                <DashboardCard className="accountSidebarCard">
-                        <Link
-                        to={{pathname: '/accounts/sdn/create'}}
-                        title="Create Sdn Account"
-                        className={'accountSidebarCard_create'}
-                    >
-                            Add SDN Account
-                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                        </Link>
-                </DashboardCard>
+                {
+                    !self.props.readonly ?
+                        <DashboardCard className="accountSidebarCard">
+                            <Link
+                            to={{pathname: '/accounts/sdn/create'}}
+                            title="Create Sdn Account"
+                            className={'accountSidebarCard_create'}>
+                                Add SDN Account
+                                <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                            </Link>
+
+                        </DashboardCard>
+                    : <div style={{margin:'1rem'}}></div>
+                }
                 <h1>Config Agent Accounts</h1>
                 {configAgentAccounts}
-                <DashboardCard className="accountSidebarCard">
-                    <Link
-                        to={{pathname: '/accounts/config-agent/create'}}
-                        title="Create Config Agent Account"
-                        className={'accountSidebarCard_create'}
-                    >
-                            Add Config Agent Account
-                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                        </Link>
-                </DashboardCard>
+                {
+                    !self.props.readonly ?
+                        <DashboardCard className="accountSidebarCard">
+                            <Link
+                                to={{pathname: '/accounts/config-agent/create'}}
+                                title="Create Config Agent Account"
+                                className={'accountSidebarCard_create'}
+                            >
+                                Add Config Agent Account
+                                <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                            </Link>
+                        </DashboardCard>
+                    :  <div style={{margin:'1rem'}}></div>
+                }
             </div>
                 );
         return html;
