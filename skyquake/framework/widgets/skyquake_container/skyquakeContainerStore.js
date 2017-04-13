@@ -199,7 +199,8 @@ class SkyquakeContainerStore {
         let user = this.user;
         user.projectId = projectId;
         this.setState({user});
-        }
+        window.location.reload(true);
+    }
     //Notifications
     showNotification = (data) => {
         let state = {
