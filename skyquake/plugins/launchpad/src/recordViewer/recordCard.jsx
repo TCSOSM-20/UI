@@ -36,6 +36,10 @@ import LaunchpadFleetStore from '../launchpadFleetStore.js';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
 
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+
+const PROJECT_ROLES = ROLES.PROJECT;
 
 export default class RecordCard extends React.Component {
   constructor(props) {
@@ -77,6 +81,8 @@ export default class RecordCard extends React.Component {
 
     let notice = null;
 
+    let hasAccess = isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN]);
+
     switch(this.props.type) {
       case 'vnfr' :
         cardData = this.props.data[0];
@@ -86,7 +92,7 @@ export default class RecordCard extends React.Component {
         if (displayConfigPrimitives) {
           configPrimitiveComponent = (
             <div className="flex vnfrConfigPrimitiveContainer">
-              <VnfrConfigPrimitives data={configPrimitivesProps} />
+              <VnfrConfigPrimitives data={configPrimitivesProps} hasAccess={hasAccess} />
             {/* <NsrPrimitiveJobList jobs={cardData['config-agent-job']}/> */}
             <div style={{display:'flex', flexDirection: 'column',     flex: '1 1 40%'}}>
                 <div className="launchpadCard_title">
@@ -419,3 +425,7 @@ RecordCard.defaultProps = {
   isLoading: true,
   jobData: []
 }
+RecordCard.contextTypes = {
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
+};

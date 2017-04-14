@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,7 +98,7 @@ class LaunchpadCard extends React.Component {
               <img src={circleXImage} title="Close card" />
               </a>
       );
-
+      if (this.props.hasAccess) closebutton = null;
       html = (
         <DashboardCard className={'launchpadCard'} closeCard={closeButton}>
           <LaunchpadHeader nsr={this.props.nsr} name={this.props.name} isActive={this.props.isActive} id={this.props.id}/>

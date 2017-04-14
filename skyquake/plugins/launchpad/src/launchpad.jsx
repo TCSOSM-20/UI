@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,12 @@ import Crouton from 'react-crouton'
 import AppHeader from 'widgets/header/header.jsx';
 import Utils from 'utils/utils.js';
 import './launchpad.scss';
+
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+
+const PROJECT_ROLES = ROLES.PROJECT;
+
 let ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 var LaunchpadFleetActions = require('./launchpadFleetActions.js');
 var LaunchpadFleetStore = require('./launchpadFleetStore.js');
@@ -91,6 +97,7 @@ export default class LaunchpadApp extends React.Component {
 
   render () {
     var self = this;
+    const hasAccess = isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN]);
     let mgmtDomainName = window.location.hash.split('/')[2];
     let navItems = [];
     if(!mgmtDomainName) {
@@ -111,14 +118,16 @@ export default class LaunchpadApp extends React.Component {
             isVisible={self.state.isNsListPanelVisible}
             />
           <NsCardPanel nsrs={self.state.nsrs}
-            openedNsrIDs={self.state.openedNsrIDs} />
+            openedNsrIDs={self.state.openedNsrIDs}
+            hasAccess={hasAccess} />
         </div>
       </div>
     );
     }
 }
 LaunchpadApp.contextTypes = {
-    router: React.PropTypes.object
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 };
 LaunchpadApp.defaultProps = {
   // name: 'Loading...',

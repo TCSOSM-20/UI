@@ -32,7 +32,8 @@ export default class NsCardPanel extends React.Component {
                                 data={nsr.data}
                                 nsr={nsr}
                                 isActive={nsr["admin-status"] == "ENABLED"}
-                                closeButtonAction={this.onCloseCard(nsr.id)}/>
+                                closeButtonAction={this.onCloseCard(nsr.id)}
+                                hasAccess={this.props.hasAccess}/>
                         );
                       }
                     }

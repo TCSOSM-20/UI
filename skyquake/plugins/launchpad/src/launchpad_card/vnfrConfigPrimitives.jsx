@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,6 +61,7 @@
     }
 
     constructConfigPrimitiveTabs = (tabList, tabPanels) => {
+        const hasAccess = this.props.hasAccess;
         let mandatoryFieldValue = 'true';
         this.state.vnfrs && this.state.vnfrs.map((vnfr, vnfrIndex) => {
             if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) {
@@ -103,7 +104,7 @@
                                     {params}
                                 </ul>
                             </div>
-                            <button className="dark" role="button" onClick={this.handleExecuteClick.bind(this, configPrimitiveIndex, vnfrIndex)}>{configPrimitive.name}</button>
+                            {hasAccess ? <button className="dark" role="button" onClick={this.handleExecuteClick.bind(this, configPrimitiveIndex, vnfrIndex)}>{configPrimitive.name}</button> : null}
                         </TabPanel>
                     )
                 });
@@ -112,7 +113,6 @@
     }
 
     render() {
-
         let tabList = [];
         let tabPanels = [];
         let isConfiguring = (this.props.data['config-status'] && this.props.data['config-status'] != 'configured') || false;
