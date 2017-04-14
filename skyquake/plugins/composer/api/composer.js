@@ -486,29 +486,34 @@ PackageManager.copy = function(req) {
     });
 }
 
+/**
+ * This methods retrieves the status of package operations. It takes an optional 
+ * transaction id (id) this if present will return only that status otherwise
+ * an array of status' will be response.
+ */
 PackageManager.getJobStatus = function(req) {
     var api_server = req.query["api_server"];
     var uri = utils.confdPort(api_server);
-    var url = '/api/operational/copy-jobs';
     var id = req.params['id'];
+    var url = uri + '/api/operational/copy-jobs' + (id ? '/job/' + id : '');
     return new Promise(function(resolve, reject) {
         request({
-            url: uri + url + '?deep',
+            url: url,
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                 'Authorization': req.get('Authorization')
             }),
             forever: constants.FOREVER_ON,
-            rejectUnauthorized: false,
+            rejectUnauthorized: false
         }, function(error, response, body) {
             if (utils.validateResponse('restconfAPI.streams', error, response, body, resolve, reject)) {
-                var data = JSON.parse(response.body)['rw-pkg-mgmt:copy-jobs'];
-                var returnData = [];
-                data && data.job.map(function(d) {
-                    if(d['transaction-id'] == id) {
-                        returnData.push(d)
-                    }
-                })
+                var returnData;
+                if (id) {
+                    returnData = JSON.parse(response.body)['rw-pkg-mgmt:job'];
+                } else {
+                    var data = JSON.parse(response.body)['rw-pkg-mgmt:copy-jobs'];
+                    returnData = (data && data.job) || [];
+                }
                 resolve({
                     statusCode: response.statusCode,
                     data: returnData

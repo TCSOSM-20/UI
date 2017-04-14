@@ -158,9 +158,9 @@ const CatalogPackageManagerSource = {
 						reject(operation);
 					};
 					const data = {
-						"package-type": operationInfo.packageType,
-						"package-id": operationInfo.id,
-						"package-name": operationInfo.name
+						"package-type": operationInfo.args.packageType,
+						"package-id": operationInfo.args.id,
+						"package-name": operationInfo.args.name
 					}
 					const path = getComposerApiPath('package-copy');
 					ajaxFetch(path, operationInfo, successHandler, failHandler, 'POST', data, true);
@@ -176,15 +176,14 @@ const CatalogPackageManagerSource = {
 			remote: function(state, operation) {
 				return new Promise(function(resolve, reject) {
 					const successHandler = (response) => {
-						const status = response.data[0].status;
+						const status = response.data.status;
 						const state = status === "COMPLETED" ? SUCCESS : status === "FAILED" ? FAILED : PENDING;
 						state.progress = state.pending ? operation.progress + ((100 - operation.progress) / 2) : 100;
 						let newOp = Object.assign({}, operation, state);
 						resolve(newOp);
 					};
 					const failHandler = (response) => {
-						let operation = Object.assign({}, this, FAILED);
-						reject(operation);
+						reject(Object.assign({}, operation, FAILED));
 					};
 					const path = getComposerApiPath('package-manager/jobs/' + operation.transactionId);
 					ajaxFetch(path, operation, successHandler, failHandler);

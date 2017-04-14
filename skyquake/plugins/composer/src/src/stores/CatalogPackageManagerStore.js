@@ -124,14 +124,16 @@ class CatalogPackageManagerStore {
 
 	copyCatalogPackage(sourcePackage) {
 		let operationInfo = Object.assign({}, defaults.operation);
-		operationInfo.name =  "Duplication of " + sourcePackage.name;
-		operationInfo.id = guid();
-		operationInfo.icon = imgCopy;
-		operationInfo.type = 'copy';
-		operationInfo.message = 'Requesting package duplication.';
+
 		operationInfo.args.packageType = sourcePackage['uiState']['type'].toUpperCase();
 		operationInfo.args.id =  sourcePackage.id;
 		operationInfo.args.name =  sourcePackage.name + ' copy';
+
+		operationInfo.id = guid();
+		operationInfo.icon = imgCopy;
+		operationInfo.type = 'copy';
+		operationInfo.name =  "Creating " + operationInfo.args.name;
+		operationInfo.message = "Requesting duplication";
 
 		this.addOperation(operationInfo);
 		this.getInstance().requestCatalogPackageCopy(operationInfo, sourcePackage);
