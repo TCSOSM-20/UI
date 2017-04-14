@@ -58,8 +58,15 @@ const Button = React.createClass({
 		const title = this.props.title;
 		const draggable = this.props.draggable;
 		const className = ClassNames(this.props.className, 'Button');
+		let style = {
+		}
+		if(this.props.disabled) {
+			style.pointerEvents = 'none';
+			style.cursor = 'not-allowed';
+			style.opacity = 0.25;
+		}
 		return (
-			<div className={className} onClick={this.props.onClick} title={title} draggable={draggable} onDragStart={this.props.onDragStart} style={{pointerEvents: (this.props.disabled ? 'none' : 'auto'), cursor: (this.props.disabled ? 'not-allowed' : 'auto'), position: 'relative'}}>
+			<div className={className} onClick={this.props.onClick} title={title} draggable={draggable} onDragStart={this.props.onDragStart} style={style}>
 				{ src ? <img src={src} /> : null }
 				{label}
 			</div>

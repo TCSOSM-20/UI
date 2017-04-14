@@ -117,7 +117,7 @@ const CatalogPanel = React.createClass({
 		const isLoading = this.props.isLoading;
 		return (
 			<div className={className} data-resizable="right" data-resizable-handle-offset="0 6" style={{width: this.props.layout.left}}>
-				<CatalogPanelToolbar />
+				<CatalogPanelToolbar rbacDisabled={this.props.rbacDisabled} />
 				<div className="CatalogPanelBody">
 					{(() => {
 						if (isLoading) {

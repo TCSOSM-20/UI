@@ -157,6 +157,7 @@ const ComposerApp = React.createClass({
 		let html = null;
 		let self = this;
 		const User = this.context.userProfile || {};
+		const rbacDisabled = !isRBACValid(User, [PROJECT_ROLES.CAT_ADMIN]);
 		if(this.state.hasModel) {
 
 			function onClickUpdateSelection(event) {
@@ -205,7 +206,8 @@ const ComposerApp = React.createClass({
 							<CatalogPanel layout={self.state.layout}
 										  isLoading={isLoading}
 										  hasNoCatalogs={hasNoCatalogs}
-										  filterByType={self.state.filterCatalogByTypeValue} />
+										  filterByType={self.state.filterCatalogByTypeValue}
+										  rbacDisabled={rbacDisabled} />
 							<CanvasPanel layout={self.state.layout}
 										 hasNoCatalogs={hasNoCatalogs}
 										 showMore={self.state.showMore}
@@ -218,6 +220,7 @@ const ComposerApp = React.createClass({
                                          newPathName={self.state.newPathName}
 										 item={self.state.item}
 										 type={self.state.filterCatalogByTypeValue}
+										 rbacDisabled={rbacDisabled}
 										  />
 						 	{
  						 		(self.state.panelTabShown == 'descriptor') ?
@@ -235,7 +238,7 @@ const ComposerApp = React.createClass({
 												isEditingVNFD={isEditingVNFD}
 												isModified={isModified}
 												isNew={isNew}
-												disabled={!hasItem || !isRBACValid(User, [PROJECT_ROLES.CAT_ADMIN])}
+												disabled={!hasItem || rbacDisabled}
 												onClick={event => event.stopPropagation()}
 												panelTabShown={self.state.panelTabShown}/>
 						</div>
