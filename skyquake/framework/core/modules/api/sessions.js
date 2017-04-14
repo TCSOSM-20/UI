@@ -46,7 +46,7 @@ function logAndRedirectToLogin(mesg, res, req) {
     var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
     var upload_server = req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname);
     console.log(mesg);
-    res.redirect('login.html?api_server=' + api_server + '&upload_server=' + upload_server);
+    res.redirect('login.html?api_server=' + api_server + '&upload_server=' + upload_server + '&referer=' + req.headers.referer);
     res.end();
 }
 
@@ -96,19 +96,26 @@ sessionsAPI.create = function(req, res) {
             } else {
                 // go through projects and get list of projects that this user belongs to.
                 // pick first one as default project?
-
+                var isLCM = false;
                 var projects = JSON.parse(results[1].body).collection['rw-project:project'];
                 projects && projects.map(function(project) {
                     project['project-config'] &&
                     project['project-config']['user'] &&
                     project['project-config']['user'].map(function(user) {
                         if (user['user-name'] == username) {
-                            project_list_for_user.push(project.name);
+                            project_list_for_user.push(project);
+                            user.role.map(function(role) {
+                                if(role.role.indexOf('rw-project-mano:lcm') > -1) {
+                                    isLCM = true;
+                                }
+                            })
                         }
                     });
                 });
-
-                req.session.projectId = (project_list_for_user.length > 0) && project_list_for_user.sort() && project_list_for_user[0];
+                if (project_list_for_user.length > 0) {
+                    req.session.projectId = project_list_for_user.sort() && project_list_for_user[0].name;
+                    req.session.isLCM = isLCM;
+                }
             }
 
             req.session.authorization = authorization_header_string;
@@ -175,6 +182,7 @@ sessionsAPI.delete = function(req, res) {
     var api_server = req.query["api_server"];
     var uri = utils.confdPort(api_server);
     var url = uri + '/api/logout';
+    req.returnTo = req.headers.referer;
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
