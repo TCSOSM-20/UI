@@ -241,10 +241,14 @@ function refreshAccountConnectionStatus (req) {
             'Authorization': req.session && req.session.authorization
         }
     );
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/' + rpcInfo[Type].rpc);
+    
+    jsonData['input'] = utils.addProjectContextToRPCPayload(req, uri, jsonData['input']);
+
     return new Promise(function(resolve, reject) {
 
         request({
-            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/' + rpcInfo[Type].rpc),
+            uri: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,

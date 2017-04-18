@@ -320,10 +320,15 @@ Composer.update = function(req) {
         'package-type': 'VNFD',
         'package-id': uuid()
     }
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-update');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-update'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -372,10 +377,20 @@ Composer.upload = function(req) {
         download_host = req.protocol + '://' + req.get('host');//req.api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
 
+    var input = {
+        'external-url': download_host + '/composer/upload/' + req.file.filename,
+        'package-type': 'VNFD',
+        'package-id': uuid()
+    };
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-create');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-create'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -385,11 +400,7 @@ Composer.upload = function(req) {
                 resolveWithFullResponse: true,
                 json: true,
                 body: {
-                    input: {
-                        'external-url': download_host + '/composer/upload/' + req.file.filename,
-                        'package-type': 'VNFD',
-                        'package-id': uuid()
-                    }
+                    input: input
                 }
             })
         ]).then(function(result) {
@@ -434,10 +445,15 @@ Composer.addFile = function(req) {
         'package-id': package_id,
         'package-path': package_path + '/' + req.file.filename
     }
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-file-add');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-file-add'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -470,12 +486,14 @@ Composer.addFile = function(req) {
 }
 
 Composer.exportPackage = function(req) {
-    // /api/operations/package-export
     var api_server = req.query['api_server'];
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-export');
+    var input = req.body;
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-export'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -484,7 +502,7 @@ Composer.exportPackage = function(req) {
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true,
                 json: true,
-                body: { "input": req.body}
+                body: { "input": input }
             })
         ]).then(function(result) {
             var data = {};
@@ -531,9 +549,11 @@ FileManager.get = function(req) {
     }
 
     function deleteFile(payload) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete');
+        payload.input = utils.addProjectContextToRPCPayload(req, uri, payload.input);
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -553,9 +573,11 @@ FileManager.get = function(req) {
         })
     }
     function download(payload) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add');
+        payload.input = utils.addProjectContextToRPCPayload(req, uri, payload.input);
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -575,9 +597,11 @@ FileManager.get = function(req) {
         })
     }
     function list(payload) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/get-package-endpoint');
+        payload.input = utils.addProjectContextToRPCPayload(req, uri, payload.input);
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/get-package-endpoint'),
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization

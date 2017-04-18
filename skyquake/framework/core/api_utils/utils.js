@@ -60,10 +60,27 @@ var projectContextUrl = function(req, url) {
 					 JSON.parse(req.sessionStore.sessions[req.session.id])['projectId']) ||
 					 (null);
 	if (projectId) {
-		return url.replace(/(\/api\/operational\/|\/api\/config\/|\/api\/operations\/)(.*)/, '$1project/' + projectId + '/$2');
-
+		return url.replace(/(\/api\/operational\/|\/api\/config\/)(.*)/, '$1project/' + projectId + '/$2');
 	}
 	return url;
+}
+
+var addProjectContextToRPCPayload = function(req, url, inputPayload) {
+	//NOTE: We need to go into the sessionStore because express-session
+	// does not reliably update the session.
+	// See https://github.com/expressjs/session/issues/450
+	var projectId = (req.session &&
+					 req.sessionStore &&
+					 req.sessionStore.sessions &&
+					 req.sessionStore.sessions[req.session.id] &&
+					 JSON.parse(req.sessionStore.sessions[req.session.id])['projectId']) ||
+					 (null);
+	if (projectId) {
+		if (url.indexOf('/api/operations/')) {
+			inputPayload['project-name'] = projectId;
+		}
+	}
+	return inputPayload;
 }
 
 
@@ -263,5 +280,7 @@ module.exports = {
 
     getPortForProtocol: getPortForProtocol,
 
-    projectContextUrl: projectContextUrl
+    projectContextUrl: projectContextUrl,
+
+    addProjectContextToRPCPayload: addProjectContextToRPCPayload
 };

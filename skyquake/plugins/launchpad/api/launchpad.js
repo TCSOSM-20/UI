@@ -48,8 +48,9 @@ APIConfig.NfviMetrics = ['vcpu', 'memory'];
 RPC.executeNSServicePrimitive = function(req) {
     var api_server = req.query['api_server'];
     return new Promise(function(resolve, reject) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/exec-ns-service-primitive');
         var jsonData = {
-            "input": req.body
+            "input": utils.addProjectContextToRPCPayload(req, uri, req.body)
         };
 
         var headers = _.extend({},
@@ -59,7 +60,7 @@ RPC.executeNSServicePrimitive = function(req) {
             }
         );
         request({
-            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/exec-ns-service-primitive'),
+            url: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -81,8 +82,10 @@ RPC.getNSServicePrimitiveValues = function(req) {
     // var nsr_id = req.body['nsr_id_ref'];
     // var nsConfigPrimitiveName = req.body['name'];
     return new Promise(function(resolve, reject) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/get-ns-service-primitive-values');
+
         var jsonData = {
-            "input": req.body
+            "input": utils.addProjectContextToRPCPayload(req, uri, req.body)
         };
 
         var headers = _.extend({},
@@ -92,7 +95,7 @@ RPC.getNSServicePrimitiveValues = function(req) {
             }
         );
         request({
-            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/get-ns-service-primitive-values'),
+            uri: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -133,6 +136,11 @@ RPC.refreshAccountConnectionStatus = function(req) {
         }
     }
     jsonData.input[rpcInfo[Type].label] = Name;
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/' + rpcInfo[Type].rpc);
+
+    jsonData.input = utils.addProjectContextToRPCPayload(req, uri, jsonData.input);
+
     var headers = _.extend({},
         constants.HTTP_HEADERS.accept.data,
         constants.HTTP_HEADERS.content_type.data, {
@@ -140,9 +148,8 @@ RPC.refreshAccountConnectionStatus = function(req) {
         }
     );
     return new Promise(function(resolve, reject) {
-
         request({
-            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/' + rpcInfo[Type].rpc),
+            uri: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
