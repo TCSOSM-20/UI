@@ -21,8 +21,6 @@
  * This class provides utility methods for interrogating an instance of model uiState object.
  */
 
-'use strict';
-
 import _includes from 'lodash/includes'
 import _isArray from 'lodash/isArray'
 import guid from './../guid'
@@ -35,6 +33,9 @@ import utils from '../utils'
 export default {
 	isBoolean(property = {}) {
 		return (typeof(property['data-type']) == 'string') && (property['data-type'].toLowerCase() == 'boolean')
+	},
+	isLeafEmpty(property = {}) {
+		return (typeof(property['data-type']) == 'string') && (property['data-type'].toLowerCase() == 'empty')
 	},
 	isLeaf(property = {}) {
 		return /leaf|choice/.test(property.type);

@@ -48,6 +48,8 @@ import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 
 import '../styles/EditDescriptorModelProperties.scss'
 
+const EMPTY_LEAF_PRESENT = '--empty-leaf-set--';
+
 function getDescriptorMetaBasicForType(type) {
 	const basicPropertiesFilter = d => _includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
 	return DescriptorModelMetaFactory.getModelMetaForType(type, basicPropertiesFilter) || {properties: []};
@@ -292,7 +294,37 @@ export default function EditDescriptorModelProperties(props) {
 					key={fieldKey} 
 					id={fieldKey} 
 					className={ClassNames({'-value-not-set': !isValueSet})} 
-					defaultValue={val && val.toUpperCase()} title={pathToProperty} 
+					defaultValue={val && val.toUpperCase()} 
+					title={pathToProperty} 
+					onChange={onSelectChange} 
+					onFocus={onFocus} 
+					onBlur={endEditing} 
+					onMouseDown={startEditing} 
+					onMouseOver={startEditing} 
+					readOnly={!isEditable}>
+						{options}
+				</select>
+			);
+		}
+		
+		if (Property.isLeafEmpty(property)) {
+			// A null value indicates the leaf exists (as opposed to undefined).
+			// We stick in a string when the user actually sets it to simplify things
+			// but the correct thing happens when we serialize to user data
+			let isEmptyLeafPresent = (value === EMPTY_LEAF_PRESENT || value === null); 
+			let present = isEmptyLeafPresent ? EMPTY_LEAF_PRESENT : "";
+			const options = [
+				<option key={'true'} value={EMPTY_LEAF_PRESENT}>Enabled</option>,
+				<option key={'false'} value="">Not Enabled</option>
+			]
+
+			return (
+				<select 
+					key={fieldKey} 
+					id={fieldKey} 
+					className={ClassNames({'-value-not-set': !isEmptyLeafPresent})} 
+					defaultValue={present} 
+					title={pathToProperty} 
 					onChange={onSelectChange} 
 					onFocus={onFocus} 
 					onBlur={endEditing} 
