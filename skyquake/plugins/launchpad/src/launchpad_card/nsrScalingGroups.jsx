@@ -69,7 +69,7 @@ export default class NsrScalingGroups extends React.Component {
 					);
 				}
 			}) : trows.push(
-				<tr key={sgrInstanceIndex}>
+				<tr key={sgri}>
 					<td colSpan="5" style={{textAlign: 'center'}}>No network services scaled in this group</td>
 				</tr>
 			);

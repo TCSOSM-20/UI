@@ -98,7 +98,9 @@ class LaunchpadCard extends React.Component {
               <img src={circleXImage} title="Close card" />
               </a>
       );
-      if (this.props.hasAccess) closebutton = null;
+      if (this.props.hasAccess) {
+        closeButton = null;
+      }
       html = (
         <DashboardCard className={'launchpadCard'} closeCard={closeButton}>
           <LaunchpadHeader nsr={this.props.nsr} name={this.props.name} isActive={this.props.isActive} id={this.props.id}/>

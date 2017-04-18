@@ -1281,10 +1281,10 @@ VNFR.get = function(req) {
         }, function(error, response, body) {
             if (utils.validateResponse('VNFR.get', error, response, body, resolve, reject)) {
                 var data = JSON.parse(response.body);
-                var returnData = id ? [data["vnfr:vnfr"]] : data.collection["vnfr:vnfr"];
+                var returnData = id ? (data["vnfr:vnfr"] ? [data["vnfr:vnfr"]] : []) : data.collection["vnfr:vnfr"];
                 returnData.forEach(function(vnfr) {
-                    vnfr['nfvi-metrics'] = buildNfviGraphs(vnfr.vdur);
-                    vnfr['epa-params'] = epa_aggregator(vnfr.vdur);
+                    vnfr['nfvi-metrics'] = vnfr.vdur ? buildNfviGraphs(vnfr.vdur) : [];
+                    vnfr['epa-params'] = vnfr.vdur ? epa_aggregator(vnfr.vdur) : [];
                     vnfr['service-primitives-present'] = (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) ? true : false;
                     vnfr['vdur'] && vnfr['vdur'].map(function(vdur, vdurIndex) {
                         // This console-url is what front-end will hit to generate a real console-url
