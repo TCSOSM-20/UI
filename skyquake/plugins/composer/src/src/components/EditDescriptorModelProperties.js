@@ -75,6 +75,8 @@ export default function EditDescriptorModelProperties(props) {
 
 	const container = props.container;
 	const readonly = props.readonly;
+	const isEditable = !readonly; //true
+
 	if (!(DescriptorModelFactory.isContainer(container))) {
 		return
 	}
@@ -184,7 +186,6 @@ export default function EditDescriptorModelProperties(props) {
 		let catalogs = cds.getTransientCatalogs();
 
 		const name = path.join('.');
-		const isEditable = !readonly; //true
 		const isGuid = Property.isGuid(property);
 		const isBoolean = Property.isBoolean(property);
 		const onChange = onFormFieldValueChanged.bind(container);

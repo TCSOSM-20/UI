@@ -72,9 +72,4 @@ const CatalogItemDetailsEditor = React.createClass({
 
 	}
 });
-
-CatalogItemDetailsEditor.contextTypes = {
-    router: React.PropTypes.object,
-    userProfile: React.PropTypes.object
-};
 export default CatalogItemDetailsEditor;

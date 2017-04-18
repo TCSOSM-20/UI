@@ -50,6 +50,10 @@ const DetailsPanel = React.createClass({
 	},
 	componentWillUnmount() {
 	},
+	contextTypes: {
+	    router: React.PropTypes.object,
+	    userProfile: React.PropTypes.object
+	},
 	render() {
 		let json = '{}';
 		let bodyComponent =  messages.detailsWelcome();
@@ -72,10 +76,5 @@ const DetailsPanel = React.createClass({
 		);
 	}
 });
-
-DetailsPanel.contextTypes = {
-    router: React.PropTypes.object,
-    userProfile: React.PropTypes.object
-};
 
 export default DetailsPanel;
