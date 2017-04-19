@@ -25,6 +25,10 @@ import _includes from 'lodash/includes'
 import _isArray from 'lodash/isArray'
 import _cloneDeep from 'lodash/cloneDeep'
 import _debounce from 'lodash/debounce';
+import _uniqueId from 'lodash/uniqueId';
+import _set from 'lodash/set';
+import _get from 'lodash/get';
+import _has from 'lodash/has';
 import utils from '../libraries/utils'
 import React from 'react'
 import ClassNames from 'classnames'
@@ -49,6 +53,14 @@ import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 import '../styles/EditDescriptorModelProperties.scss'
 
 const EMPTY_LEAF_PRESENT = '--empty-leaf-set--';
+
+function resolveReactKey(value) {
+	const keyPath =  ['uiState', 'fieldKey'];
+	if (!_has(value, keyPath)) {
+		_set(value, keyPath, _uniqueId());
+	}
+	return _get(value, keyPath);
+}
 
 function getDescriptorMetaBasicForType(type) {
 	const basicPropertiesFilter = d => _includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
@@ -656,7 +668,7 @@ export default function EditDescriptorModelProperties(props) {
 
 			if (isArray) {
 				valuePath.push(index);
-				fieldId += index;
+				fieldId = resolveReactKey(value);
 			}
 
 			if (isMetaField) {
