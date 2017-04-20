@@ -19,7 +19,7 @@ import React from 'react';
 import NSVirtualLinkCreateStore from './nsVirtualLinkCreateStore.js';
 import Button from 'widgets/button/rw.button.js';
 import Utils from 'utils/utils.js';
-import _ from 'lodash';
+import _find from 'lodash/find';
 import './nsVirtualLinks.scss';
 import UpTime from 'widgets/uptime/uptime.jsx';
 import NSVirtualLinkDetails from './nsVirtualLinkDetails.jsx';
@@ -29,7 +29,8 @@ import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx'
 class NsVirtualLinks extends React.Component {
 	constructor(props) {
 		super(props);
-	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore);
+	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? 
+				this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore, 'NSVirtualLinkCreateStore');
 		this.state = {};
 		this.state.mode = 'viewing';	// Can be 'viewing'/'creating'/'editing'/'deleting'. Default is 'viewing'
 		this.selectedVirtualLink = null;
@@ -113,7 +114,7 @@ class NsVirtualLinks extends React.Component {
 	handleSelectVirtualLinkClick = (virtualLinkId, event) => {
 		this.setState({
 			mode: 'viewing',
-			selectedVirtualLink: this.props.data && this.props.data['decorated-vlrs'] && _.find(this.props.data['decorated-vlrs'], {id: virtualLinkId}),
+			selectedVirtualLink: this.props.data && this.props.data['decorated-vlrs'] && _find(this.props.data['decorated-vlrs'], {id: virtualLinkId}),
 			editingVirtualLink: null
 		});
 	}
@@ -121,8 +122,8 @@ class NsVirtualLinks extends React.Component {
 		event.stopPropagation();
 		this.setState({
 			mode: 'editing',
-			editingVirtualLink: this.props.data && this.props.data['nsd'] && this.props.data['nsd']['vld'] && _.find(this.props.data['nsd']['vld'], {id: vldId}),
-			selectedVirtualLink: this.props.data && this.props.data['decorated-vlrs'] && _.find(this.props.data['decorated-vlrs'], {id: vlrId})
+			editingVirtualLink: this.props.data && this.props.data['nsd'] && this.props.data['nsd']['vld'] && _find(this.props.data['nsd']['vld'], {id: vldId}),
+			selectedVirtualLink: this.props.data && this.props.data['decorated-vlrs'] && _find(this.props.data['decorated-vlrs'], {id: vlrId})
 		});
 	}
 

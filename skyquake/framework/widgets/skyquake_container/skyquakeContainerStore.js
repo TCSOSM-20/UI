@@ -21,9 +21,11 @@ import Alt from './skyquakeAltInstance.js';
 import SkyquakeContainerSource from './skyquakeContainerSource.js';
 import SkyquakeContainerActions from './skyquakeContainerActions';
 let Utils = require('utils/utils.js');
-import _ from 'lodash';
+import _indexOf from 'lodash/indexOf';
+import _isEqual from 'lodash/isEqual';
 //Temporary, until api server is on same port as webserver
-var rw = require('utils/rw.js');
+import rw from 'utils/rw.js';
+
 var API_SERVER = rw.getSearchParams(window.location).api_server;
 var UPLOAD_SERVER = rw.getSearchParams(window.location).upload_server;
 
@@ -103,7 +105,7 @@ class SkyquakeContainerStore {
                 } else {
                     // Temp to test before adding multi-sources
                     data.notification.source = streamSource;
-                    if (_.indexOf(self.notifications, data.notification) == -1) {
+                    if (_indexOf(self.notifications, data.notification) == -1) {
                         // newly appreared event.
                         // Add to the notifications list and setState
                         self.notifications.unshift(data.notification);
@@ -178,7 +180,7 @@ class SkyquakeContainerStore {
                 Utils.checkAuthentication(data.statusCode, function() {
                     self.closeSocket();
                 });
-                if (!_.isEqual(data.project, self.projects)) {
+                if (!_isEqual(data.project, self.projects)) {
                     let user = self.user;
                     user.projects = data.project;
                     self.setState({
@@ -277,4 +279,4 @@ function getCurrentPlugin() {
     }
 }
 
-export default Alt.createStore(SkyquakeContainerStore);
+export default Alt.createStore(SkyquakeContainerStore, 'SkyquakeContainerStore');

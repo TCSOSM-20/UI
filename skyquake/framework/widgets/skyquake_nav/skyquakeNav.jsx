@@ -28,7 +28,8 @@ import {FormSection} from '../form_controls/formControls.jsx';
 import {isRBACValid, SkyquakeRBAC} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
 
 //Temporary, until api server is on same port as webserver
-var rw = require('utils/rw.js');
+import rw from 'utils/rw.js';
+
 var API_SERVER = rw.getSearchParams(window.location).api_server;
 var UPLOAD_SERVER = rw.getSearchParams(window.location).upload_server;
 

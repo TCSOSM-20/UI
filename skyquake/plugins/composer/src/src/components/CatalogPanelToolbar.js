@@ -102,6 +102,7 @@ const CatalogHeader = React.createClass({
 		CatalogItemsActions.createCatalogItem(type);
 	},
 	onClickDuplicateCatalogItem() {
+		CatalogPanelTrayActions.open();
 		CatalogItemsActions.duplicateSelectedCatalogItem();
 	},
 	onClickExportCatalogItems() {

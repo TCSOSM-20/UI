@@ -18,7 +18,14 @@
 
 'use strict';
 
-import changeCase from 'change-case';
+import _cloneDeep from 'lodash/cloneDeep';
+import _isArray from 'lodash/isArray';
+import _map from 'lodash/map';
+import _flatten from 'lodash/flatten';
+import _find from 'lodash/find';
+import _toNumber from 'lodash/toNumber';
+import _isNumber from 'lodash/isNumber';
+import _clone from 'lodash/clone';
 
 export default {
 	addAuthorizationStub(xhr) {
@@ -133,22 +140,22 @@ export default {
 	},
 
 	getResults (topLevelObject, pathArray) {
-		let objectCopy = _.cloneDeep(topLevelObject);
+		let objectCopy = _cloneDeep(topLevelObject);
 		let i = pathArray.length;
 		let results = [];
 
 		while(pathArray[pathArray.length - i]) {
-			if (_.isArray(objectCopy[pathArray[pathArray.length - i]])) {
+			if (_isArray(objectCopy[pathArray[pathArray.length - i]])) {
 				if (i == 2) {
-					results = _.map(objectCopy[pathArray[pathArray.length - i]], pathArray[pathArray.length - 1]);
+					results = _map(objectCopy[pathArray[pathArray.length - i]], pathArray[pathArray.length - 1]);
 				} else {
 					objectCopy = objectCopy[pathArray[pathArray.length - i]];
 				}
-			} else if (_.isArray(objectCopy)) {
+			} else if (_isArray(objectCopy)) {
 				objectCopy.map((object) => {
-					if (_.isArray(object[pathArray[pathArray.length - i]])) {
+					if (_isArray(object[pathArray[pathArray.length - i]])) {
 						if (i == 2) {
-							results = results.concat(_.map(object[pathArray[pathArray.length - i]], pathArray[pathArray.length - 1]));
+							results = results.concat(_map(object[pathArray[pathArray.length - i]], pathArray[pathArray.length - 1]));
 						}
 					}
 				})
@@ -161,7 +168,7 @@ export default {
 
 	getAbsoluteResults (topLevelObject, pathArray) {
 		let i = pathArray.length;
-		let objectCopy = _.cloneDeep(topLevelObject);
+		let objectCopy = _cloneDeep(topLevelObject);
 		let results = [];
 
 		let fragment = pathArray[pathArray.length - i]
@@ -169,9 +176,9 @@ export default {
 		while (fragment) {
 			if (i == 1) {
 				// last fragment
-				if (_.isArray(objectCopy)) {
+				if (_isArray(objectCopy)) {
 					// results will be obtained from a map
-					results = _.map(objectCopy, fragment);
+					results = _map(objectCopy, fragment);
 				} else {
 					// object
 					if (fragment.match(/\[.*\]/g)) {
@@ -187,16 +194,16 @@ export default {
 					}
 				}
 			} else {
-				if (_.isArray(objectCopy)) {
+				if (_isArray(objectCopy)) {
 					// is array
-					objectCopy = _.map(objectCopy, fragment);
+					objectCopy = _map(objectCopy, fragment);
 
 					// If any of the deeper object is an array, flatten the entire list.
 					// This would usually be a bad leafref going out of its scope.
 					// Log it too
 					for (let i = 0; i < objectCopy.length; i++) {
-						if (_.isArray(objectCopy[i])) {
-							objectCopy = _.flatten(objectCopy);
+						if (_isArray(objectCopy[i])) {
+							objectCopy = _flatten(objectCopy);
 							console.log('This might be a bad leafref. Verify with backend team.')
 							break;
 						}
@@ -215,7 +222,7 @@ export default {
 						let key = fragment.split('[')[0];
 						let searchObject = {};
 						searchObject[predicateKey] = predicateValue;
-						let found = _.find(objectCopy[key], searchObject);
+						let found = _find(objectCopy[key], searchObject);
 						if (found) {
 							objectCopy = found;
 						} else {
@@ -225,10 +232,10 @@ export default {
 								predicateValue != NaN &&
 								predicateValue != Infinity &&
 								predicateValue != -Infinity) {
-								let numericalPredicateValue = _.toNumber(predicateValue);
-								if (_.isNumber(numericalPredicateValue)) {
+								let numericalPredicateValue = _toNumber(predicateValue);
+								if (_isNumber(numericalPredicateValue)) {
 									searchObject[predicateKey] = numericalPredicateValue;
-									found = _.find(objectCopy[key], searchObject);
+									found = _find(objectCopy[key], searchObject);
 								}
 							}
 							if (found) {
@@ -243,6 +250,10 @@ export default {
 							break;
 						}
 						objectCopy = objectCopy[fragment];
+						if (!objectCopy) {
+							// contains no value
+							break;
+						}
 					}
 				}
 			}
@@ -279,7 +290,7 @@ export default {
 	},
 
 	resolveLeafRefPath (catalogs, leafRefPath, fieldKey, path, container) {
-		let pathCopy = _.clone(path);
+		let pathCopy = _clone(path);
 		// Strip any prefixes
 		let leafRefPathCopy = leafRefPath.replace(/[\w\d]*:/g, '');
 		// Strip any spaces
@@ -312,7 +323,7 @@ export default {
 			if (fieldKeyArray.length == 1) {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
-						let found = _.find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						let found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
 						if (found) {
 							results = this.getAbsoluteResults(found, pathArray.splice(-i, i));
 							return results;
@@ -322,13 +333,43 @@ export default {
 			} else if (fieldKeyArray.length == 2) {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
-						let found = _.find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						console.log(key, subKey);
+						var found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
 						if (found) {
 							for (let foundKey in found) {
-								let topLevel = _.find(found[foundKey], {id: fieldKeyArray[1]});
-								if (topLevel) {
-									results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
-									return results;
+								if (_isArray(found[foundKey])) {
+									let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
+									if (topLevel) {
+										results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
+										return results;
+									}
+								} else {
+									if (foundKey == fieldKeyArray[1]) {
+										results = this.getAbsoluteResults(found[foundKey], pathArray.splice(-i, i));
+										return results;
+									}
+								}
+							}
+						}
+					}
+				}
+			} else if (fieldKeyArray.length == 3) {
+				for (let key in catalogs) {
+					for (let subKey in catalogs[key]) {
+						let found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						if (found) {
+							for (let foundKey in found) {
+								if (_isArray(found[foundKey])) {
+									let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
+									if (topLevel) {
+										results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
+										return results;
+									}
+								} else {
+									if (foundKey == fieldKeyArray[1]) {
+										results = this.getAbsoluteResults(found[foundKey], pathArray.splice(-i, i));
+										return results;
+									}
 								}
 							}
 						}

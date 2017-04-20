@@ -25,7 +25,6 @@ import NsCardPanel from './nsCardPanel/nsCardPanel.jsx';
 import NsListPanel from './nsListPanel/nsListPanel.jsx';
 import Crouton from 'react-crouton'
 import AppHeader from 'widgets/header/header.jsx';
-import Utils from 'utils/utils.js';
 import './launchpad.scss';
 
 import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';

@@ -29,6 +29,7 @@ var PackageFileHandler = require('./packageFileHandler.js');
 
 var Composer = {};
 var FileManager = {};
+var PackageManager = {};
 var DataCenters = {};
 // Catalog module methods
 Composer.get = function(req) {
@@ -304,7 +305,69 @@ Composer.updateSave = function(req) {
     });
 }
 
-Composer.update = function(req) {
+PackageManager.upload = function(req) {
+    console.log(' Uploading file', req.file.originalname, 'as', req.file.filename);
+    var api_server = req.query['api_server'];
+    // dev_download_server is for testing purposes.
+    // It is the direct IP address of the Node server where the
+    // package will be hosted.
+    var download_host = req.query['dev_download_server'];
+
+    if (!download_host) {
+        download_host = req.protocol + '://' + req.get('host');//req.api_server + ':' + utils.getPortForProtocol(req.protocol);
+    }
+
+    var input = {
+        'external-url': download_host + '/composer/upload/' + req.file.filename,
+        'package-type': 'VNFD',
+        'package-id': uuid()
+    }
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-create');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
+    return new Promise(function(resolve, reject) {
+        Promise.all([
+            rp({
+                uri: uri,
+                method: 'POST',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
+                    'Authorization': req.session && req.session.authorization
+                }),
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true,
+                json: true,
+                body: {
+                    input: input
+                }
+            })
+        ]).then(function(result) {
+            var data = {};
+            data['transaction_id'] = result[0].body['output']['transaction-id'];
+
+            // Add a status checker on the transaction and then to delete the file later
+            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], true);
+
+            // Return status to composer UI to update the status.
+            resolve({
+                statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
+                data: data
+            });
+        }).catch(function(error) {
+            var res = {};
+            console.log('Problem with PackageManager.upload', error);
+            res.statusCode = error.statusCode || 500;
+            res.errorMessage = {
+                error: 'Failed to upload package ' + req.file.originalname + '. Error: ' + error
+            };
+            reject(res);
+        });
+    });
+};
+
+PackageManager.update = function(req) {
     console.log(' Updating file', req.file.originalname, 'as', req.file.filename);
     var api_server = req.query['api_server'];
     // dev_download_server is for testing purposes.
@@ -319,7 +382,7 @@ Composer.update = function(req) {
         'external-url': download_host + '/composer/update/' + req.file.filename,
         'package-type': 'VNFD',
         'package-id': uuid()
-    }
+    };
 
     var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-update');
 
@@ -365,32 +428,16 @@ Composer.update = function(req) {
     });
 };
 
-Composer.upload = function(req) {
-    console.log(' Uploading file', req.file.originalname, 'as', req.file.filename);
+PackageManager.export = function(req) {
+    // /api/operations/package-export
     var api_server = req.query['api_server'];
-    // dev_download_server is for testing purposes.
-    // It is the direct IP address of the Node server where the
-    // package will be hosted.
-    var download_host = req.query['dev_download_server'];
-
-    if (!download_host) {
-        download_host = req.protocol + '://' + req.get('host');//req.api_server + ':' + utils.getPortForProtocol(req.protocol);
-    }
-
-    var input = {
-        'external-url': download_host + '/composer/upload/' + req.file.filename,
-        'package-type': 'VNFD',
-        'package-id': uuid()
-    };
-
-    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-create');
-
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-export');
+    var input = req.body;
     input = utils.addProjectContextToRPCPayload(req, uri, input);
-
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: uri,
+                uri: utils.confdPort(api_server) + '/api/operations/package-export',
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
                     'Authorization': req.session && req.session.authorization
@@ -399,37 +446,103 @@ Composer.upload = function(req) {
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true,
                 json: true,
-                body: {
-                    input: input
-                }
+                body: { "input": input }
             })
         ]).then(function(result) {
             var data = {};
-            data['transaction_id'] = result[0].body['output']['transaction-id'];
-
-            // Add a status checker on the transaction and then to delete the file later
-            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id']);
-
-            // Return status to composer UI to update the status.
             resolve({
                 statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
-                data: data
+                data: result[0].body
             });
         }).catch(function(error) {
             var res = {};
-            console.log('Problem with Composer.upload', error);
+            console.log('Problem with PackageManager.export', error);
             res.statusCode = error.statusCode || 500;
             res.errorMessage = {
-                error: 'Failed to upload package ' + req.file.originalname + '. Error: ' + error
+                error: error
             };
             reject(res);
         });
     });
-};
+}
 
+PackageManager.copy = function(req) {
+    // /api/operations/package-copy
+    var api_server = req.query['api_server'];
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-copy');
+    var input = req.body;
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
 
+    return new Promise(function(resolve, reject) {
+        Promise.all([
+            rp({
+                uri: uri,
+                method: 'POST',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
+                    'Authorization': req.get('Authorization')
+                }),
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true,
+                json: true,
+                body: { "input": input}
+            })
+        ]).then(function(result) {
+            var data = {};
+            resolve({
+                statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
+                data: result[0].body
+            });
+        }).catch(function(error) {
+            var res = {};
+            console.log('Problem with PackageManager.copy', error);
+            res.statusCode = error.statusCode || 500;
+            res.errorMessage = {
+                error: error
+            };
+            reject(res);
+        });
+    });
+}
 
-Composer.addFile = function(req) {
+/**
+ * This methods retrieves the status of package operations. It takes an optional 
+ * transaction id (id) this if present will return only that status otherwise
+ * an array of status' will be response.
+ */
+PackageManager.getJobStatus = function(req) {
+    var api_server = req.query["api_server"];
+    var uri = utils.confdPort(api_server);
+    var id = req.params['id'];
+    var url = utils.projectContextUrl(req, uri + '/api/operational/copy-jobs' + (id ? '/job/' + id : ''));
+    return new Promise(function(resolve, reject) {
+        request({
+            url: url,
+            method: 'GET',
+            headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
+                'Authorization': req.get('Authorization')
+            }),
+            forever: constants.FOREVER_ON,
+            rejectUnauthorized: false
+        }, function(error, response, body) {
+            if (utils.validateResponse('restconfAPI.streams', error, response, body, resolve, reject)) {
+                var returnData;
+                if (id) {
+                    returnData = JSON.parse(response.body)['rw-pkg-mgmt:job'];
+                } else {
+                    var data = JSON.parse(response.body)['rw-pkg-mgmt:copy-jobs'];
+                    returnData = (data && data.job) || [];
+                }
+                resolve({
+                    statusCode: response.statusCode,
+                    data: returnData
+                })
+            };
+        })
+    })
+}
+
+FileManager.addFile = function(req) {
     console.log(' Uploading file', req.file.originalname, 'as', req.file.filename);
     var api_server = req.query['api_server'];
     var download_host = req.query['dev_download_server'];
@@ -444,11 +557,12 @@ Composer.addFile = function(req) {
         'package-type': package_type,
         'package-id': package_id,
         'package-path': package_path + '/' + req.file.filename
-    }
+    };
 
     var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-file-add');
 
     input = utils.addProjectContextToRPCPayload(req, uri, input);
+
 
     return new Promise(function(resolve, reject) {
         Promise.all([
@@ -456,7 +570,7 @@ Composer.addFile = function(req) {
                 uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.session && req.session.authorization
+                    'Authorization': req.get('Authorization')
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -479,43 +593,6 @@ Composer.addFile = function(req) {
             res.statusCode = error.statusCode || 500;
             res.errorMessage = {
                 error: 'Failed to upload package ' + req.file.originalname + '. Error: ' + error
-            };
-            reject(res);
-        });
-    });
-}
-
-Composer.exportPackage = function(req) {
-    var api_server = req.query['api_server'];
-    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-export');
-    var input = req.body;
-    input = utils.addProjectContextToRPCPayload(req, uri, input);
-    return new Promise(function(resolve, reject) {
-        Promise.all([
-            rp({
-                uri: uri,
-                method: 'POST',
-                headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.session && req.session.authorization
-                }),
-                forever: constants.FOREVER_ON,
-                rejectUnauthorized: false,
-                resolveWithFullResponse: true,
-                json: true,
-                body: { "input": input }
-            })
-        ]).then(function(result) {
-            var data = {};
-            resolve({
-                statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
-                data: result[0].body
-            });
-        }).catch(function(error) {
-            var res = {};
-            console.log('Problem with Composer.exportPackage', error);
-            res.statusCode = error.statusCode || 500;
-            res.errorMessage = {
-                error: error
             };
             reject(res);
         });
@@ -679,5 +756,6 @@ FileManager.job = function(req) {
 }
 module.exports = {
     Composer:Composer,
-    FileManager: FileManager
+    FileManager: FileManager,
+    PackageManager: PackageManager
 };

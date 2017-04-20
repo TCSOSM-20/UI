@@ -272,6 +272,13 @@ if (cluster.isMaster && clusteredLaunch) {
 		app.get('/multiplex-client', function(req, res) {
 			res.sendFile(__dirname + '/node_modules/websocket-multiplex/multiplex_client.js');
 		});
+
+		// handle requests for gzip'd files
+	    app.get('*gzip*', function (req, res, next) {
+			res.set('Content-Encoding', 'gzip');
+       		next();
+	    });
+
 	}
 
 	/**

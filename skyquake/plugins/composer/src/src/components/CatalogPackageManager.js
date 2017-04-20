@@ -88,7 +88,7 @@ const CatalogPackageManager = React.createClass({
 
 		var createItem = function (catalogPackage) {
 			const onClickRemove = function () {
-				CatalogPackageManagerActions.removeCatalogPackage(catalogPackage);
+				CatalogPackageManagerActions.removeCatalogOperation(catalogPackage);
 			};
 			const classNames = ClassNames('item', {'-error': catalogPackage.error, '-success': catalogPackage.success});
 			return (
@@ -106,11 +106,11 @@ const CatalogPackageManager = React.createClass({
 			);
 		};
 
-		const packages = this.state.packages || [];
+		const operations = this.state.operations || [];
 		return (
 			<div className="CatalogPackageManager">
 				<div className="items">
-					{packages.map(createItem)}
+					{operations.map(createItem)}
 				</div>
 			</div>
 		);

@@ -799,8 +799,14 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
                 try {
                     if (nsr["monitoring-param"]) {
                         nsr["monitoring-param"].map(function(m) {
-                            var vnfr = vnfrs[m["vnfr-id"]] || {};
+                            // var vnfr = vnfrs[m["vnfr-id"]] || {};
+                            // m["vnfr-name"] = vnfr['name'] ? vnfr['name'] : (vnfr['short-name'] ? vnfr['short-name'] : 'VNFR');
+                            var groupTag = m['group-tag'];
+                            var vnfrId = m['vnfr-mon-param-ref'] && m['vnfr-mon-param-ref'][0] && m['vnfr-mon-param-ref'][0]['vnfr-id-ref'];
+                            var vnfr = vnfrs[vnfrId] || {};
                             m["vnfr-name"] = vnfr['name'] ? vnfr['name'] : (vnfr['short-name'] ? vnfr['short-name'] : 'VNFR');
+                            m['group-tag'] = (groupTag ? (groupTag + ' - ') : '') + m['vnfr-name'] + (vnfrId ? ' (' + vnfrId.substring(1,8) + '...)' : '');
+
                         });
                     }
                 } catch (e) {

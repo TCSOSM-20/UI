@@ -18,7 +18,14 @@
  */
 'use strict';
 
-import _ from 'lodash'
+import _isNumber from 'lodash/isNumber'
+import _cloneDeep from 'lodash/cloneDeep'
+import _isEmpty from 'lodash/isEmpty'
+import _mergeWith from 'lodash/mergeWith'
+import _uniqBy from 'lodash/uniqBy'
+import _isEqual from 'lodash/isEqual'
+import _findIndex from 'lodash/findIndex'
+import _remove from 'lodash/remove'
 import d3 from 'd3'
 import alt from '../alt'
 import UID from '../libraries/UniqueId'
@@ -56,7 +63,7 @@ class ComponentBridge extends React.Component {
 const getDefault = (name, defaultValue) => {
 	const val = window.localStorage.getItem('defaults-' + name);
 	if (val) {
-		if (_.isNumber(val)) {
+		if (_isNumber(val)) {
 			if (val < 0) {
 				return setDefault(name, 0);
 			}
@@ -165,6 +172,7 @@ class ComposerAppStore {
 			addFileSuccess: FileManagerActions.addFileSuccess,
 			deletePackageFile: FileManagerActions.deletePackageFile,
 			deleteFileSuccess: FileManagerActions.deleteFileSuccess,
+			deleteFileError: FileManagerActions.deleteFileError,
 			closeFileManagerSockets: FileManagerActions.closeFileManagerSockets,
 			openFileManagerSockets: FileManagerActions.openFileManagerSockets,
 			openDownloadMonitoringSocketSuccess: FileManagerActions.openDownloadMonitoringSocketSuccess,
@@ -218,7 +226,7 @@ class ComposerAppStore {
 				d.cpNumber = ++cpNumber;
 				containers.filter(d => DescriptorModelFactory.isVnfdConnectionPointRef(d)).filter(ref => ref.key === d.key).forEach(ref => ref.cpNumber = d.cpNumber);
 			});
-			this.setState({containers: containers, item: _.cloneDeep(item)});
+			this.setState({containers: containers, item: _cloneDeep(item)});
 		}
 		SelectionManager.refreshOutline();
 	}
@@ -234,7 +242,9 @@ class ComposerAppStore {
 		}
 		SelectionManager.select(item);
 		this.updateItem(item);
-		this.openFileManagerSockets(item)
+		if (item) {
+			this.openFileManagerSockets(item);
+		}
 	}
 	catalogItemMetaDataChanged(item) {
 		this.updateItem(item);
@@ -267,7 +277,7 @@ class ComposerAppStore {
 
 	applyDefaultLayout() {
 		if (this.item && this.item.uiState && this.item.uiState.containerPositionMap) {
-			if (!_.isEmpty(this.item.uiState.containerPositionMap)) {
+			if (!_isEmpty(this.item.uiState.containerPositionMap)) {
 				this.item.uiState.containerPositionMap = {};
 				CatalogItemsActions.catalogItemMetaDataChanged.defer(this.item);
 			}
@@ -410,7 +420,7 @@ class ComposerAppStore {
 
 			if (isFullScreen()) {
 				const layout = comp.layout;
-				const restoreLayout = _.cloneDeep(layout);
+				const restoreLayout = _cloneDeep(layout);
 				uiTransientState.restoreLayout = restoreLayout;
 				layout.left = 0;
 				layout.right = 0;
@@ -475,13 +485,12 @@ class ComposerAppStore {
         if (self.fileMonitoringSocketID) {
         	let newState = {};
         	if(data.hasOwnProperty('contents')) {
-        		filesState = addInputState( _.cloneDeep(this.filesState),data);
-				// filesState = _.merge(self.filesState, addInputState({},data));
+        		filesState = addInputState( _cloneDeep(this.filesState),data);
 				let normalizedData = normalizeTree(data);
 				newState = {
 					files: {
-						data: _.mergeWith(normalizedData.data, self.files.data, function(obj, src) {
-							return _.uniqBy(obj? obj.concat(src) : src, 'name');
+						data: _mergeWith(normalizedData.data, self.files.data, function(obj, src) {
+							return _uniqBy(obj? obj.concat(src) : src, 'name');
 						}),
 						id: normalizedData.id
 					},
@@ -492,8 +501,10 @@ class ComposerAppStore {
         			files: false
         		}
         	}
+        	if(!_isEqual(newState.files, this.files) || ! _isEqual(newState.fileState, this.fileState)) {
+        		this.setState(newState);
+        	}
 
-			this.setState(newState);
         }
 		function normalizeTree(data) {
 			let f = {
@@ -538,7 +549,7 @@ class ComposerAppStore {
 	updateFileLocationInput = (data) => {
 		let name = data.name;
 		let value = data.value;
-		var filesState = _.cloneDeep(this.filesState);
+		var filesState = _cloneDeep(this.filesState);
 		filesState[name] = value;
 		this.setState({
 			filesState: filesState
@@ -548,7 +559,7 @@ class ComposerAppStore {
 		if(!data.refresh) {
 			let path = data.path;
 			let fileName = data.fileName;
-			let files = _.cloneDeep(this.files);
+			let files = _cloneDeep(this.files);
 			let loadingIndex = files.data[path].push({
 				status: 'DOWNLOADING',
 				name: path + '/' + fileName
@@ -566,7 +577,7 @@ class ComposerAppStore {
 	openDownloadMonitoringSocketSuccess = (id) => {
 		let self = this;
 		let ws = window.multiplexer.channel(id);
-		let downloadJobs = _.cloneDeep(self.downloadJobs);
+		let downloadJobs = _cloneDeep(self.downloadJobs);
 		let newFiles = false;
 		ws.onmessage = (socket) => {
             if (self.files && self.files.length > 0) {
@@ -574,14 +585,14 @@ class ComposerAppStore {
                 try {
                     jobs = JSON.parse(socket.data);
                 } catch(e) {}
-                newFiles = _.cloneDeep(self.files);
+                newFiles = _cloneDeep(self.files);
                 jobs.map(function(j) {
                     //check if not in completed state
                     let fullPath = j['package-path'];
                     let path = fullPath.split('/');
                     let fileName = path.pop();
                     path = path.join('/');
-                    let index = _.findIndex(self.files.data[path], function(o){
+                    let index = _findIndex(self.files.data[path], function(o){
                         return fullPath == o.name
                     });
                     if((index > -1) && newFiles.data[path][index]) {
@@ -659,11 +670,11 @@ class ComposerAppStore {
 	}
 	deleteFileSuccess = (data) => {
 		let path = data.path.split('/')
-		let files = _.cloneDeep(this.files);
+		let files = _cloneDeep(this.files);
 		path.pop();
 		path = path.join('/');
 		let pathFiles = files.data[path]
-		_.remove(pathFiles, function(c) {
+		_remove(pathFiles, function(c) {
 			return c.name == data.path;
 		});
 
@@ -671,6 +682,15 @@ class ComposerAppStore {
 			files: files
 		})
 	}
+	deleteFileError = (error) => {
+		const filepath = error.path;
+		const message = error.data && error.data.output ? ' (' + error.data.output['error-trace'] + ')' : ' (server error)';
+		console.log('Unable to delete', filepath, 'Error:', message);
+		ComposerAppActions.showError.defer({
+			errorMessage: 'Unable to delete ' + filepath + message + '. '
+		});
+	}
+
 	newPathNameUpdated = (event) => {
 		const value = event.target.value;
 		this.setState({

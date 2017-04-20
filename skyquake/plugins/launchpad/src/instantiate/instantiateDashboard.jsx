@@ -36,7 +36,7 @@ const PLATFORM = ROLES.PLATFORM;
 class InstantiateDashboard extends React.Component {
     constructor(props) {
         super(props);
-        this.Store = this.props.flux.stores.hasOwnProperty('InstantiateStore') ? this.props.flux.stores.InstantiateStore : this.props.flux.createStore(InstantiateStore                );
+        this.Store = this.props.flux.stores.hasOwnProperty('InstantiateStore') ? this.props.flux.stores.InstantiateStore : this.props.flux.createStore(InstantiateStore, 'InstantiateStore');
         this.state = this.Store.getState();
     }
     componentDidMount() {

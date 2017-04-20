@@ -18,7 +18,8 @@
 
 
 //https://raw.githubusercontent.com/RIFTIO/RIFT.ware/master/rift-shell
-import _ from 'lodash'
+import _cloneDeep from 'lodash/cloneDeep'
+import _findIndex from 'lodash/findIndex'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TreeView from 'react-treeview';
@@ -83,11 +84,11 @@ class FileManager extends React.Component {
             let splitUrl = url.split('/');
             let fileName = splitUrl[splitUrl.length - 1];
             folder.pop;
-            let fullPath = _.cloneDeep(folder);
+            let fullPath = _cloneDeep(folder);
             fullPath.push(fileName);
             fullPath = fullPath.join('/');
             folder = folder.join('/');
-            let fileIndex = _.findIndex(files[folder], function(f) {
+            let fileIndex = _findIndex(files[folder], function(f) {
                 return f.name == fullPath;
             })
             if (fileIndex == -1) {
@@ -123,7 +124,7 @@ class FileManager extends React.Component {
 function buildList(self, data) {
     let toReturn = [];
     data.id.map(function(k,i) {
-        toReturn.push (contentFolder(self, data.data[k], k, i, self.props.filesState, self.updateFileLocationInput, self.sendDownloadFileRequst, self.deleteFile));
+        toReturn.push (contentFolder(self, data.data[k], k, k+i, self.props.filesState, self.updateFileLocationInput, self.sendDownloadFileRequst, self.deleteFile));
     });
     return toReturn.reverse();
 }
@@ -131,7 +132,8 @@ function buildList(self, data) {
 function contentFolder(context, folder, path, key, inputState, updateFn, sendDownloadFileRequst, deleteFn) {
     let type = context.props.type;
     let id = context.props.item.id;
-    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + path.replace(/\//g, '-'), type, id, path);
+    let classId = `DZ-${path.replace(/\/|\s+/g, '-')}`;
+    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + classId, type, id, path);
     return (
         <Panel title={path} key={key} itemClassName="nested" no-corners>
         <div className="folder">
@@ -169,11 +171,12 @@ class ItemUpload extends React.Component {
     }
     render() {
         let {type, id, path, key, ...props} = this.props;
+        let classId = `DZ-${path.replace(/\/|\s+/g, '-')}`;
         return (
             <div className="inputSection">
                 <label className="sqTextInput" style={{flexDirection: 'row', alignItems:'center'}}>
                     <span>Upload File</span>
-                    <Button className={'ComposerAppAddFile ' + path.replace(/\//g, '-')} label="BROWSE"/>
+                    <Button className={'ComposerAppAddFile ' + classId} label="BROWSE"/>
                 </label>
             </div>
         )

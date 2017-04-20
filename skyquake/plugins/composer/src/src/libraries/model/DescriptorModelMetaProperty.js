@@ -21,9 +21,8 @@
  * This class provides utility methods for interrogating an instance of model uiState object.
  */
 
-'use strict';
-
-import _ from 'lodash'
+import _includes from 'lodash/includes'
+import _isArray from 'lodash/isArray'
 import guid from './../guid'
 import changeCase from 'change-case'
 import InstanceCounter from './../InstanceCounter'
@@ -34,6 +33,9 @@ import utils from '../utils'
 export default {
 	isBoolean(property = {}) {
 		return (typeof(property['data-type']) == 'string') && (property['data-type'].toLowerCase() == 'boolean')
+	},
+	isLeafEmpty(property = {}) {
+		return (typeof(property['data-type']) == 'string') && (property['data-type'].toLowerCase() == 'empty')
 	},
 	isLeaf(property = {}) {
 		return /leaf|choice/.test(property.type);
@@ -69,7 +71,7 @@ export default {
         return !/^(leaf|leaf_list)$/.test(property.type);
 	},
 	isSimpleList(property = {}) {
-		return _.includes(DescriptorModelFields.simpleList, property.name);
+		return _includes(DescriptorModelFields.simpleList, property.name);
 	},
 	isPrimativeDataType(property = {}) {
 		const Property = this;
@@ -146,22 +148,36 @@ export default {
 		}
 		return /uuid/.test(property['data-type']);
 	},
-	createModelInstance(property) {
+	/**
+	 * Create a new instance of the indicated property and, if relevent, use the given
+	 * unique name for the instance's key (see generateItemUniqueName)
+	 * 
+	 * @param {Object} typeOrPath - property definition
+	 * @param {any} uniqueName 
+	 * @returns 
+	 */
+	createModelInstance(property, uniqueName) {
 		const Property = this;
 		const defaultValue = Property.defaultValue.bind(this);
-		function createModel(uiState, parentMeta) {
+		function createModel(uiState, parentMeta, uniqueName) {
 			const model = {};
 			if (Property.isLeaf(uiState)) {
 				if (uiState.name === 'name') {
-					return changeCase.param(parentMeta.name) + '-' + InstanceCounter.count(parentMeta[':qualified-type']);
+					return uniqueName || (changeCase.param(parentMeta.name) + '-' + InstanceCounter.count(parentMeta[':qualified-type']));
 				}
-				if (_.isArray(parentMeta.key) && _.includes(parentMeta.key, uiState.name)) {
+				if (_isArray(parentMeta.key) && _includes(parentMeta.key, uiState.name)) {
 					if (/uuid/.test(uiState['data-type'])) {
 						return guid();
 					}
 					if (uiState['data-type'] === 'string') {
-						const prefix = uiState.name.replace('id', '');
-						return  (prefix ? changeCase.param(prefix) + '-' : '') + guid(5);
+						// if there is only one key property and we were given a 
+						// unique name (probably because creating a list entry
+						// property) then use the unique name otherwise make one up.
+						if (parentMeta.key.length > 1 || !uniqueName) {
+							const prefix = uiState.name.replace('id', '');
+							uniqueName = (prefix ? changeCase.param(prefix) + '-' : '') + guid(5);
+						}
+						return uniqueName;
 					}
 					if (/int/.test(uiState['data-type'])) {
 						return InstanceCounter.count(uiState[':qualified-type']);
@@ -172,7 +188,7 @@ export default {
 				return [];
 			} else {
 				uiState.properties.forEach(p => {
-					model[p.name] = createModel(p, uiState);
+					model[p.name] = createModel(p, uiState, uniqueName);
 				});
 			}
 			return model;
@@ -187,7 +203,7 @@ export default {
 			if (/list/.test(property.type)) {
 				property.type = 'container';
 			}
-			const modelInstance = createModel(property, property);
+			const modelInstance = createModel(property, property, uniqueName);
 			modelInstance.uiState = {type: property.name};
 			const modelFragment = DescriptorTemplateFactory.createModelForType(property[':qualified-type'] || property.name) || {};
 			Object.assign(modelInstance, modelFragment);

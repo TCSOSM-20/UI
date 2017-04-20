@@ -21,7 +21,8 @@
 
 'use strict';
 
-import _ from 'lodash'
+import _isEmpty from 'lodash/isEmpty'
+import _cloneDeep from 'lodash/cloneDeep'
 import d3 from 'd3'
 import UID from './../UniqueId'
 import guid from '../guid'
@@ -157,7 +158,7 @@ class DescriptorModelFactory {
 		}
 
 		return (containerList, obj) => {
-			if (_.isEmpty(obj)) {
+			if (_isEmpty(obj)) {
 				return containerList;
 			}
 			switch (obj.uiState.type) {
@@ -249,7 +250,7 @@ class DescriptorModelFactory {
 		} else {
 			model = vnfdToWrap;
 		}
-		return new VirtualNetworkFunctionReadOnlyWrapper(_.cloneDeep(model), parent);
+		return new VirtualNetworkFunctionReadOnlyWrapper(_cloneDeep(model), parent);
 	}
 
 	static newClassifier(model, parent) {
