@@ -92,6 +92,7 @@ Subscriptions.prototype.subscribe = function(req, callback) {
     var a = url.resolve(origin, req.baseUrl);
     var b = url.resolve(a, URL);
     URL = b;
+    console.log('DEBUG URL IS', URL);
   } else {
     protocol = protocol[1]
   }

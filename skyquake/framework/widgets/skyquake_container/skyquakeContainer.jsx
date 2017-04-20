@@ -18,6 +18,7 @@
 import React from 'react';
 import AltContainer from 'alt-container';
 import Alt from './skyquakeAltInstance.js';
+ import _cloneDeep from 'lodash/cloneDeep';
 import SkyquakeNav from '../skyquake_nav/skyquakeNav.jsx';
 import EventCenter from './eventCenter.jsx';
 import SkyquakeContainerActions from './skyquakeContainerActions.js'
@@ -92,7 +93,7 @@ export default class skyquakeContainer extends React.Component {
     render() {
         const {displayNotification, notificationMessage, displayScreenLoader, notificationType, ...state} = this.state;
         var html;
-        let nav = _.cloneDeep(this.state.nav);
+        let nav = _cloneDeep(this.state.nav);
         if (this.matchesLoginUrl()) {
             html = (
                 <AltContainer>
