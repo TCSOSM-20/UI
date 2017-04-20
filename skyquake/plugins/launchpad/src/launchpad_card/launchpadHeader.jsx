@@ -163,11 +163,15 @@ class LaunchpadHeader extends React.Component {
                 </a>
             </h3>
             {toggleStatus}
-            <h3 className="launchpadCard_header-link" style={{display: 'inherit'}}>
-              <a onClick={this.deleteLaunchpad} title="Delete">
-                <span className="oi" data-glyph="trash" aria-hidden="true"></span>
-              </a>
-            </h3>
+            {this.props.hasAccess ?
+                (
+                  <h3 className="launchpadCard_header-link" style={{display: 'inherit'}}>
+                    <a onClick={this.deleteLaunchpad} title="Delete">
+                      <span className="oi" data-glyph="trash" aria-hidden="true"></span>
+                    </a>
+                  </h3>
+                )
+              : null}
           </div>
         </div>
         <div className="launchpadCard_header-status">

@@ -197,7 +197,7 @@ export default class RecordCard extends React.Component {
         if (displayConfigPrimitives) {
           configPrimitiveComponent = (
             <div className="flex nsConfigPrimitiveContainer">
-              <NsrConfigPrimitives data={configPrimitivesProps} />
+              <NsrConfigPrimitives data={configPrimitivesProps} hasAccess={hasAccess}  />
               <div style={{display:'flex', flexDirection: 'column',     flex: '1 1 40%'}}>
                 <div className="launchpadCard_title">
                   JOB LIST

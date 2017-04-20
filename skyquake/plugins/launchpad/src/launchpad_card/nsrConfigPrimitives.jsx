@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -162,6 +162,7 @@ class NsrConfigPrimitives extends React.Component {
     }
     constructConfigPrimitiveTabs = (tabList, tabPanels) => {
         let self = this;
+        const hasAccess = self.props.hasAccess;
         let defaultFromRpc = '';
         //coded here for dev purposes
         let mandatoryFieldValue = 'true';
@@ -307,7 +308,11 @@ class NsrConfigPrimitives extends React.Component {
                                     </div>
                                 )
                             })}
-                            <Button label="Submit" isLoading={this.state.isSaving} onClick={this.handleExecuteClick.bind(this, nsConfigPrimitiveIndex)} className="dark"/>
+                            {
+                                hasAccess ?
+                                    <Button label="Submit" isLoading={this.state.isSaving} onClick={this.handleExecuteClick.bind(this, nsConfigPrimitiveIndex)} className="dark"/>
+                                : null
+                            }
                         </TabPanel>
                     )
                 );
