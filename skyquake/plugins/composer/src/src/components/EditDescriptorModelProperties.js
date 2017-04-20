@@ -214,7 +214,7 @@ export default function EditDescriptorModelProperties(props) {
 			processFieldValueChange.bind(container, pathToProperty), 2000, {maxWait: 5000})); // max wait for short-name
 		// create an onChange event handler for a select field for the specified field path
 		const onSelectChange = changeHandler.bind(null, processFieldValueChange.bind(container, pathToProperty));
-		
+
 		if (isEnumeration) {
 			const enumeration = Property.getEnumeration(property, value);
 			const options = enumeration.map((d, i) => {
@@ -230,17 +230,17 @@ export default function EditDescriptorModelProperties(props) {
 				options.unshift(<option key={'(value-not-in-enum)'} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
 			return (
-				<select 
-					key={fieldKey} 
+				<select
+					key={fieldKey}
 					id={fieldKey}
-					className={ClassNames({'-value-not-set': !isValueSet})} 
-					defaultValue={value} 
-					title={pathToProperty} 
-					onChange={onSelectChange} 
-					onFocus={onFocus} 
-					onBlur={endEditing} 
-					onMouseDown={startEditing} 
-					onMouseOver={startEditing} 
+					className={ClassNames({'-value-not-set': !isValueSet})}
+					defaultValue={value}
+					title={pathToProperty}
+					onChange={onSelectChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
 					disabled={!isEditable}>
 						{options}
 				</select>
@@ -265,17 +265,17 @@ export default function EditDescriptorModelProperties(props) {
 				options.unshift(<option key={'(value-not-in-leafref)'} value="" placeholder={placeholder}>{noValueDisplayText}</option>);
 			}
 			return (
-				<select 
-					key={fieldKey} 
-					id={fieldKey} 
-					className={ClassNames({'-value-not-set': !isValueSet})} 
-					defaultValue={value} 
-					title={pathToProperty} 
-					onChange={onSelectChange} 
-					onFocus={onFocus} 
-					onBlur={endEditing} 
-					onMouseDown={startEditing} 
-					onMouseOver={startEditing} 
+				<select
+					key={fieldKey}
+					id={fieldKey}
+					className={ClassNames({'-value-not-set': !isValueSet})}
+					defaultValue={value}
+					title={pathToProperty}
+					onChange={onSelectChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
 					disabled={!isEditable}>
 						{options}
 				</select>
@@ -298,28 +298,28 @@ export default function EditDescriptorModelProperties(props) {
 			}
 			const isValueSet = (val != '' && val)
 			return (
-				<select 
-					key={fieldKey} 
-					id={fieldKey} 
-					className={ClassNames({'-value-not-set': !isValueSet})} 
-					defaultValue={val && val.toUpperCase()} 
-					title={pathToProperty} 
-					onChange={onSelectChange} 
-					onFocus={onFocus} 
-					onBlur={endEditing} 
-					onMouseDown={startEditing} 
-					onMouseOver={startEditing} 
+				<select
+					key={fieldKey}
+					id={fieldKey}
+					className={ClassNames({'-value-not-set': !isValueSet})}
+					defaultValue={val && val.toUpperCase()}
+					title={pathToProperty}
+					onChange={onSelectChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
 					disabled={!isEditable}>
 						{options}
 				</select>
 			);
 		}
-		
+
 		if (Property.isLeafEmpty(property)) {
 			// A null value indicates the leaf exists (as opposed to undefined).
 			// We stick in a string when the user actually sets it to simplify things
 			// but the correct thing happens when we serialize to user data
-			let isEmptyLeafPresent = (value === EMPTY_LEAF_PRESENT || value === null); 
+			let isEmptyLeafPresent = (value === EMPTY_LEAF_PRESENT || value === null);
 			let present = isEmptyLeafPresent ? EMPTY_LEAF_PRESENT : "";
 			const options = [
 				<option key={'true'} value={EMPTY_LEAF_PRESENT}>Enabled</option>,
@@ -327,17 +327,17 @@ export default function EditDescriptorModelProperties(props) {
 			]
 
 			return (
-				<select 
-					key={fieldKey} 
-					id={fieldKey} 
-					className={ClassNames({'-value-not-set': !isEmptyLeafPresent})} 
-					defaultValue={present} 
-					title={pathToProperty} 
-					onChange={onSelectChange} 
-					onFocus={onFocus} 
-					onBlur={endEditing} 
-					onMouseDown={startEditing} 
-					onMouseOver={startEditing} 
+				<select
+					key={fieldKey}
+					id={fieldKey}
+					className={ClassNames({'-value-not-set': !isEmptyLeafPresent})}
+					defaultValue={present}
+					title={pathToProperty}
+					onChange={onSelectChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
 					disabled={!isEditable}>
 						{options}
 				</select>
@@ -346,25 +346,25 @@ export default function EditDescriptorModelProperties(props) {
 
 		if (property['preserve-line-breaks']) {
 			return (
-				<textarea 
-					key={fieldKey} 
-					cols="5" 
-					id={fieldKey} 
-					defaultValue={value} 
-					placeholder={placeholder} 
-					onChange={onTextChange} 
-					onFocus={onFocus} 
-					onBlur={endEditing} 
-					onMouseDown={startEditing} 
-					onMouseOver={startEditing} 
-					onMouseOut={endEditing} 
-					onMouseLeave={endEditing} 
+				<textarea
+					key={fieldKey}
+					cols="5"
+					id={fieldKey}
+					defaultValue={value}
+					placeholder={placeholder}
+					onChange={onTextChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
+					onMouseOut={endEditing}
+					onMouseLeave={endEditing}
 					disabled={!isEditable} />
 			);
 		}
 
 		return (
-			<input 
+			<input
 				key={fieldKey}
 				id={fieldKey}
 				type="text"
@@ -550,16 +550,16 @@ export default function EditDescriptorModelProperties(props) {
 
 		return (
 			<div key={key} className="choice">
-				<select 
-					key={Date.now()} 
-					className={ClassNames({'-value-not-set': !selectedOptionValue})} 
-					defaultValue={selectedOptionValue} 
-					onChange={onChange} 
-					onFocus={onFocus} 
-					onBlur={endEditing} 
-					onMouseDown={startEditing} 
-					onMouseOver={startEditing} 
-					onMouseOut={endEditing} 
+				<select
+					key={Date.now()}
+					className={ClassNames({'-value-not-set': !selectedOptionValue})}
+					defaultValue={selectedOptionValue}
+					onChange={onChange}
+					onFocus={onFocus}
+					onBlur={endEditing}
+					onMouseDown={startEditing}
+					onMouseOver={startEditing}
+					onMouseOut={endEditing}
 					onMouseLeave={endEditing}
 					disabled={!isEditable}
 				>
@@ -658,7 +658,7 @@ export default function EditDescriptorModelProperties(props) {
 			let field;
 			const valuePath = path.slice();
 			// create a unique field Id for use as react component keys and html element ids
-			// notes: 
+			// notes:
 			//   keys only need to be unique on components in the same array
 			//   html element ids should be unique with the document (or form)
 			let fieldId = uniqueId;
@@ -827,4 +827,3 @@ export default function EditDescriptorModelProperties(props) {
 		</div>
 	);
 };
-
