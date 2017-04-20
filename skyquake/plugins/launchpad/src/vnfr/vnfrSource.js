@@ -42,7 +42,7 @@ export default {
           }
           console.log(nsr_id)
           $.ajax({
-            url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling?api_server=' + API_SERVER,
+            url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling',
             type: 'POST',
             beforeSend: Utils.addAuthorizationStub,
             data: {
