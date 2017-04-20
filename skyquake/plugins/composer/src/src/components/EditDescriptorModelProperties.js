@@ -183,7 +183,6 @@ export default function EditDescriptorModelProperties(props) {
 		let catalogs = cds.getTransientCatalogs();
 
 		const pathToProperty = path.join('.');
-		const isEditable = true;
 		const isGuid = Property.isGuid(property);
 		const isBoolean = Property.isBoolean(property);
 		const isEnumeration = Property.isEnumeration(property);

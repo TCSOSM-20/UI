@@ -479,7 +479,7 @@ PackageManager.copy = function(req) {
                 uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -520,12 +520,12 @@ PackageManager.getJobStatus = function(req) {
             url: url,
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false
         }, function(error, response, body) {
-            if (utils.validateResponse('restconfAPI.streams', error, response, body, resolve, reject)) {
+            if (utils.validateResponse('PackageManager.getJobStatus', error, response, body, resolve, reject)) {
                 var returnData;
                 if (id) {
                     returnData = JSON.parse(response.body)['rw-pkg-mgmt:job'];
@@ -570,7 +570,7 @@ FileManager.addFile = function(req) {
                 uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
