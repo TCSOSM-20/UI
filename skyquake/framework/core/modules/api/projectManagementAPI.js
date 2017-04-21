@@ -107,13 +107,11 @@ ProjectManagement.update = function(req) {
     var self = this;
     var api_server = req.query['api_server'];
     var bodyData = req.body;
-    data = {
-        "project":[bodyData]
-    }
+    data = bodyData['project-config']
     var updateTasks = [];
 
     var updateUser = rp({
-                uri: utils.confdPort(api_server) + '/api/config/project',
+                uri: utils.confdPort(api_server) + '/api/config/project/' + bodyData.name + '/project-config',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization
