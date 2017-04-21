@@ -110,7 +110,7 @@ ProjectManagement.update = function(req) {
     data = bodyData['project-config']
     var updateTasks = [];
 
-    var updateUser = rp({
+    var updateProject= rp({
                 uri: utils.confdPort(api_server) + '/api/config/project/' + bodyData.name + '/project-config',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
@@ -121,7 +121,7 @@ ProjectManagement.update = function(req) {
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
             });
-    updateTasks.push(updateUser)
+    updateTasks.push(updateProject)
     return new Promise(function(resolve, reject) {
         Promise.all([
             updateTasks
@@ -229,7 +229,7 @@ ProjectManagement.updatePlatform = function(req) {
     data.user = JSON.parse(data.user)
     var updateTasks = [];
 
-    var updateUser = rp({
+    var updatePlatform = rp({
                 uri: utils.confdPort(api_server) + '/api/config/rbac-platform-config',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
@@ -240,7 +240,7 @@ ProjectManagement.updatePlatform = function(req) {
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
             });
-    updateTasks.push(updateUser)
+    updateTasks.push(updatePlatform)
     return new Promise(function(resolve, reject) {
         Promise.all([
             updateTasks
