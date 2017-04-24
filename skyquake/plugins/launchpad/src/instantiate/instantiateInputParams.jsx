@@ -105,13 +105,12 @@ export default class InstantiateInputParams extends Component {
   }
   inputParametersHTML = (props) => {
     let inputParameters = props.inputParameters;
-    const handleChange = (i, event) => props.updateInputParam(i, event.target.value);
     return inputParameters && inputParameters.map(function(input, i) {
         return (
                 <div className="configure-nsd_section" key={i}>
                   <h3 className="launchpadCard_title">Input Parameters</h3>
                   <div className="inputControls">
-                      <TextInput label={ input.label || input.xpath } type="text" onChange={handleChange.bind(this, i)} />
+                      <TextInput label={ input.label || input.xpath } type="text" onChange={props.updateInputParam.bind(self, i)} />
                   </div>
                 </div>
         )

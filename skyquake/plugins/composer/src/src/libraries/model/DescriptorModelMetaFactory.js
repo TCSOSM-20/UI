@@ -102,15 +102,19 @@ function serialize_leaf_empty(data) {
 function serialize_leaf_list(data) {
 	data = data[this.name];
 	if (data) {
-		data = data.reduce((result, value) => {
-			if (value !== '' && value !== null && value !== undefined && typeof value !== 'object') {
-				result.push(value);
+		commaSeparatedValues = data.reduce((d, v) => {
+			let leaf = Serializer.leaf.call(this, d);
+			let value = leaf & leaf[this.name];
+			if (value && value.length) {
+				if (v.length) {
+					v += ', ';
+				}
+				v += value;
 			}
-			return result;
-		}, []);
-		if (data.length){
+		}, "");
+		if (commaSeparatedValues.length) {
 			let obj = {};
-			obj[this.name] = data;
+			obj[this.name] = commaSeparatedValues;
 			return obj;
 		}
 	}
