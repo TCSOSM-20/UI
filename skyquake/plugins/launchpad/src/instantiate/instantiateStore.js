@@ -189,10 +189,10 @@ class LaunchNetworkServiceStore {
         });
         return window.location.hash = 'launchpad/' + tokenizedHash[2];
     }
-    launchNSRError(error) {
+    launchNSRError(data) {
         var msg = 'Something went wrong while trying to instantiate. Check the error logs for more information';
-        if(error) {
-            msg = error;
+        if (data.error) {
+            msg = data.error;
         }
         Alt.actions.global.showNotification.defer(msg);
         Alt.actions.global.hideScreenLoader.defer();
