@@ -79,9 +79,7 @@ export default class ProjectManagementStore {
     }
     editProject(isReadOnly) {
         this.viewProject([this.projects[this.activeIndex], this.activeIndex, isReadOnly]);
-        // this.setState({
-        //     isReadOnly: isEdit
-        // })
+
     }
     handleCloseProjectPanel() {
         this.setState({

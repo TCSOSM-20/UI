@@ -53,37 +53,14 @@ class PlatformRoleManagement extends React.Component {
     platformChange = (platformRole, e) => {
         this.actions.handlePlatformRoleUpdate(platformRole, e.currentTarget.checked);
     }
-    addProjectRole = (e) => {
-        this.actions.handleAddProjectItem();
-    }
-    removeProjectRole = (i, e) => {
-        this.actions.handleRemoveProjectItem(i);
-    }
-    updateProjectRole = (i, e) => {
-        this.actions.handleUpdateProjectRole(i, e)
-    }
-    addProject = () => {
-        this.actions.handleAddProject();
-    }
-    viewProject = (un, index) => {
-        this.actions.viewProject(un, index);
-    }
     editProject = () => {
-        this.actions.editProject(false);
+        this.actions.editPlatform(false);
     }
-    cancelEditProject = () => {
-        this.actions.editProject(true)
+    cancelEditPlatform = () => {
+        this.actions.editPlatform(true)
     }
     closePanel = () => {
         this.actions.handleCloseProjectPanel();
-    }
-
-    deleteProject = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.Store.deleteProject({
-                'name': this.state['name']
-            });
     }
     updatePlatform = (e) => {
         let self = this;
@@ -91,20 +68,20 @@ class PlatformRoleManagement extends React.Component {
         e.stopPropagation();
         let platformUsers = self.state.platformUsers;
         let cleanUsers = this.cleanUsers(platformUsers);
-
-
         this.Store.updatePlatform({
-                'user': JSON.stringify(platformUsers)
+                'user': JSON.stringify(cleanUsers)
             }
         );
     }
-     cleanUsers(projectUsers) {
+     cleanUsers(platformUsers) {
+        let self = this;
         let cleanUsers = [];
         //Remove null values from role
-        projectUsers.map((u) => {
+        platformUsers.map((u) => {
             let cleanRoles = [];
             u.role && u.role.map((r,i) => {
                 let role = {};
+                //Platform user can not change role of itself.
                 if(r.role){
                     //removing key for rbac-platform
                     delete r.keys;
@@ -112,7 +89,9 @@ class PlatformRoleManagement extends React.Component {
                 }
             });
            u.role = cleanRoles;
-           cleanUsers.push(u);
+           if (u['user-name'] != self.context.userProfile.userId) {
+                cleanUsers.push(u);
+           }
         });
         return cleanUsers;
     }
@@ -195,8 +174,7 @@ class PlatformRoleManagement extends React.Component {
                                 (
                                     <ButtonGroup className="buttonGroup">
                                         <Button label="Update" type="submit" onClick={this.updatePlatform} />
-                                        <Button label="Delete" onClick={this.deleteProject} />
-                                        <Button label="Cancel" onClick={this.cancelEditProject} />
+                                        <Button label="Cancel" onClick={this.cancelEditPlatform} />
                                     </ButtonGroup>
                                 )
                                 : (
@@ -298,7 +276,8 @@ class PlatformRoleManagement extends React.Component {
 }
 // onClick={this.Store.update.bind(null, Account)}
 PlatformRoleManagement.contextTypes = {
-    router: React.PropTypes.object
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 };
 
 PlatformRoleManagement.defaultProps = {

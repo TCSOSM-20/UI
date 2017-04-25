@@ -8,7 +8,8 @@ module.exports = function(Alt) {
                                        'handleRemoveProjectItem',
                                        'handleUpdateProjectRole',
                                        'viewProject',
-                                       'editProject',
+                                       'editPlatform',
+                                       'handleCancelEdit',
                                        'handleCloseProjectPanel',
                                        'handleHideColumns',
                                        'handleSelectedUser',
@@ -29,7 +30,7 @@ module.exports = function(Alt) {
                                        'handleToggleUserRoleInProject',
                                        'addRoleToUserInProject',
                                        'handleRemoveRoleFromUserInProject',
-                                       'updateProjectSuccess',
+                                       'updatePlatformSuccess',
                                        'createProjectSuccess',
                                        'deleteProjectSuccess'
                                        );

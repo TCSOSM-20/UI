@@ -99,67 +99,9 @@ module.exports = function(Alt) {
           interceptResponse: interceptResponse({
             'error': 'There was an error updating the project.'
           }),
-          success: Alt.actions.global.updateProjectSuccess,
+          success: Alt.actions.global.updatePlatformSuccess,
           loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
-        },
-        deleteProject: {
-          remote: function(state, project) {
-            return new Promise(function(resolve, reject) {
-              $.ajax({
-                url: `/project/${project['name']}?api_server=${API_SERVER}`,
-                type: 'DELETE',
-                beforeSend: Utils.addAuthorizationStub,
-                success: function(data, textStatus, jqXHR) {
-                  resolve(data);
-                }
-              }).fail(function(xhr){
-                //Authentication and the handling of fail states should be wrapped up into a connection class.
-                Utils.checkAuthentication(xhr.status);
-                let msg = xhr.responseText;
-                  if(xhr.errorMessage) {
-                    msg = xhr.errorMessage
-                  }
-                  reject(msg);
-              });
-            });
-          },
-          interceptResponse: interceptResponse({
-            'error': 'There was an error deleting the user.'
-          }),
-          success: Alt.actions.global.deleteProjectSuccess,
-          loading: Alt.actions.global.showScreenLoader,
-          error: Alt.actions.global.showNotification
-        },
-        createProject: {
-            remote: function(state, project) {
-
-              return new Promise(function(resolve, reject) {
-                $.ajax({
-                  url: `/project?api_server=${API_SERVER}`,
-                  type: 'POST',
-                  data: project,
-                  beforeSend: Utils.addAuthorizationStub,
-                  success: function(data, textStatus, jqXHR) {
-                    resolve(data);
-                  }
-                }).fail(function(xhr){
-                  //Authentication and the handling of fail states should be wrapped up into a connection class.
-                  Utils.checkAuthentication(xhr.status);
-                  let msg = xhr.responseText;
-                  if(xhr.errorMessage) {
-                    msg = xhr.errorMessage
-                  }
-                  reject(msg);
-                });
-              });
-            },
-            interceptResponse: interceptResponse({
-              'error': 'There was an error updating the account.'
-            }),
-            success: Alt.actions.global.createProjectSuccess,
-            loading: Alt.actions.global.showScreenLoader,
-            error: Alt.actions.global.showNotification
         }
       }
 }

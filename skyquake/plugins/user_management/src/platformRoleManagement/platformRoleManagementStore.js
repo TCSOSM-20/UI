@@ -56,27 +56,20 @@ export default class PlatformRoleManagementStore {
             projectRoles
         });
     }
-    viewProject(data) {
-        let project = data[0];
-        let projectIndex = data[1];
-
-        let ProjectUser = {
-            'name': project['name'],
-            'description': project['description'],
-            'platformUsers': project['project-config'] && project['project-config']['user'] || []
-        }
+    editPlatform(isReadOnly) {
         let state = _.merge({
-            activeIndex: projectIndex,
-            projectOpen: true,
             isEdit: true,
-            isReadOnly: true
-        }, ProjectUser);
+            isReadOnly: isReadOnly,
+        }, {
+            'platformUsers': this.cachedUsers
+        });
         this.setState(state)
     }
-    editProject(isEdit) {
-        this.setState({
-            isReadOnly: isEdit
-        })
+    // editPlatform(isReadOnly) {
+    //     this.platformEdit(isReadOnly);
+    // }
+    handleCancelEdit() {
+
     }
     handleCloseProjectPanel() {
         this.setState({
@@ -223,7 +216,8 @@ export default class PlatformRoleManagementStore {
             projectOpen: true,
             isEdit: true,
             isReadOnly: true,
-            platformUsers: platformUsers
+            platformUsers: platformUsers,
+            cachedUsers: platformUsers
         });
         this.setState(state)
     }
@@ -232,15 +226,12 @@ export default class PlatformRoleManagementStore {
         this.alt.actions.global.hideScreenLoader.defer();
         this.setState({users});
     }
-    updateProjectSuccess() {
+    updatePlatformSuccess() {
         this.alt.actions.global.hideScreenLoader.defer();
-        let projects = this.projects || [];
-        projects[this.activeIndex] = {
-            'name': this['name'],
-            'description': this['description']
-        }
+        let platformUsers = this.platformUsers;
         this.setState({
-            projects,
+            platformUsers,
+            cachedUsers: platformUsers,
             isEdit: true,
             isReadOnly: true
         })
