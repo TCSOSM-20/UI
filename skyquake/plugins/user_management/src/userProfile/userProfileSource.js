@@ -17,34 +17,6 @@ if (DEV_MODE) {
 
 module.exports = function(Alt) {
     return {
-        getUsers: {
-          remote: function() {
-              return new Promise(function(resolve, reject) {
-                $.ajax({
-                  url: `/user?api_server=${API_SERVER}`,
-                  type: 'GET',
-                  beforeSend: Utils.addAuthorizationStub,
-                  success: function(data, textStatus, jqXHR) {
-                    resolve(data.user);
-                  }
-                }).fail(function(xhr){
-                  //Authentication and the handling of fail states should be wrapped up into a connection class.
-                  Utils.checkAuthentication(xhr.status);
-                  let msg = xhr.responseText;
-                  if(xhr.errorMessage) {
-                    msg = xhr.errorMessage
-                  }
-                  reject(msg);
-                });
-              });
-          },
-          interceptResponse: interceptResponse({
-            'error': 'There was an error retrieving the resource orchestrator information.'
-          }),
-          success: Alt.actions.global.getUsersSuccess,
-          loading: Alt.actions.global.showScreenLoader,
-          error: Alt.actions.global.showNotification
-        },
         updateUser: {
           remote: function(state, user) {
             return new Promise(function(resolve, reject) {
@@ -71,35 +43,6 @@ module.exports = function(Alt) {
             'error': 'There was an error updating the user.'
           }),
           success: Alt.actions.global.updateUserSuccess,
-          loading: Alt.actions.global.showScreenLoader,
-          error: Alt.actions.global.showNotification
-        },
-        deleteUser: {
-          remote: function(state, user) {
-            return new Promise(function(resolve, reject) {
-              $.ajax({
-                url: `/user/${user['user-name']}/${user['user-domain']}?api_server=${API_SERVER}`,
-                type: 'DELETE',
-                data: user,
-                beforeSend: Utils.addAuthorizationStub,
-                success: function(data, textStatus, jqXHR) {
-                  resolve(data);
-                }
-              }).fail(function(xhr){
-                //Authentication and the handling of fail states should be wrapped up into a connection class.
-                Utils.checkAuthentication(xhr.status);
-                let msg = xhr.responseText;
-                if(xhr.errorMessage) {
-                  msg = xhr.errorMessage
-                }
-                reject(msg);
-              });
-            });
-          },
-          interceptResponse: interceptResponse({
-            'error': 'There was an error deleting the user.'
-          }),
-          success: Alt.actions.global.deleteUserSuccess,
           loading: Alt.actions.global.showScreenLoader,
           error: Alt.actions.global.showNotification
         },

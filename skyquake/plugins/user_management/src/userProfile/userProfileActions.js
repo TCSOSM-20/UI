@@ -11,15 +11,10 @@ module.exports = function(Alt) {
                                        'editUser',
                                        'handleCloseUserPanel',
                                        'handleHideColumns',
-                                       'getUsersSuccess',
                                        'getUsersNotification',
                                        'handleDisabledChange',
                                        'handlePlatformRoleUpdate',
-                                       'handleAddUser',
-                                       'handleCreateUser',
                                        'handleUpdateUser',
-                                       'updateUserSuccess',
-                                       'createUserSuccess',
-                                       'deleteUserSuccess'
+                                       'updateUserSuccess'
                                        );
 }

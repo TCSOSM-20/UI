@@ -167,11 +167,6 @@ export default class UserProfileStore {
     handleUpdateUser() {
 
     }
-
-    getUsersSuccess(users) {
-        this.alt.actions.global.hideScreenLoader.defer();
-        this.setState({users});
-    }
     updateUserSuccess() {
         this.alt.actions.global.hideScreenLoader.defer();
         let users = this.users || [];
