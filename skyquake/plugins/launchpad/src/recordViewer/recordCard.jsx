@@ -369,11 +369,11 @@ export default class RecordCard extends React.Component {
           consoleUrlsTabTitle = 'VDU Console Links';
 
           tabList.push(
-            <Tab key={cardData.id + '-cp'}>{consoleUrlsTabTitle}</Tab>
+            <Tab key={cardData.id + '-vducl'}>{consoleUrlsTabTitle}</Tab>
           );
 
           tabPanels.push(
-            <TabPanel key={cardData.id + '-cp-panel'}>
+            <TabPanel key={cardData.id + '-vducl-panel'}>
               <div className="consoleUrls">
                 {consoleUrlsComponent}
               </div>
