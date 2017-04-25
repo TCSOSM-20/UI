@@ -219,7 +219,7 @@ class PlatformRoleManagement extends React.Component {
                                         <tr key={i}>
                                             {!state.isReadOnly ? <td><span
                                                                         className="removeInput"
-                                                                        onClick={self.removeUserFromProject.bind(self, u)}
+                                                                        onClick={self.removeUserFromProject.bind(self, i)}
                                                                     >
                                                                         <img src={imgRemove} />
 

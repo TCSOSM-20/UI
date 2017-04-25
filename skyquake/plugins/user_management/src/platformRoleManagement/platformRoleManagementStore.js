@@ -65,9 +65,7 @@ export default class PlatformRoleManagementStore {
         });
         this.setState(state)
     }
-    // editPlatform(isReadOnly) {
-    //     this.platformEdit(isReadOnly);
-    // }
+
     handleCancelEdit() {
 
     }
