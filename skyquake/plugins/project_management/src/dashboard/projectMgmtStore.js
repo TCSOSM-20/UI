@@ -58,9 +58,11 @@ export default class ProjectManagementStore {
             projectRoles
         });
     }
-    viewProject(data) {
+    viewProject() {
+        let data = arguments[0];
         let project = data[0];
         let projectIndex = data[1];
+        let isReadOnly = data[2];
 
         let ProjectData = {
             'name': project['name'],
@@ -71,14 +73,15 @@ export default class ProjectManagementStore {
             activeIndex: projectIndex,
             projectOpen: true,
             isEdit: true,
-            isReadOnly: true
+            isReadOnly: isReadOnly
         }, ProjectData);
         this.setState(state)
     }
-    editProject(isEdit) {
-        this.setState({
-            isReadOnly: isEdit
-        })
+    editProject(isReadOnly) {
+        this.viewProject([this.projects[this.activeIndex], this.activeIndex, isReadOnly]);
+        // this.setState({
+        //     isReadOnly: isEdit
+        // })
     }
     handleCloseProjectPanel() {
         this.setState({

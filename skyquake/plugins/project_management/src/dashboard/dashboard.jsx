@@ -76,7 +76,7 @@ class ProjectManagementDashboard extends React.Component {
         this.actions.handleAddProject();
     }
     viewProject = (un, index) => {
-        this.actions.viewProject(un, index);
+        this.actions.viewProject(un, index, true);
     }
     editProject = () => {
         this.actions.editProject(false);
