@@ -348,7 +348,7 @@ PackageManager.upload = function(req) {
             data['transaction_id'] = result[0].body['output']['transaction-id'];
 
             // Add a status checker on the transaction and then to delete the file later
-            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], true);
+            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], false);
 
             // Return status to composer UI to update the status.
             resolve({
@@ -506,7 +506,7 @@ PackageManager.copy = function(req) {
 }
 
 /**
- * This methods retrieves the status of package operations. It takes an optional 
+ * This methods retrieves the status of package operations. It takes an optional
  * transaction id (id) this if present will return only that status otherwise
  * an array of status' will be response.
  */
