@@ -132,6 +132,10 @@ class UserManagementDashboard extends React.Component {
             let newOne = state['new-password'];
             let confirmOne = state['confirm-password'];
             if(true) {
+                if(!oldOne || !newOne) {
+                     self.props.actions.showNotification('Please fill in all fields.');
+                    return false;
+                }
                 if(oldOne == newOne) {
                     self.props.actions.showNotification('Your new password must not match your old one');
                     return false;
