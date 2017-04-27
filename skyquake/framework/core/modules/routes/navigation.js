@@ -42,12 +42,27 @@ Router.get('/login.html', cors(), function(req, res) {
 	res.end();
 });
 
-Router.get('/', cors(), function(req, res) {
+Router.use(/^\/(?!session).*/, function(req, res, next) {
 	var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
 	if (req.session && req.session.loggedIn) {
-		console.log('Logged in. Redirect to launchpad');
-		if(req.params.referer) {
-			res.redirect(req.params.referer);
+		next();
+	} else {
+		console.log('Redirect to login.html');
+		res.redirect('/login.html?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname)  + '&referer=' + encodeURIComponent(req.headers.referer));
+	}
+});
+
+Router.use(function(req, res, next) {
+	var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
+	if (req.session.redirect) {
+		req.session.redirect = false;
+        req.session.save(function(err) {
+            if (err) {
+                console.log('Error saving session to store', err);
+            }
+        });
+		if(req.query.referer && (req.query.referer != "undefined")) {
+			res.redirect(decodeURIComponent(req.query.referer));
 		}  else {
 			if(req.session.isLCM) {
 				res.redirect('/launchpad/?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname));
@@ -56,8 +71,7 @@ Router.get('/', cors(), function(req, res) {
 			}
 		}
 	} else {
-		console.log('Redirect to login.html');
-		res.redirect('login.html?api_server=' + api_server + '&upload_server=' + req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname)  + '&referer=' + req.headers.referer);
+		next();
 	}
 });
 

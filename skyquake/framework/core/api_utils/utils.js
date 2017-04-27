@@ -196,6 +196,9 @@ if (process.env.LOG_REQUESTS) {
  * @param {Function} res - a handle to the express response function
  */
 var sendErrorResponse = function(error, res) {
+	if (!error.statusCode) {
+		console.error('Status Code has not been set in error object: ', error);
+	}
 	res.status(error.statusCode);
 	res.send(error);
 }

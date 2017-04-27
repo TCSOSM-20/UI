@@ -70,21 +70,27 @@ UserManagement.getProfile = function(req) {
     var api_server = req.query['api_server'];
     return new Promise(function(resolve, reject) {
         var response = {};
-        var userId = req.session.userdata.username
-        response['data'] = {
-            userId: userId,
-            projectId: req.session.projectId
-        };
-        UserManagement.getUserInfo(req, userId).then(function(result) {
-            response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK;
-            response.data.data =result.data
-            resolve(response);
-        }, function(error) {
-            console.log('Error retrieving getUserInfo');
+        try {
+            var userId = req.session.userdata.username
+            response['data'] = {
+                userId: userId,
+                projectId: req.session.projectId
+            };
+            UserManagement.getUserInfo(req, userId).then(function(result) {
+                response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK;
+                response.data.data = result.data
+                resolve(response);
+            }, function(error) {
+                console.log('Error retrieving getUserInfo');
+                response.statusCode = constants.HTTP_RESPONSE_CODES.ERROR.INTERNAL_SERVER_ERROR;
+                reject(response);
+            })
+        } catch (e) {
+            response.data.data = e;
             response.statusCode = constants.HTTP_RESPONSE_CODES.ERROR.INTERNAL_SERVER_ERROR;
             reject(response);
-        })
-
+            reject()
+        }
     });
 };
 UserManagement.getUserInfo = function(req, userId, domain) {

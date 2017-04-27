@@ -75,6 +75,7 @@ $(document).ready(function() {
     var username;
     var pass;
     var api_server = getSearchParams(window.location).api_server;
+    var referer = getSearchParams(window.location).referer;
     $('#submit').click(function() {
         username=$('#username').val();
         pass=$('#password').val();
@@ -89,7 +90,7 @@ $(document).ready(function() {
                 password: pass
             },
             success: function(data) {
-                window.location.href='/?api_server=' + api_server;
+                window.location.href='/?api_server=' + api_server + '&referer=' + referer;
             }
         });
     });

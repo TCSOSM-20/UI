@@ -46,7 +46,7 @@ function logAndRedirectToLogin(mesg, res, req) {
     var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
     var upload_server = req.protocol + '://' + (configurationAPI.globalConfiguration.get().upload_server || req.hostname);
     console.log(mesg);
-    res.redirect('login.html?api_server=' + api_server + '&upload_server=' + upload_server + '&referer=' + req.headers.referer);
+    res.redirect('login.html?api_server=' + api_server + '&upload_server=' + upload_server + '&referer=' + encodeURIComponent(req.headers.referer));
     res.end();
 }
 
@@ -124,6 +124,7 @@ sessionsAPI.create = function(req, res) {
                 username: username,
                 // project: req.session.projectId
             };
+            req.session.redirect = true;
             var successMsg = 'User => ' + username + ' successfully logged in.';
             successMsg += req.session.projectId ? 'Project => ' + req.session.projectId + ' set as default.' : '';
 
