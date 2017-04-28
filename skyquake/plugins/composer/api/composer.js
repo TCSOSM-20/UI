@@ -523,6 +523,9 @@ PackageManager.getJobStatus = function(req) {
     })
 }
 
+function makeAssetTypeParamName (type) {
+    return type.toLowerCase() + '-file-type';
+}
 FileManager.addFile = function(req) {
     console.log(' Uploading file', req.file.originalname, 'as', req.file.filename);
     var api_server = req.query['api_server'];
@@ -530,15 +533,17 @@ FileManager.addFile = function(req) {
     var package_id = req.query['package_id'];
     var package_type = req.query['package_type'].toUpperCase();
     var package_path = req.query['package_path'];
-    if (!download_host) {
+     if (!download_host) {
         download_host = req.protocol + '://' + req.get('host');//api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
     var input = {
         'external-url': download_host + '/composer/upload/' + req.query['package_id'] + '/' + req.file.filename,
         'package-type': package_type,
         'package-id': package_id,
-        'package-path': package_path + '/' + req.file.filename
+        'package-path': package_path ? package_path + '/' + req.file.filename : req.file.filename
     }
+    var assetType = req.query['asset_type'].toUpperCase();
+    input[makeAssetTypeParamName(package_type)] = assetType;
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
@@ -580,16 +585,17 @@ FileManager.get = function(req) {
     var id = req.query['package_id'];
     var downloadUrl = req.query['url'];
     var path = req.query['package_path'];
-    var payload = {
-        "input": {
-            "package-type": type,
-            "package-id": id
-        }
+    var assetType = req.query['asset_type'];
+    var input = {
+        "package-type": type,
+        "package-id": id
     }
+    var payload = {input: input};
     if(req.method == 'GET') {
         if(downloadUrl && path) {
             payload.input['external-url'] = downloadUrl;
             payload.input['package-path'] = path;
+            payload.input[makeAssetTypeParamName(type)] = assetType;
             return download(payload);
         } else {
             return list(payload);
@@ -597,6 +603,7 @@ FileManager.get = function(req) {
     }
     if(req.method == 'DELETE') {
         payload.input['package-path'] = path;
+        payload.input[makeAssetTypeParamName(type)] = assetType;
         return deleteFile(payload)
     }
 
