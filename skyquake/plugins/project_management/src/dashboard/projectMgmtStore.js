@@ -177,23 +177,8 @@ export default class ProjectManagementStore {
             if (!projectUsers[userIndex].role) {
                 projectUsers[userIndex].role = [];
             }
-            if (!projectUsers[userIndex]['rw-project-mano:mano-role']) {
-                projectUsers[userIndex]['rw-project-mano:mano-role'] = [];
-            }
-            switch (ROLES.PROJECT.TYPE[self.roles[roleIndex]]) {
-                case 'rw-project' :
-                    projectUsers[userIndex].role.push({
-                        role: selectedRole
-                    });
-                    break;
-                case 'rw-project-mano' :
-                    projectUsers[userIndex]["rw-project-mano:mano-role"].push({
-                        role: selectedRole
-                    });
-                    break;
-            }
             projectUsers[userIndex].role.push({
-                role: selectedRole
+                role: self.roles[roleIndex]
             })
         } else {
             let role = projectUsers[userIndex].role;

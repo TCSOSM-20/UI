@@ -20,7 +20,7 @@ import SelectOption from 'widgets/form_controls/selectOption.jsx';
 import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../node_modules/open-iconic/svg/trash.svg'
-
+import _  from 'lodash';
 import ROLES from 'utils/roleConstants.js';
 const PROJECT_ROLES = ROLES.PROJECT;
 const PLATFORM = ROLES.PLATFORM;
@@ -118,18 +118,18 @@ class ProjectManagementDashboard extends React.Component {
         let self = this;
         e.preventDefault();
         e.stopPropagation();
-         let projectName = self.state['name'];
-        let projectUsers = self.state.projectUsers;
+        let projectName = self.state['name'];
+        let projectUsers = _.cloneDeep(self.state.projectUsers);
         let cleanUsers = this.cleanUsers(projectUsers, projectName);
 
 
-        this.Store.updateProject(_.merge({
+        this.Store.updateProject({
             'name': projectName,
             'description': self.state.description,
             'project-config' : {
                 'user': cleanUsers
             }
-        }));
+        });
     }
     cleanUsers(projectUsers, projectName) {
         let cleanUsers = [];
