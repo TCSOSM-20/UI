@@ -168,7 +168,7 @@ class ComposerAppStore {
 			showDescriptor: ComposerAppActions.showDescriptor,
 			getFilelistSuccess: FileManagerActions.getFilelistSuccess,
 			updateFileLocationInput: FileManagerActions.updateFileLocationInput,
-			sendDownloadFileRequst: FileManagerActions.sendDownloadFileRequst,
+			sendDownloadFileRequest: FileManagerActions.sendDownloadFileRequest,
 			addFileSuccess: FileManagerActions.addFileSuccess,
 			deletePackageFile: FileManagerActions.deletePackageFile,
 			deleteFileSuccess: FileManagerActions.deleteFileSuccess,
@@ -485,7 +485,7 @@ class ComposerAppStore {
         if (self.fileMonitoringSocketID) {
         	let newState = {};
         	if(data.hasOwnProperty('contents')) {
-        		filesState = addInputState( _cloneDeep(this.filesState),data);
+        		filesState = updateFileState( _cloneDeep(this.filesState),data);
 				let normalizedData = normalizeTree(data);
 				newState = {
 					files: {
@@ -511,7 +511,6 @@ class ComposerAppStore {
 				id:[],
 				data:{}
 			};
-			data.contents.map(getContents);
 			function getContents(d) {
 				if(d.hasOwnProperty('contents')) {
 					let contents = [];
@@ -526,25 +525,26 @@ class ComposerAppStore {
 					f.data[d.name] = contents;
 				}
 			}
+			getContents(data);
  			return f;
 		}
-		function addInputState(obj, d) {
+		function updateFileState(obj, d) {
 			d.newFile = '';
 			if(d.hasOwnProperty('contents')) {
-				d.contents.map(addInputState.bind(null, obj))
+				d.contents.map(updateFileState.bind(null, obj))
 			}
-			if(!obj[d.name]) {
-				obj[d.name] = '';
-			}
+			// override any "pending" state we may have initialized
+			obj[d.name] = '';
 			return obj;
 		}
 	}
-	sendDownloadFileRequst(data) {
+	sendDownloadFileRequest(data) {
 		let id = data.id || this.item.id;
 		let type = data.type || this.item.uiState.type;
+		let assetType = data.assetType;
 		let path = data.path;
 		let url = data.url;
-		this.getInstance().addFile(id, type, path, url, data.refresh);
+		this.getInstance().addFile(id, type, assetType, path, url, data.refresh);
 	}
 	updateFileLocationInput = (data) => {
 		let name = data.name;
@@ -558,13 +558,27 @@ class ComposerAppStore {
 	addFileSuccess = (data) => {
 		if(!data.refresh) {
 			let path = data.path;
+			if (path.startsWith('readme')) {
+				// this asset type stuff should be in a more common location
+				// this is a wee bit of a hack till it is
+				path = '.' + path.slice(6);
+			}
 			let fileName = data.fileName;
 			let files = _cloneDeep(this.files);
-			let loadingIndex = files.data[path].push({
-				status: 'DOWNLOADING',
-				name: path + '/' + fileName
-			}) - 1;
-			this.setState({files: files});
+			let assetGroup = files.data[path] || [];
+			if (fileName) {
+				let name = path + '/' + fileName;
+				if (assetGroup.findIndex(f => f.name === name) == -1){
+					assetGroup.push({name});
+				}
+			}
+			files.data[path] = assetGroup;
+			if (files.id.indexOf(path) == -1){
+				files.id.push(path);
+			}
+			let filesState = _cloneDeep(this.filesState);
+			filesState[name] = "DOWNLOADING";
+			this.setState({files, filesState});
 		}
 
 	}
@@ -634,6 +648,11 @@ class ComposerAppStore {
 		}
 
 		this.setState({
+			filesState: [],
+			files: {
+				id:[],
+				data:{}
+			},
 			fileMonitoringSocketID: id,
 			fileMonitoringSocket: ws
 		})
@@ -663,19 +682,28 @@ class ComposerAppStore {
 	endWatchingJob(id) {
 
 	}
-	deletePackageFile(name) {
+	deletePackageFile(asset) {
+		let {assetType, path} = asset;
 		let id = this.item.id;
 		let type = this.item.uiState.type;
-		this.getInstance().deleteFile(id, type, name);
+		this.getInstance().deleteFile(id, type, assetType, path);
 	}
 	deleteFileSuccess = (data) => {
-		let path = data.path.split('/')
+		let name = null;
+		let path = null;
+		if (data.assetFolder === 'readme'){
+			// freak'n root folder is special
+			name = data.path;
+			path = ['.'];
+		} else {
+			name = data.assetFolder + '/' + data.path;
+			path = name.split('/');
+			path.pop();
+		}
 		let files = _cloneDeep(this.files);
-		path.pop();
-		path = path.join('/');
-		let pathFiles = files.data[path]
-		_remove(pathFiles, function(c) {
-			return c.name == data.path;
+		let filesForPath = files.data[path.join('/')]
+		_remove(filesForPath, function(c) {
+			return c.name == name;
 		});
 
 		this.setState({
@@ -697,12 +725,13 @@ class ComposerAppStore {
 			newPathName: value
 		})
 	}
-	createDirectory = () => {
+	createDirectory = (assetType) => {
 		console.log(this.newPathName);
-		this.sendDownloadFileRequst({
+		this.sendDownloadFileRequest({
 			id: this.item.id,
 			type: this.item.uiState.type,
-			path: this.item.name + '/' + this.newPathName,
+			assetType: assetType,
+			path: this.newPathName,
 			url: utils.getSearchParams(window.location).dev_download_server || window.location.protocol + '//' + window.location.host,
 			refresh: true
 		});

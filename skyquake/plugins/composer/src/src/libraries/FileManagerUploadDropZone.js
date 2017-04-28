@@ -40,17 +40,26 @@ function getCatalogPackageManagerServerOrigin() {
 	return window.location.origin;
 }
 
-function initializeDropZone(element = '#dropzone', button = false, action = ACTIONS.onboard, type, id, path) {
+function initializeDropZone(element = '#dropzone', button = false, action = ACTIONS.onboard, getUploadProps) {
 	let Auth = 'Basic ' + window.sessionStorage.getItem("auth");
 	let dev_download_server = Utils.getSearchParams(window.location).dev_download_server;
 	DropZone.autoDiscover = false;
 	return new DropZone(element, {
 		paramName: 'package',
 		url() {
+			let {packageType, packageId, assetGroup, path} = getUploadProps();
 			if (action === ACTIONS.update) {
 				return getCatalogPackageManagerServerOrigin() + '/api/update';
 			}
-			return getCatalogPackageManagerServerOrigin() + '/composer/api/file-manager?api_server=' + Utils.getSearchParams(window.location).api_server + '&package_type=' + type + '&package_id=' + id + '&package_path=' + path + ( dev_download_server ? '&dev_download_server=' + dev_download_server : '');
+			let url = getCatalogPackageManagerServerOrigin() 
+				+ '/composer/api/file-manager?api_server=' 
+				+ Utils.getSearchParams(window.location).api_server 
+				+ '&package_type=' + packageType 
+				+ '&package_id=' + packageId 
+				+ '&package_path=' + path 
+				+ '&asset_type=' + assetGroup.id
+				+ ( dev_download_server ? '&dev_download_server=' + dev_download_server : '');
+			return url;
 		},
 		headers: {
 			'Authorization': Auth
@@ -61,11 +70,12 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 		previewTemplate: '',
 		sending(file, xhr, formData) {
 			// NOTE ie11 does not get this form data
+			let {packageType, packageId, assetGroup, path} = getUploadProps();
 			formData.append('id', file.id);
 			FileManagerActions.addFileSuccess({
-				fileName: file.name,
-				path: path
-			})
+				path: assetGroup.folder + (path ? '/' + path: ''),
+				fileName: file.name
+			});
 		},
 		error(file, errorMessage) {
 			const response = {
@@ -119,10 +129,10 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 	});
 }
 
-export default class CatalogPackageManagerUploadDropZone {
+export default class FileManagerUploadDropZone {
 
-	constructor(element, button, action, type, id, path) {
-		this.dropZone = initializeDropZone(element, button, action, type, id, path);
+	constructor(element, button, action, getUploadProps) {
+		this.dropZone = initializeDropZone(element, button, action, getUploadProps);
 	}
 
 	static get ACTIONS() {
