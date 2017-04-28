@@ -16,7 +16,9 @@ export default class ProjectManagementStore {
         this.projectUsers = [];
         this.selectedUser = null;
         this.selectedRole = null;
-        this.roles = Object.keys(ROLES.PROJECT).map((p) => {
+        this.roles = Object.keys(ROLES.PROJECT).filter((p) => {
+            return p != "TYPE";
+        }).map((p) => {
             return ROLES.PROJECT[p];
         })
         // this.roles = ['rw-project:project-admin', 'rw-project:project-oper', 'rw-project:project-create'];
@@ -172,9 +174,26 @@ export default class ProjectManagementStore {
         let projectUsers = this.projectUsers;
         let selectedRole = self.roles[roleIndex];
         if(checked) {
-            if(!projectUsers[userIndex].role) projectUsers[userIndex].role = [];
+            if (!projectUsers[userIndex].role) {
+                projectUsers[userIndex].role = [];
+            }
+            if (!projectUsers[userIndex]['rw-project-mano:mano-role']) {
+                projectUsers[userIndex]['rw-project-mano:mano-role'] = [];
+            }
+            switch (ROLES.PROJECT.TYPE[self.roles[roleIndex]]) {
+                case 'rw-project' :
+                    projectUsers[userIndex].role.push({
+                        role: selectedRole
+                    });
+                    break;
+                case 'rw-project-mano' :
+                    projectUsers[userIndex]["rw-project-mano:mano-role"].push({
+                        role: selectedRole
+                    });
+                    break;
+            }
             projectUsers[userIndex].role.push({
-                role: self.roles[roleIndex]
+                role: selectedRole
             })
         } else {
             let role = projectUsers[userIndex].role;

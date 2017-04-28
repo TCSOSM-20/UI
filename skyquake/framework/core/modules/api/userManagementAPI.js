@@ -141,6 +141,9 @@ UserManagement.getUserInfo = function(req, userId, domain) {
                             u.role && u.role.map(function(r) {
                                 userData.project[p.name].role[r.role] = true
                             });
+                            u["rw-project-mano:mano-role"] && u["rw-project-mano:mano-role"] .map(function(r) {
+                                userData.project[p.name].role[r.role] = true
+                            });
                         }
                     })
                 });

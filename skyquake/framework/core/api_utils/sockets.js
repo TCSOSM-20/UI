@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -295,7 +295,11 @@ function PollingSocket(url, req, interval, config) {
         console.log('Error polling: ' + url);
       } else {
         if (!self.isClosed) {
-          self.poll = setTimeout(pollServer, 1000 || interval);
+          if(process.env.DISABLE_POLLING != "TRUE") {
+            self.poll = setTimeout(pollServer, 1000 || interval);
+          } else {
+            console.log('Polling is disabled. Finishing request.')
+          }
           var data = response.body;
           if (self.onmessage) {
             self.onmessage(data);

@@ -136,17 +136,21 @@ class ProjectManagementDashboard extends React.Component {
         //Remove null values from role
         projectUsers.map((u) => {
             let cleanRoles = [];
+            let cleanManoRoles = [];
            u.role && u.role.map((r,i) => {
              let role = {};
              //you may add a user without a role or a keys, but if one is present then the other must be as well.
-            if(!r.role ) {
-            } else {
+            if(r.role ) {
                 delete r.keys;
-                    // r.keys = projectName;
-                    cleanRoles.push(r)
+                // r.keys = projectName;
+                switch(ROLES.PROJECT.TYPE[r.role]) {
+                    case 'rw-project-mano' : cleanManoRoles.push(r); break;
+                    case 'rw-project' : cleanRoles.push(r); break;
+                }
             }
            });
            u.role = cleanRoles;
+           u["rw-project-mano:mano-role"] = cleanManoRoles
            cleanUsers.push(u);
         });
         return cleanUsers;
@@ -174,13 +178,6 @@ class ProjectManagementDashboard extends React.Component {
     }
     removeUserFromProject = (userIndex, e) => {
         this.actions.handleRemoveUserFromProject(userIndex);
-    }
-    updateUserRoleInProject = (userIndex, roleIndex, e) => {
-        this.actions.handleUpdateUserRoleInProject({
-            userIndex,
-            roleIndex,
-            value: JSON.parse(e.target.value)
-        })
     }
     toggleUserRoleInProject = (userIndex, roleIndex, e) => {
         this.actions.handleToggleUserRoleInProject({
