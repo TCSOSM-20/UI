@@ -13,8 +13,8 @@ c.PROJECT = {
     LCM_ADMIN: "rw-project-mano:lcm-admin",
     ACCOUNT_OPER: "rw-project-mano:account-oper",
     ACCOUNT_ADMIN: "rw-project-mano:account-admin",
-    PROJECT_ADMIN: "rw-project:project-admin",
     PROJECT_OPER: "rw-project:project-oper",
+    PROJECT_ADMIN: "rw-project:project-admin"
 }
 
 module.exports = c;
