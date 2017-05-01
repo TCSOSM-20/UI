@@ -322,9 +322,13 @@ class ProjectManagementDashboard extends React.Component {
                             <tbody>
                                 {
                             state.projectUsers.map((u,i)=> {
-                                let userRoles = u.role && u.role.map((r) => {
-                                    return r.role;
-                                }) || [];
+                                let userRoles = []
+                                u.role && u.role.map((r) => {
+                                    userRoles.push(r.role);
+                                });
+                                u["rw-project-mano:mano-role"] && u["rw-project-mano:mano-role"].map((r) => {
+                                    userRoles.push(r.role);
+                                });
                                 return (
                                     <tr key={i}>
                                         {!state.isReadOnly ? <td><span

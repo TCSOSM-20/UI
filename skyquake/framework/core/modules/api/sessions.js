@@ -104,7 +104,7 @@ sessionsAPI.create = function(req, res) {
                     project['project-config']['user'].map(function(user) {
                         if (user['user-name'] == username) {
                             project_list_for_user.push(project);
-                            user.role.map(function(role) {
+                            user['rw-project-mano:mano-role'] && user['rw-project-mano:mano-role'].map(function(role) {
                                 if(role.role.indexOf('rw-project-mano:lcm') > -1) {
                                     isLCM = true;
                                 }
