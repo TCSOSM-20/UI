@@ -140,7 +140,7 @@ class ProjectManagementDashboard extends React.Component {
            u.role && u.role.map((r,i) => {
              let role = {};
              //you may add a user without a role or a keys, but if one is present then the other must be as well.
-            if(r.role ) {
+            if(r.role) {
                 delete r.keys;
                 // r.keys = projectName;
                 switch(ROLES.PROJECT.TYPE[r.role]) {
@@ -150,7 +150,8 @@ class ProjectManagementDashboard extends React.Component {
             }
            });
            u.role = cleanRoles;
-           u["rw-project-mano:mano-role"] = cleanManoRoles
+           u["rw-project-mano:mano-role"] = u["rw-project-mano:mano-role"] || [];
+           u["rw-project-mano:mano-role"] = u["rw-project-mano:mano-role"].concat(cleanManoRoles);
            cleanUsers.push(u);
         });
         return cleanUsers;

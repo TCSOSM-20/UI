@@ -65,7 +65,7 @@ SkyquakeRBAC.contextTypes = {
 function checkForRoleAccess(project, PlatformRole, allow) {
     if (allow.indexOf('*') > -1) return true;
     for (let i = 0; i<allow.length; i++) {
-      if((project && project.role[allow[i]] )|| PlatformRole[allow[i]]) {
+      if((project && project.role[allow[i]])|| PlatformRole[allow[i]]) {
         return true
       }
     }

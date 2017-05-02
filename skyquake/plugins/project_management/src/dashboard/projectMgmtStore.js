@@ -69,7 +69,7 @@ export default class ProjectManagementStore {
         let ProjectData = {
             'name': project['name'],
             'description': project['description'],
-            'projectUsers': project['project-config'] && project['project-config']['user'] || []
+            'projectUsers': (project['project-config'] && project['project-config']['user'] || [])
         }
         let state = _.merge({
             activeIndex: projectIndex,
@@ -173,17 +173,19 @@ export default class ProjectManagementStore {
         let {userIndex, roleIndex, checked} = data;
         let projectUsers = this.projectUsers;
         let selectedRole = self.roles[roleIndex];
+        let roleType = (ROLES.PROJECT.TYPE[selectedRole] == 'rw-project-mano') ? "rw-project-mano:mano-role" : "role";
+        //
         if(checked) {
-            if (!projectUsers[userIndex].role) {
-                projectUsers[userIndex].role = [];
+            if (!projectUsers[userIndex][roleType]) {
+                projectUsers[userIndex][roleType] = [];
             }
-            projectUsers[userIndex].role.push({
+            projectUsers[userIndex][roleType].push({
                 role: self.roles[roleIndex]
             })
         } else {
-            let role = projectUsers[userIndex].role;
+            let role = projectUsers[userIndex][roleType];
             let roleIndex = _.findIndex(role, {role:selectedRole})
-            projectUsers[userIndex].role.splice(roleIndex, 1)
+            projectUsers[userIndex][roleType].splice(roleIndex, 1)
         }
        self.setState({projectUsers});
 
