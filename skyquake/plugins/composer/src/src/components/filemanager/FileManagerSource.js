@@ -57,20 +57,29 @@ const FileManagerSource = {
     },
     addFile: function() {
         return {
-            remote: function(state, id, type, path, url, refresh) {
+            remote: function(state, id, type, assetType, path, url, refresh) {
                 return new Promise(function(resolve, reject) {
                     console.log('Adding file');
                     console.log(id, type, path, url);
                     let splitUrl = url.split('/');
                     let fileName = splitUrl[splitUrl.length -1];
-                    let packagePath = refresh ? path + ((path[path.length - 1] == '/') ? '' : '/') : path + '/' + fileName;
+                    let packagePath = refresh ? path + ((path[path.length - 1] == '/') ? '' : '/') : (path ? path + '/' + fileName : fileName);
+                    let assetFolder = assetType.toLowerCase();
                     $.ajax({
-                        beforeSend: Utils.addAuthorizationStub,
-                        url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&package_path=' + packagePath + '&url=' + url,
+                        beforeSend: (xhr) => {
+                                Utils.addAuthorizationStub(xhr);
+                                // lets get the buzy graphic rolling
+                                FileManagerActions.addFileSuccess.defer({
+                                                path: assetFolder + (path ? '/' + path: ''),
+                                                fileName: fileName,
+                                                refresh: refresh
+                                            });                            
+                            },
+                        url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&package_path=' + packagePath + '&asset_type=' + assetType + '&url=' + url,
                         success: function(data) {
                             resolve({
-                                data:data,
-                                path: path,
+                                data: data,
+                                path: assetFolder + (path ? '/' + path: ''),
                                 fileName: fileName,
                                 refresh: refresh
                             });
@@ -93,33 +102,25 @@ const FileManagerSource = {
     },
     deleteFile: function() {
         return {
-            remote: function(state, id, type, path) {
+            remote: function(state, id, type, assetType, path) {
+                let assetFolder = assetType.toLowerCase();
                 return new Promise(function(resolve, reject) {
                     $.ajax({
                         method: 'DELETE',
                         beforeSend: Utils.addAuthorizationStub,
-                        url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&package_path=' + path ,
+                        url: 'api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id + '&asset_type=' + assetType + '&package_path=' + path ,
                         success: function(data) {
                             if (data.output.status == 'True') {
-                                resolve({
-                                    data: data,
-                                    path: path
-                                });
+                                resolve({data, assetFolder, path});
                             } else {
-                                reject({
-                                    data: data,
-                                    path: path
-                                })
+                                reject({data, assetFolder, path})
                             }
                         },
                         error: function(error) {
                             if (typeof error == 'string') {
                                 error = JSON.parse(error);
                             }
-                            reject({
-                                path: path,
-                                data: error
-                            });
+                            reject({data, assetFolder, path});
                         }
                     }).fail(function(xhr){
                         //Authentication and the handling of fail states should be wrapped up into a connection class.
