@@ -37,23 +37,6 @@ var UPLOAD_SERVER = rw.getSearchParams(window.location).upload_server;
 // Internal classes/functions
 //
 
-class LogoutAppMenuItem extends React.Component {
-    handleLogout() {
-        Utils.clearAuthentication();
-    }
-    render() {
-        return (
-            <div className="app">
-                <h2>
-                    <a onClick={this.handleLogout}>
-                        Logout
-                    </a>
-                </h2>
-            </div>
-        );
-    }
-}
-
 class SelectProject extends React.Component {
     constructor(props) {
         super(props);

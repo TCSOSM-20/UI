@@ -5,6 +5,7 @@
     "order": 1,
     "priority":2,
     "admin_link": true,
+    "allow": ["rw-rbac-platform:super-admin", "rw-rbac-platform:platform-admin"],
     "routes": [
         {
             "label": "Logging",

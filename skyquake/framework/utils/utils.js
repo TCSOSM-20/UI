@@ -185,26 +185,7 @@ Utils.getPacketDataWithUnitPrefix = function(number, precision) {
     }
 }
 Utils.loginHash = "#/login";
-Utils.setAuthentication = function(username, password, cb) {
-    var self = this;
-    var AuthBase64 = btoa(username + ":" + password);
-    window.sessionStorage.setItem("auth", AuthBase64);
-    self.detectInactivity();
-    $.ajax({
-            url: '//' + window.location.hostname + ':' + window.location.port + '/check-auth?api_server=' + API_SERVER,
-            type: 'GET',
-            beforeSend: Utils.addAuthorizationStub,
-            success: function(data) {
-              //console.log("LoggingSource.getLoggingConfig success call. data=", data);
-                if (cb) {
-                    cb();
-                };
-            },
-            error: function(data) {
-                Utils.clearAuthentication();
-            }
-          });
-}
+
 Utils.clearAuthentication = function(callback) {
     var self = this;
     window.sessionStorage.removeItem("auth");
