@@ -104,14 +104,21 @@ ProjectManagement.create = function(req) {
     });
 };
 ProjectManagement.update = function(req) {
+    //"rw-project:project"
     var self = this;
     var api_server = req.query['api_server'];
     var bodyData = req.body;
-    data = bodyData['project-config']
+    var data = {
+        "rw-project:project" : {
+            "name": bodyData.name,
+            "description": bodyData.description,
+            "project-config": bodyData['project-config']
+        }
+    }
     var updateTasks = [];
 
     var updateProject= rp({
-                uri: utils.confdPort(api_server) + '/api/config/project/' + bodyData.name + '/project-config',
+                uri: utils.confdPort(api_server) + '/api/config/project/',
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization
