@@ -41,8 +41,8 @@ Router.get('/login.html', cors(), function(req, res) {
 	res.render('login.html');
 	res.end();
 });
-
-Router.use(/^\/(?!session).*/, function(req, res, next) {
+//Should have a way of adding excluded routes to this via plugin registry, instead of hard coding
+Router.use(/^(?!.*(session|composer\/upload|composer\/update)).*/, function(req, res, next) {
 	var api_server = req.query['api_server'] || (req.protocol + '://' + configurationAPI.globalConfiguration.get().api_server);
 	if (req.session && req.session.loggedIn) {
 		next();

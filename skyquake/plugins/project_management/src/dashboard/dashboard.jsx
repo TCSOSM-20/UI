@@ -132,6 +132,7 @@ class ProjectManagementDashboard extends React.Component {
         });
     }
     cleanUsers(projectUsers, projectName) {
+        let self = this;
         let cleanUsers = [];
         //Remove null values from role
         projectUsers.map((u) => {
@@ -152,7 +153,9 @@ class ProjectManagementDashboard extends React.Component {
            u.role = cleanRoles;
            u["rw-project-mano:mano-role"] = u["rw-project-mano:mano-role"] || [];
            u["rw-project-mano:mano-role"] = u["rw-project-mano:mano-role"].concat(cleanManoRoles);
-           cleanUsers.push(u);
+           if (u['user-name'] != self.context.userProfile.userId) {
+                cleanUsers.push(u);
+           }
         });
         return cleanUsers;
     }
@@ -390,7 +393,8 @@ class ProjectManagementDashboard extends React.Component {
 }
 // onClick={this.Store.update.bind(null, Account)}
 ProjectManagementDashboard.contextTypes = {
-    router: React.PropTypes.object
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 };
 
 ProjectManagementDashboard.defaultProps = {
