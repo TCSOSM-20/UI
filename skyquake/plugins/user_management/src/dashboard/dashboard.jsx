@@ -19,6 +19,7 @@ import SelectOption from 'widgets/form_controls/selectOption.jsx';
 import 'widgets/form_controls/formControls.scss';
 import imgAdd from '../../node_modules/open-iconic/svg/plus.svg'
 import imgRemove from '../../node_modules/open-iconic/svg/trash.svg';
+import {merge} from 'lodash';
 
 import ROLES from 'utils/roleConstants.js';
 const PLATFORM = ROLES.PLATFORM;
@@ -107,6 +108,12 @@ class UserManagementDashboard extends React.Component {
         if(this.state['new-password'] != this.state['confirm-password']) {
             this.props.actions.showNotification('Passwords do not match')
         } else {
+            let isDisabled = {};
+            if (this.state.disabled == "TRUE") {
+                let isDisabled = {
+                    disabled: [null]
+                }
+            }
             this.Store.createUser({
                 'user-name': this.state['user-name'],
                 'user-domain': this.state['user-domain'],
@@ -121,22 +128,35 @@ class UserManagementDashboard extends React.Component {
         e.stopPropagation();
         let validatedPasswords = validatePasswordFields(this.state);
         if(validatedPasswords) {
+            let isDisabled = {};
+            let password = {};
+            if (self.state.disabled == "TRUE") {
+                isDisabled = {
+                    disabled: [null]
+                }
+            }
+            if (this.state['new-password'] != '') {
+                password = {'password': this.state['new-password']}
+            } else {
+                password = {
+                    'password': this.state.currentPassword
+                }
+            }
             this.Store.updateUser(_.merge({
                             'user-name': this.state['user-name'],
-                            'user-domain': this.state['user-domain'],
-                            'password': this.state['new-password']
-                        }));
+                            'user-domain': this.state['user-domain']
+                        }, _.merge(isDisabled, password)));
         }
         function validatePasswordFields(state) {
             let oldOne = state['old-password'];
             let newOne = state['new-password'];
             let confirmOne = state['confirm-password'];
             if(true) {
-                if(!oldOne || !newOne) {
-                     self.props.actions.showNotification('Please fill in all fields.');
-                    return false;
-                }
-                if(oldOne == newOne) {
+                // if(!oldOne || !newOne) {
+                //      self.props.actions.showNotification('Please fill in all fields.');
+                //     return false;
+                // }
+                if((oldOne || newOne) && (oldOne == newOne)) {
                     self.props.actions.showNotification('Your new password must not match your old one');
                     return false;
                 }
@@ -172,12 +192,7 @@ class UserManagementDashboard extends React.Component {
     disableChange = (e) => {
         let value = e.target.value;
         value = value.toUpperCase();
-        if (value=="TRUE") {
-            value = true;
-        } else {
-            value = false;
-        }
-        console.log(value)
+        this.actions.handleDisabledChange(value);
     }
     render() {
         let self = this;
@@ -280,6 +295,13 @@ class UserManagementDashboard extends React.Component {
                                         : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
                                 }
                                 <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
+                                <Input
+                                    type="radiogroup"
+                                    onChange={this.disableChange}
+                                    label="Disabled"
+                                    value={this.state.disabled}
+                                    options={["TRUE","FALSE"]}
+                                    readonly={state.isReadOnly} />
                             </FormSection>
                             <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
                                 <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />

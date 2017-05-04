@@ -12,7 +12,7 @@ export default class UserManagementStore {
         this.users = [];
         this['user-name'] = '';
         this['user-domain'] = 'system';
-        this.disabled = false;
+        this.disabled = "FALSE";
         this.platformRoles = {
             super_admin: false,
             platform_admin: false,
@@ -70,8 +70,9 @@ export default class UserManagementStore {
             'user-name': user['user-name'],
             'user-domain': user['user-domain'],
             platformRoles: user.platformRoles || this.platformRoles,
-            disabled: user.disabled || this.disabled,
-            projectRoles: user.projectRoles || this.projectRoles
+            disabled: user.hasOwnProperty('disabled').toString().toUpperCase(),
+            projectRoles: user.projectRoles || this.projectRoles,
+            currentPassword: user.password
         }
         let state = _.merge({
             activeIndex: userIndex,
@@ -168,6 +169,9 @@ export default class UserManagementStore {
     }
     handleCreateUser() {
 
+    }
+    handleDisabledChange(value) {
+        this.disabled = value;
     }
     handleUpdateUser() {
 
