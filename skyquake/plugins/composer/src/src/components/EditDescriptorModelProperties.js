@@ -531,7 +531,7 @@ export default function EditDescriptorModelProperties(props) {
 			if(fieldProperties) {
 				//Check each case statement in model and see if it is present in container model.
 				cases.map(function(c){
-					if(fieldProperties.hasOwnProperty(c.optionValue.split('.')[1])) {
+					if(c.optionValue && fieldProperties.hasOwnProperty(c.optionValue.split('.')[1])) {
 						utils.assignPathValue(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'), c.optionValue);
 					}
 				});
