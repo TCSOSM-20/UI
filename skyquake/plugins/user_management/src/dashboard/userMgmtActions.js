@@ -20,6 +20,7 @@ module.exports = function(Alt) {
                                        'handleUpdateUser',
                                        'updateUserSuccess',
                                        'createUserSuccess',
-                                       'deleteUserSuccess'
+                                       'deleteUserSuccess',
+                                       'handleDisabledChange'
                                        );
 }

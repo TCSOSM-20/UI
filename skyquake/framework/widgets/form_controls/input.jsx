@@ -97,10 +97,12 @@ function buildRadioButtons(props) {
        <div className={className}>
             {
                 props.options.map((o,i) => {
+                    let label = o.label || o;
+                    let value = o.value || o;
                     return (
                         <label key={i}>
-                            {o.label}
-                            <input type="radio" checked={props.value == o.value} value={o.value} onChange={props.onChange} />
+                            {label}
+                            <input type="radio" checked={props.value == value} value={value} onChange={props.onChange} />
                         </label>
                     )
                 })
