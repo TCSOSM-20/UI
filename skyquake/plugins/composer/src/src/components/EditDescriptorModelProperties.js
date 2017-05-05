@@ -538,7 +538,7 @@ export default function EditDescriptorModelProperties(props) {
 				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'));
 			} else {
 				property.properties.map(function(p) {
-					let pname = p.properties[0].name;
+					let pname = p.properties[0] && p.properties[0].name;
 					if(container.model.hasOwnProperty(pname)) {
 						utils.assignPathValue(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'), [p.name, pname].join('.'));
 					}
@@ -747,7 +747,7 @@ export default function EditDescriptorModelProperties(props) {
 			value = utils.resolvePath(container.model, ['uiState.choice'].concat(path, 'selected').join('.'));
 			if(!value) {
 				property.properties.map(function(p) {
-					let pname = p.properties[0].name;
+					let pname = p.properties[0] && p.properties[0].name;
 					if(container.model.hasOwnProperty(pname)) {
 						value = container.model[pname];
 					}
