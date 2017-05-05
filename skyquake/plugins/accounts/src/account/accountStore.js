@@ -122,7 +122,7 @@ let AccountMeta = {
                 label: 'Management Network',
                 ref: 'mgmt-network'
             }, {
-                label: 'Floating IP Pool',
+                label: 'Floating IP Pool Network Name',
                 ref: 'floating-ip-pool',
                 optional: true
             }, {
