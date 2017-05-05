@@ -25,6 +25,10 @@ import _includes from 'lodash/includes'
 import _isArray from 'lodash/isArray'
 import _cloneDeep from 'lodash/cloneDeep'
 import _debounce from 'lodash/debounce';
+import _uniqueId from 'lodash/uniqueId';
+import _set from 'lodash/set';
+import _get from 'lodash/get';
+import _has from 'lodash/has';
 import utils from '../libraries/utils'
 import React from 'react'
 import ClassNames from 'classnames'
@@ -49,6 +53,14 @@ import imgRemove from '../../../node_modules/open-iconic/svg/trash.svg'
 import '../styles/EditDescriptorModelProperties.scss'
 
 const EMPTY_LEAF_PRESENT = '--empty-leaf-set--';
+
+function resolveReactKey(value) {
+	const keyPath =  ['uiState', 'fieldKey'];
+	if (!_has(value, keyPath)) {
+		_set(value, keyPath, _uniqueId());
+	}
+	return _get(value, keyPath);
+}
 
 function getDescriptorMetaBasicForType(type) {
 	const basicPropertiesFilter = d => _includes(DESCRIPTOR_MODEL_FIELDS[type], d.name);
@@ -383,19 +395,33 @@ export default function EditDescriptorModelProperties(props) {
 
 	}
 
-	function buildElement(container, property, valuePath, value) {
-		return property.properties.map((property, index) => {
-			let childValue;
-			const childPath = valuePath.slice();
-			if (typeof value === 'object') {
-				childValue = value[property.name];
+	/**
+	 * buiid and return an array of components representing an editor for each property.
+	 * 
+	 * @param {any} container the master document being edited
+	 * @param {[property]} properties 
+	 * @param {string} pathToProperties path within the container to the properties
+	 * @param {Object} data source for each property
+	 * @param {any} props object containing main data panel information, e.g. panel width {width: 375}
+	 * which may be useful/necessary to a components rendering.
+	 * @returns an array of react components
+	 */
+	function buildComponentsForProperties(container, properties, pathToProperties, data, props) {
+		return properties.map((property) => {
+			let value;
+			let propertyPath = pathToProperties.slice();
+			if (data && typeof data === 'object') {
+				value = data[property.name];
 			}
 			if(property.type != 'choice'){
-						childPath.push(property.name);
+				propertyPath.push(property.name);
 			}
-			return build(container, property, childPath, childValue);
-
+			return build(container, property, propertyPath, value, props);
 		});
+	}
+
+	function buildElement(container, property, valuePath, value) {
+		return buildComponentsForProperties(container, property.properties, valuePath, value);
 	}
 
 	function buildChoice(container, property, path, value, key) {
@@ -519,7 +545,7 @@ export default function EditDescriptorModelProperties(props) {
 				selectedOptionValue = utils.resolvePath(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'));
 			} else {
 				property.properties.map(function(p) {
-					let pname = p.properties[0].name;
+					let pname = p.properties[0] && p.properties[0].name;
 					if(container.model.hasOwnProperty(pname)) {
 						utils.assignPathValue(container.model, ['uiState.choice', pathToChoice, 'selected'].join('.'), [p.name, pname].join('.'));
 					}
@@ -533,8 +559,15 @@ export default function EditDescriptorModelProperties(props) {
 		const hasProperties = _isArray(valueProperty.properties) && valueProperty.properties.length;
 		const isMissingDescriptorMeta = !hasProperties && !Property.isLeaf(valueProperty);
 		//Some magic that prevents errors for arising
-		const valueResponse = valueProperty.properties && valueProperty.properties.length ? valueProperty.properties.map(valuePropertyFn) : (!isMissingDescriptorMeta) ? build(container, valueProperty, path.concat(valueProperty.name), utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name]) :
-		valueProperty.map && valueProperty.map(valuePropertyFn);
+		let valueResponse = null;
+		if (valueProperty.properties && valueProperty.properties.length) { 
+			valueResponse = valueProperty.properties.map(valuePropertyFn);
+		} else if (!isMissingDescriptorMeta) {
+			let value = utils.resolvePath(container.model, path.concat(valueProperty.name).join('.')) || container.model[valueProperty.name];
+			valueResponse = build(container, valueProperty, path.concat(valueProperty.name), value)
+		} else {
+			valueResponse = valueProperty.map && valueProperty.map(valuePropertyFn);
+		}
 		function valuePropertyFn(d, i) {
 			const childPath = path.concat(valueProperty.name, d.name);
 			const childValue = utils.resolvePath(container.model, childPath.join('.'));
@@ -664,7 +697,7 @@ export default function EditDescriptorModelProperties(props) {
 
 			if (isArray) {
 				valuePath.push(index);
-				fieldId += index;
+				fieldId = isLeafList ? fieldId + index + value : resolveReactKey(value);
 			}
 
 			if (isMetaField) {
@@ -722,7 +755,7 @@ export default function EditDescriptorModelProperties(props) {
 			value = utils.resolvePath(container.model, ['uiState.choice'].concat(path, 'selected').join('.'));
 			if(!value) {
 				property.properties.map(function(p) {
-					let pname = p.properties[0].name;
+					let pname = p.properties[0] && p.properties[0].name;
 					if(container.model.hasOwnProperty(pname)) {
 						value = container.model[pname];
 					}
@@ -768,11 +801,7 @@ export default function EditDescriptorModelProperties(props) {
 			<div className="basic-properties-group">
 				<h2>Basic</h2>
 				<div>
-					{basicProperties.map(property => {
-						const path = [property.name];
-						const value = container.model[property.name];
-						return build(container, property, path, value);
-					})}
+					{buildComponentsForProperties(container, basicProperties, [], container.model)}
 				</div>
 			</div>
 		);
@@ -792,11 +821,7 @@ export default function EditDescriptorModelProperties(props) {
 					<a className="toggle-show-less" href="#show-more-properties">less&hellip;</a>
 				</h1>
 				<div className="toggleable">
-					{properties.map(property => {
-						const path = [property.name];
-						const value = container.model[property.name];
-						return build(container, property, path, value, {toggle: true, width: props.width});
-					})}
+					{buildComponentsForProperties(container, properties, [], container.model, {toggle: true, width: props.width})}
 				</div>
 				<div className="toggle-bottom-spacer" style={{visibility: 'hidden', 'height': '50%', position: 'absolute'}}>We need this so when the user closes the panel it won't shift away and scare the bj out of them!</div>
 			</div>

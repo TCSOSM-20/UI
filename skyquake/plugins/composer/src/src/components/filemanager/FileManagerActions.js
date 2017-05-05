@@ -21,9 +21,24 @@ import alt from '../../alt';
 class FileManagerActions {
 
     constructor() {
-        this.generateActions('getFilelistSuccess', 'getFilelistError', 'updateFileLocationInput','sendDownloadFileRequst', 'addFileSuccess', 'addFileError','deletePackageFile','deleteFileSuccess','deleteFileError','openDownloadMonitoringSocketSuccess', 'openDownloadMonitoringSocketError',
-                             'getFilelistSocketSuccess',
-                             'openFileManagerSockets', 'closeFileManagerSockets','newPathNameUpdated', 'createDirectory');
+        this.generateActions(
+            'getFilelistSuccess',
+            'getFilelistError',
+            'updateFileLocationInput',
+            'sendDownloadFileRequest',
+            'addFileSuccess',
+            'addFileError',
+            'deletePackageFile',
+            'deleteFileSuccess',
+            'deleteFileError',
+            'openDownloadMonitoringSocketSuccess',
+            'openDownloadMonitoringSocketError',
+            'getFilelistSocketSuccess',
+            'openFileManagerSockets',
+            'closeFileManagerSockets',
+            'newPathNameUpdated',
+            'createDirectory'
+        );
     }
 
 }

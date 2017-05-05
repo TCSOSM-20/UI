@@ -20,6 +20,7 @@
 //https://raw.githubusercontent.com/RIFTIO/RIFT.ware/master/rift-shell
 import _cloneDeep from 'lodash/cloneDeep'
 import _findIndex from 'lodash/findIndex'
+import _uniqueId from 'lodash/uniqueId'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TreeView from 'react-treeview';
@@ -28,7 +29,7 @@ import Button from '../Button';
 import './FileMananger.scss';
 import FileManagerActions from './FileManagerActions.js';
 import imgSave from '../../../../node_modules/open-iconic/svg/data-transfer-upload.svg'
-import {Panel, PanelWrapper} from 'widgets/panel/panel';
+import { Panel, PanelWrapper } from 'widgets/panel/panel';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import LoadingIndicator from 'widgets/loading-indicator/loadingIndicator.jsx';
 
@@ -37,17 +38,61 @@ import Utils from '../../libraries/utils'
 import FileManagerUploadDropZone from '../../libraries/FileManagerUploadDropZone';
 let API_SERVER = require('utils/rw.js').getSearchParams(window.location).api_server;
 
-const createDropZone = function (action, clickable, type, id, path, dropTarget) {
-    const dropZone = new FileManagerUploadDropZone(ReactDOM.findDOMNode(dropTarget), [clickable], action, type, id, path);
+const ASSET_TYPE = {
+    'nsd': [
+        { id: 'ICONS', folder: 'icons', title: "Icons", allowFolders: false },
+        { id: 'SCRIPTS', folder: 'scripts', title: "scripts", allowFolders: true },
+        { id: 'NS_CONFIG', folder: 'ns_config', title: "NS Config", allowFolders: false },
+        { id: 'VNF_CONFIG', folder: 'vnf_config', title: "VNF Config", allowFolders: false }
+    ],
+    'vnfd': [
+        { id: 'ICONS', folder: 'icons', title: "Icons", allowFolders: false },
+        { id: 'CHARMS', folder: 'charms', title: "charms", allowFolders: true },
+        { id: 'SCRIPTS', folder: 'scripts', title: "scripts", allowFolders: true },
+        { id: 'IMAGES', folder: 'images', title: "images", allowFolders: false },
+        { id: 'CLOUD_INIT', folder: 'cloud_init', title: "cloud_init", allowFolders: false },
+        { id: 'README', folder: '.', title: ".", allowFolders: false }
+    ]
+}
+
+const createDropZone = function (action, clickable, getUploadPropsCallback, dropTarget) {
+    const dropZone = new FileManagerUploadDropZone(ReactDOM.findDOMNode(dropTarget), [clickable], action, getUploadPropsCallback);
     // dropZone.on('dragover', this.onDragOver);
     // dropZone.on('dragend', this.onDragEnd);
     // dropZone.on('addedfile', this.onFileAdded);
     return dropZone;
 };
-//updateFileLocationInput
+
+function normalizeAssets(packageType, assetInfo, filesStatus) {
+    let assets = {};
+    let assetTypes = ASSET_TYPE[packageType];
+    assetTypes.forEach(assetGroup => {
+        const typeFolder = assetGroup.folder;
+        let folders = assetInfo.id.filter(name => name.startsWith(typeFolder));
+        if (folders.length) {
+            folders.reverse();
+            assets[assetGroup.id] = folders.map(fullName => {
+                let path = fullName.slice(typeFolder.length + 1);
+                let files = assetInfo.data[fullName].map(info => ({
+                    name: info.name.startsWith(fullName) ? info.name.slice(fullName.length + 1) : info.name,
+                    status: filesStatus[info.name]
+                }));
+                return { path, files };
+            });
+        }
+    });
+    return assets;
+}
+
+function sendDeleteFileRequest(assetType, path, name) {
+    path = path ? path + '/' + name : name;
+    FileManagerActions.deletePackageFile({ assetType, path });
+}
+
 class FileManager extends React.Component {
     constructor(props) {
         super(props)
+        let assests = props.files;
     }
     componentWillMount() {
         // FileManagerActions.openFileManagerSockets()
@@ -57,62 +102,41 @@ class FileManager extends React.Component {
     }
     generateFolder(data, nesting) {
         let nestingLevel = nesting || 1;
-
-    }
-    deleteFile(name) {
-        return function(e) {
-            FileManagerActions.deletePackageFile(name);
-        }
-
-    }
-    updateFileLocationInput(name) {
-        return function(e) {
-            FileManagerActions.updateFileLocationInput({
-                name: name,
-                value: e.target.value
-            });
-        }
-    }
-    sendDownloadFileRequst = (url, path) => {
-        let self = this;
-        return function(e) {
-            if(!url || url == "") {
-                return self.props.actions.showNotification.defer({type: 'error', msg: 'Value missing in download request'});;
-            }
-            let files = self.props.files.data;
-            let folder = path.split('/');
-            let splitUrl = url.split('/');
-            let fileName = splitUrl[splitUrl.length - 1];
-            folder.pop;
-            let fullPath = _cloneDeep(folder);
-            fullPath.push(fileName);
-            fullPath = fullPath.join('/');
-            folder = folder.join('/');
-            let fileIndex = _findIndex(files[folder], function(f) {
-                return f.name == fullPath;
-            })
-            if (fileIndex == -1) {
-                FileManagerActions.sendDownloadFileRequst({
-                    url: url,
-                    path: path
-                });
-            } else {
-                self.props.actions.showNotification('It seems you\'re attempting to upload a file with a duplicate file name');
-            }
-        }
     }
     render() {
-        let self = this;
+        let { files, filesState, type, item, actions } = this.props;
+        let assets = normalizeAssets(type, files, filesState);
+        let children = [];
+        let assetTypes = ASSET_TYPE[type];
+        assetTypes.forEach(assetGroup => {
+            const typeFolder = assetGroup.folder;
+            let folders = assets[assetGroup.id];
+            let rootAssets = { path: '', files: [] };
+            let subFolders = null;
+            if (folders && folders.length) {
+                rootAssets = folders[0];
+                subFolders = folders.slice(1);
+            }
+            children.push(
+                <AssetGroup
+                    key={typeFolder}
+                    packageId={item.id}
+                    packageType={type}
+                    title={assetGroup.title}
+                    assetGroup={assetGroup}
+                    path={rootAssets.path}
+                    files={rootAssets.files}
+                    allowsFolders={assetGroup.allowFolders}
+                    folders={subFolders}
+                    showNotification={actions.showNotification}
+                />
+            )
+        }, this);
+
         let html = (
             <div className="FileManager">
-                <PanelWrapper style={{flexDirection: 'column'}}>
-                <Panel className="addFileSection" style={{backgroundColor: 'transparent'}} no-corners>
-                    <div className="inputSection">
-                        <TextInput placeholder="some/path" value={this.props.newPathName} label="create a new directory" onChange={FileManagerActions.newPathNameUpdated} />
-                        <Button label="Create" onClick={FileManagerActions.createDirectory} />
-                    </div>
-                </Panel>
-                {self.props.files && self.props.files.id && buildList(self, self.props.files) }
+                <PanelWrapper style={{ flexDirection: 'column' }}>
+                    {children}
                 </PanelWrapper>
             </div>
         )
@@ -121,88 +145,158 @@ class FileManager extends React.Component {
 
 }
 
-function buildList(self, data) {
-    let toReturn = [];
-    data.id.map(function(k,i) {
-        toReturn.push (contentFolder(self, data.data[k], k, k+i, self.props.filesState, self.updateFileLocationInput, self.sendDownloadFileRequst, self.deleteFile));
-    });
-    return toReturn.reverse();
-}
-
-function contentFolder(context, folder, path, key, inputState, updateFn, sendDownloadFileRequst, deleteFn) {
-    let type = context.props.type;
-    let id = context.props.item.id;
-    let classId = `DZ-${path.replace(/\/|\s+/g, '-')}`;
-    const onboardDropZone = createDropZone.bind(this, FileManagerUploadDropZone.ACTIONS.onboard, '.ComposerAppAddFile.' + classId, type, id, path);
+function NewHierachy(props) {
     return (
-        <Panel title={path} key={key} itemClassName="nested" no-corners>
-        <div className="folder">
-            {
-                folder.map(function(f, i) {
-                    if( !f.hasOwnProperty('contents') ){
-                        return contentFile(context, f, path, i, deleteFn);
-                    }
-                })
-            }
-            <Panel className="addFileSection" no-corners>
-                <ItemUpload type={type} id={id} path={path} key={key} dropZone={onboardDropZone} />
-                <div style={{marginLeft: '0.5rem'}}>
-                    OR
-                </div>
-                <div className="inputSection">
-                    <TextInput placeholder="URL" className="" label="External URL" value={inputState[path]} onChange={updateFn(path)} />
-                    <Button className='ComposerAppSave' label="DOWNLOAD" onClick={sendDownloadFileRequst(inputState[path], path)}/>
-                </div>
-            </Panel>
-
+        <Panel className="addFileSection" style={{ backgroundColor: 'transparent' }} no-corners>
+            <div className="inputSection">
+                <TextInput placeholder="some/path" label="create a folder hierarchy" onChange={FileManagerActions.newPathNameUpdated} />
+                <Button label="Create" onClick={e => FileManagerActions.createDirectory(props.assetGroup.id)} />
             </div>
         </Panel>
     );
 }
+
+class AssetGroup extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { downloadPath: "" };
+    }
+
+    render() {
+        let { title, packageType, packageId, assetGroup, files, allowsFolders, folders, path, inputState, showNotification } = this.props;
+        let children = [];
+        if (folders && folders.length) {
+            folders.map(function (folder, i) {
+                children.push(
+                    <AssetGroup
+                        key={folder.path}
+                        packageId={packageId}
+                        title={folder.path}
+                        packageType={packageType}
+                        files={folder.files}
+                        assetGroup={assetGroup}
+                        path={folder.path}
+                        showNotification={showNotification}
+                    />
+                )
+            });
+        }
+        let folderCreateComponent = allowsFolders ? <NewHierachy assetGroup={assetGroup} /> : null;
+        let entries = null
+
+        function uploadFileFromUrl(url) {
+            if (!url || url == "") {
+                return;
+            }
+            let splitUrl = url.split('/');
+            let fileName = splitUrl[splitUrl.length - 1];
+            if (files.findIndex(f => f.name === fileName) > -1) {
+                showNotification('It seems you\'re attempting to upload a file with a duplicate file name');
+            } else {
+                FileManagerActions.sendDownloadFileRequest({ url, assetType: assetGroup.id, path: path });
+            }
+        }
+
+        return (
+            <Panel title={title} itemClassName="nested" no-corners>
+                {folderCreateComponent}
+                <div className="folder">
+                    <FileAssetList files={files} path={path} packageId={packageId} packageType={packageType} assetGroup={assetGroup} />
+                    <Panel className="addFileSection" no-corners>
+                        <ItemUpload packageType={packageType} packageId={packageId} path={path} assetGroup={assetGroup} />
+                        <div style={{ marginLeft: '0.5rem' }}>
+                            OR
+                    </div>
+                        <div className="inputSection">
+                            <TextInput placeholder="URL" className="" label="External URL" value={this.state.downloadPath} onChange={e => this.setState({ downloadPath: e.target.value })} />
+                            <Button className='ComposerAppSave' label="DOWNLOAD" onClick={e => uploadFileFromUrl(this.state.downloadPath)} />
+                        </div>
+                    </Panel>
+                    <div>
+                        {children}
+                    </div>
+                </div>
+            </Panel>
+        );
+    }
+}
+
+function FileAssetList(props) {
+    let { packageType, packageId, assetGroup, files, path } = props;
+    let children = null;
+    if (files) {
+        children = files.map(function (file, i) {
+            if (!file.hasOwnProperty('contents')) {
+                return <FileAsset key={file.name} file={file} path={path} id={packageId} type={packageType} assetGroup={assetGroup} />
+            }
+        })
+    }
+    return (
+        <div className='file-list'>
+            {children}
+        </div>
+    );
+
+}
+
+function FileAsset(props) {
+    let { file, path, type, assetGroup, id } = props;
+    const name = file.name;
+    const downloadHost = API_SERVER.match('localhost') || API_SERVER.match('127.0.0.1') ? `${window.location.protocol}//${window.location.hostname}` : API_SERVER;
+    //{`${window.location.protocol}//${API_SERVER}:4567/api/package${type}/${id}/${path}/${name}`}
+    return (
+        <div className="file">
+            <div className="file-section">
+                <div className="file-info">
+                    <div className="file-status"
+                        style={{ display: (file.status && file.status.toLowerCase() != 'completed') ? 'inherit' : 'none', color: (file.status == 'FAILED' ? 'red' : 'inherit') }}>
+                        {file.status && (file.status == 'IN_PROGRESS' || file.status == 'DOWNLOADING') ? <LoadingIndicator size={2} /> : file.status}
+                    </div>
+                    <div className="file-name">
+                        <a target="_blank" href={`${downloadHost}:4567/api/package/${type}/${id}/${assetGroup.folder}${path}/${name}`}>{name}</a>
+                    </div>
+                </div>
+                <div className="file-action"
+                    style={{ display: (!file.status || (file && file.status.toLowerCase() != 'loading...')) ? 'inherit' : 'none', cursor: 'pointer' }}
+                    onClick={e => sendDeleteFileRequest(assetGroup.id, path, name)}>
+                    X
+                </div>
+            </div>
+        </div>
+    )
+}
+
 class ItemUpload extends React.Component {
     constructor(props) {
         super(props);
+        this.state = { dropzoneIdClass: 'DZ-' + _uniqueId() };
     }
     componentDidMount() {
-        if (this.props.dropZone) {
-            const dropTarget = this;
-            const dropZone = this.props.dropZone(dropTarget);
-        }
+        createDropZone(
+            FileManagerUploadDropZone.ACTIONS.onboard,
+            '.ComposerAppAddFile.' + this.state.dropzoneIdClass,
+            () => {
+            let theCode = 'crap';
+            return ({
+                packageType: this.props.packageType,
+                packageId: this.props.packageId,
+                assetGroup: this.props.assetGroup,
+                path: this.props.path
+            })},
+            this);
     }
+
     render() {
-        let {type, id, path, key, ...props} = this.props;
-        let classId = `DZ-${path.replace(/\/|\s+/g, '-')}`;
+        let { dropzoneIdClass } = this.props;
         return (
             <div className="inputSection">
-                <label className="sqTextInput" style={{flexDirection: 'row', alignItems:'center'}}>
+                <label className="sqTextInput" style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <span>Upload File</span>
-                    <Button className={'ComposerAppAddFile ' + classId} label="BROWSE"/>
+                    <Button className={'ComposerAppAddFile ' + this.state.dropzoneIdClass} label="BROWSE" />
                 </label>
             </div>
         )
     }
-}
-function contentFile(context, file, path, key, deleteFn) {
-    const name = stripPath(file.name, path);
-    const id = context.props.item.id;
-    const type = context.props.type;
-    const downloadHost = API_SERVER.match('localhost') || API_SERVER.match('127.0.0.1') ? `${window.location.protocol}//${window.location.hostname}` : API_SERVER;
-    //{`${window.location.protocol}//${API_SERVER}:4567/api/package${type}/${id}/${path}/${name}`}
-    return (
-        <div className="file" key={key}>
-            <div className="file-section">
-                <div className="file-info">
-                    <div className="file-status" style={{display: (file.status && file.status.toLowerCase() != 'completed') ? 'inherit' : 'none', color: (file.status == 'FAILED' ? 'red' : 'inherit')}}>
-                        {file.status && (file.status == 'IN_PROGRESS' || file.status == 'DOWNLOADING'  )  ? <LoadingIndicator size={2} /> : file.status }
-                    </div>
-                    <div className="file-name">
-                        <a target="_blank" href={`${downloadHost}:4567/api/package/${type}/${id}/${path}/${name}`}>{name}</a>
-                    </div>
-                </div>
-                <div className="file-action" style={{display: (!file.status || (file && file.status.toLowerCase() != 'loading...')) ? 'inherit' : 'none', cursor: 'pointer'}} onClick={deleteFn(file.name)}>X</div>
-            </div>
-        </div>
-    )
 }
 
 function stripPath(name, path, returnPath) {
