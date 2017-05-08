@@ -131,6 +131,9 @@
         font-weight:bold;
     }
     &--data {
+        &:nth-child(even) {
+            background:$neutral-dark-0;
+        }
         &:hover:not(&-active) {
             background:$neutral-dark-1;
         }

@@ -211,7 +211,7 @@ UserManagement.update = function(req) {
     var api_server = req.query['api_server'];
     var bodyData = req.body;
     data = {
-        "user":[bodyData]
+        "rw-user:user": bodyData
     }
     var updateTasks = [];
     if(bodyData.hasOwnProperty('old-password')) {
@@ -237,7 +237,7 @@ UserManagement.update = function(req) {
         updateTasks.push(changePW);
     };
     var updateUser = rp({
-                uri: utils.confdPort(api_server) + '/api/config/user-config',
+                uri: utils.confdPort(api_server) + '/api/config/user-config/user/' + bodyData['user-name'] + ',' +  bodyData['user-domain'],
                 method: 'PUT',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': req.session && req.session.authorization

@@ -311,7 +311,7 @@ class ProjectManagementDashboard extends React.Component {
                         </FormSection>
                         <FormSection title="USER ROLES"  className="userTable">
 
-                        <table>
+                        <table className="projectTable">
                             <thead>
                                 <tr>
                                     {!state.isReadOnly ? <td></td> : null}
