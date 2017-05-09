@@ -29,7 +29,9 @@ export default class UserManagementStore {
         this.isReadOnly = true;
         this.userOpen = false;
         this.hideColumns = false;
+        //There is probably a better way of handling the view/edit/readonly matrix conditions for some of these inputs. Should definitely revist
         this.isEdit = false;
+        this.isEditUser = false;
         // this.exportPublicMethods({})
     }
     /**
@@ -84,6 +86,7 @@ export default class UserManagementStore {
     }
     editUser(isEdit) {
         this.setState({
+            isEditUser: !isEdit,
             isReadOnly: isEdit
         })
     }

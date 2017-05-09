@@ -95,9 +95,6 @@ export default class Input extends Component {
 
 function buildRadioButtons(props) {
     let className = 'sqCheckBox';
-    if (props.className) {
-        className = `${className} ${props.className}`;
-    }
     return(
        <div className={className}>
             {

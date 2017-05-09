@@ -224,13 +224,14 @@ class UserManagementDashboard extends React.Component {
                                 state.isEdit ?
                                 (
                                     <ButtonGroup className="buttonGroup">
-                                        <Button label="Update" type="submit" onClick={this.updateUser} />
                                         <Button label="Delete" onClick={this.deleteUser} />
                                         <Button label="Cancel" onClick={this.cancelEditUser} />
+                                        <Button label="Update" type="submit" onClick={this.updateUser} />
                                     </ButtonGroup>
                                 )
                                 : (
                                     <ButtonGroup className="buttonGroup">
+                                        <Button label="Cancel" onClick={this.closePanel} />
                                         <Button label="Create" type="submit" onClick={this.createUser}  />
                                     </ButtonGroup>
                                 )
@@ -251,6 +252,9 @@ class UserManagementDashboard extends React.Component {
                                 <div>
                                     Domain
                                 </div>
+                                <div>
+                                    Status
+                                </div>
                             </div>
                             {state.users && state.users.map((u, k) => {
                                 let platformRoles = [];
@@ -268,6 +272,9 @@ class UserManagementDashboard extends React.Component {
                                         </div>
                                         <div>
                                             {u['user-domain']}
+                                        </div>
+                                        <div>
+                                            {u['disabled'] ? "DISABLED" : "ENABLED"}
                                         </div>
 
 
@@ -288,14 +295,18 @@ class UserManagementDashboard extends React.Component {
                             style={{marginBottom: 0}}
                             hasCloseButton={this.closePanel}
                             no-corners>
-                            <FormSection title="USER INFO">
-                                {
-                                    this.state.isEdit ?
-                                        null
-                                        : <Input  readonly={state.isReadOnly}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
-                                }
-                                <Input readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
-                                <Input
+                            <FormSection title="USER INFO" className="userInfo">
+                            {
+                                (!state.isEditUser ||  state.isReadOnly) ?
+                                <Input className="userInfo-section" readonly={state.isReadOnly || this.state.isEdit}  label="Username" value={state['user-name']} onChange={this.updateInput.bind(null, 'user-name')} />
+                                : null
+                            }
+                            {
+                                (!state.isEditUser ||  state.isReadOnly) ?
+                                <Input className="userInfo-section" readonly={true} label="Domain" value={state['user-domain']}  onChange={this.updateInput.bind(null, 'user-domain')}></Input>
+                                : null
+                            }
+                                <Input className="userInfo-section"
                                     type="radiogroup"
                                     onChange={this.disableChange}
                                     label="STATUS"

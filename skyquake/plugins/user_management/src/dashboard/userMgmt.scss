@@ -64,7 +64,15 @@
         }
 
     }
-
+    .userInfo {
+        &-section {
+            padding: 0.5rem;
+            margin-bottom: 0;
+            &:nth-child(even) {
+                background:$neutral-dark-0;
+            }
+        }
+    }
     .userAdmin {
             -ms-flex: 1 1;
             flex: 1 1;
