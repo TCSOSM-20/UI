@@ -74,6 +74,11 @@ export default class Input extends Component {
         if( props.readonly && props.type == "checkbox" && props.checked ) {
             displayedValue = <img src={CircleSVG} />
         }
+
+        if( props.readonly && props.type == "radiogroup" && props.readonlydisplay ) {
+            displayedValue = props.readonlydisplay
+        }
+
         let html = (
             <label className={className} style={props.style}>
               <span> { label } {isRequired}</span>

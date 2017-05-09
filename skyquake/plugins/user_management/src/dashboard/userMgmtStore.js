@@ -122,7 +122,7 @@ export default class UserManagementStore {
     resetUser() {
         let username = '';
         let domain = 'system';
-        let disabled = false;
+        let disabled = "FALSE";
         let platformRoles = {
             super_admin: false,
             platform_admin: false,

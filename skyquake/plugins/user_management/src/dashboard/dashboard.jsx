@@ -114,12 +114,12 @@ class UserManagementDashboard extends React.Component {
                     disabled: [null]
                 }
             }
-            this.Store.createUser({
-                'user-name': this.state['user-name'],
-                'user-domain': this.state['user-domain'],
-                'password': this.state['new-password']
-                // 'confirm-password': this.state['confirm-password']
-            });
+            this.Store.createUser(_.merge({
+                            'user-name': this.state['user-name'],
+                            'user-domain': this.state['user-domain'],
+                            'password': this.state['new-password']
+                            // 'confirm-password': this.state['confirm-password']
+                        }, isDisabled));
         }
     }
     updateUser = (e) => {
@@ -298,10 +298,12 @@ class UserManagementDashboard extends React.Component {
                                 <Input
                                     type="radiogroup"
                                     onChange={this.disableChange}
-                                    label="Disabled"
+                                    label="STATUS"
                                     value={this.state.disabled}
-                                    options={["TRUE","FALSE"]}
-                                    readonly={state.isReadOnly} />
+                                    options={[{label: "DISABLED", value: "TRUE"},{label: "ENABLED", value: "FALSE"}]}
+                                    readonly={state.isReadOnly}
+                                    readonlydisplay={this.state.disabled == "TRUE" ? "DISABLED" : "ENABLED"}
+                                    />
                             </FormSection>
                             <FormSection title="PLATFORM ROLES" style={{display:'none'}}>
                                 <Input label="Super Admin" onChange={this.platformChange.bind(null, 'super_admin')} checked={state.platformRoles.super_admin} type="checkbox" />
