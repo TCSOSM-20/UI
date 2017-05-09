@@ -321,18 +321,43 @@ class UserManagementDashboard extends React.Component {
                                 <Input label="Platform Admin" onChange={this.platformChange.bind(null, 'platform_admin')}  checked={state.platformRoles.platform_admin} type="checkbox" />
                                 <Input label="Platform Oper" onChange={this.platformChange.bind(null, 'platform_oper')}  checked={state.platformRoles.platform_oper} type="checkbox" />
                             </FormSection>
-                            <FormSection title="PROJECT ROLES" style={{display:'none'}}>
-                                <InputCollection
-                                    inital={true}
-                                    type='select'
-                                    readonly={state.isReadOnly}
-                                    options={state.projectRolesOptions}
-                                    collection={state.projectRoles}
-                                    onChange={this.updateProjectRole}
-                                    AddItemFn={this.addProjectRole}
-                                    RemoveItemFn={this.removeProjectRole}
-                                    />
-                            </FormSection>
+                            {
+                                !state.isEditUser ?
+                                <FormSection title="PROJECT ROLES">
+                                    <table className="userProfile-table">
+                                        <thead>
+                                            <tr>
+                                                <td>Project</td>
+                                                <td>Role</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {
+                                                this.state.projects && this.state.projects.ids && this.state.projects.ids.map((p,i)=> {
+                                                    let project = self.state.projects.data[p];
+                                                    let userRoles = [];
+                                                    return (
+                                                        <tr key={i}>
+                                                            <td>
+                                                                {p}
+                                                            </td>
+                                                            <td>
+                                                                {
+                                                                    project.map(function(k) {
+                                                                        return <div>{k}</div>
+                                                                    })
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })
+                                            }
+                                        </tbody>
+                                    </table>
+                                </FormSection>
+                                : null
+                            }
+
                             {passwordSectionHTML}
 
                         </Panel>

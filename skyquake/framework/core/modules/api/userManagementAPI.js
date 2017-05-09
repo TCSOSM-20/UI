@@ -32,8 +32,7 @@ UserManagement.get = function(req) {
     var api_server = req.query['api_server'];
 
     return new Promise(function(resolve, reject) {
-        Promise.all([
-            rp({
+        var userConfig = rp({
                 uri: utils.confdPort(api_server) + '/api/operational/user-config/user',
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
@@ -42,15 +41,53 @@ UserManagement.get = function(req) {
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
+            });
+        var userOp = rp({
+                uri: utils.confdPort(api_server) + '/api/operational/user-state/user',
+                method: 'GET',
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
+                    'Authorization': req.session && req.session.authorization
+                }),
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false,
+                resolveWithFullResponse: true
             })
+        Promise.all([
+            userConfig,
+            userOp
         ]).then(function(result) {
             var response = {};
             response['data'] = {};
+            var resultData = [];
             if (result[0].body) {
-                response['data']['user'] = JSON.parse(result[0].body)['rw-user:user'];
+                resultData.push(JSON.parse(result[0].body)['rw-user:user'].sort());
+            }
+            if (result[1].body) {
+                resultData.push(JSON.parse(result[1].body)['rw-user:user'].sort());
             }
             response.statusCode = constants.HTTP_RESPONSE_CODES.SUCCESS.OK
-
+            response['data']['user'] = resultData[0].map(function(d,i) {
+                var mergedData = _.merge(d, resultData[1][i]);
+                mergedData.projects = {
+                    ids: [],
+                    data: {}
+                };
+                var projects = mergedData.projects;
+                mergedData.role && mergedData.role.map(function(r) {
+                    if ((r.role != "rw-project:user-self" )&& (r.role != "rw-rbac-platform:user-self")) {
+                        var projectId = r.keys.split(';')[0];
+                        if (projectId == "") {
+                            projectId = "platform"
+                        }
+                        if (!projects.data[projectId]) {
+                            projects.ids.push(projectId);
+                            projects.data[projectId] = [];
+                        }
+                        projects.data[projectId].push(r.role);
+                    }
+                })
+                return mergedData;
+            })
             resolve(response);
         }).catch(function(error) {
             var response = {};

@@ -74,6 +74,7 @@ export default class UserManagementStore {
             platformRoles: user.platformRoles || this.platformRoles,
             disabled: user.hasOwnProperty('disabled').toString().toUpperCase(),
             projectRoles: user.projectRoles || this.projectRoles,
+            projects: user.projects,
             currentPassword: user.password
         }
         let state = _.merge({
