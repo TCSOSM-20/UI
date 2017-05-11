@@ -51,7 +51,7 @@ const ASSET_TYPE = {
         { id: 'SCRIPTS', folder: 'scripts', title: "scripts", allowFolders: true },
         { id: 'IMAGES', folder: 'images', title: "images", allowFolders: false },
         { id: 'CLOUD_INIT', folder: 'cloud_init', title: "cloud_init", allowFolders: false },
-        { id: 'README', folder: '.', title: ".", allowFolders: false }
+        { id: 'README', folder: '.', title: "readme", allowFolders: false }
     ]
 }
 
