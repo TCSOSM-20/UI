@@ -70,7 +70,7 @@ const CatalogPackageManager = React.createClass({
 				return (
 					<div className="file-download">
 						<a className="file-download-link" href={download.url}>Download Package</a>
-						<span>expires&nbsp;</span> {duration.humanize(true)}
+						{/*<span>expires&nbsp;</span> {duration.humanize(true)}*/}
 
 					</div>
 				);
