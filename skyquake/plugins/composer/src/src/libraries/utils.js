@@ -283,6 +283,13 @@ export default {
 		return leafRefPath;
 	},
 
+	cleanupFieldKeyArray (fieldKeyArray) {
+		fieldKeyArray.map((fieldKey, fieldKeyIndex) => {
+			fieldKeyArray[fieldKeyIndex] = fieldKey.replace(/.*\/(.*)/, '$1');
+		});
+		return fieldKeyArray;
+	},
+
 	resolveLeafRefPath (catalogs, leafRefPath, fieldKey, path, container) {
 		let pathCopy = _clone(path);
 		// Strip any prefixes
@@ -295,16 +302,20 @@ export default {
 
 		// Split on delimiter (/)
 		const pathArray = leafRefPathCopy.split('/');
+
 		let fieldKeyArray = fieldKey.split(':');
+
+		// strip prepending qualifiers from fieldKeys
+		fieldKeyArray = this.cleanupFieldKeyArray(fieldKeyArray);
 		let results = [];
 
 		// Check if relative path or not
 		// TODO: Below works but
-		// better to convert the pathCopy to absolute/rooted path 
+		// better to convert the pathCopy to absolute/rooted path
 		// and use the absolute module instead
 		if (this.isRelativePath(leafRefPathCopy)) {
 			let i = pathArray.length;
-			while (pathArray[pathArray.length - i] == '..') {
+			while ((pathArray[pathArray.length - i] == '..') && fieldKeyArray.length > 1) {
 				fieldKeyArray.splice(-1, 1);
 				if (!isNaN(Number(fieldKeyArray[fieldKeyArray.length - 1]))) {
 					// found a number, so an index. strip it
@@ -390,3 +401,4 @@ export default {
 		}
 	}
 }
+
