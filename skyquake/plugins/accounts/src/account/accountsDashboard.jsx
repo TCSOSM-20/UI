@@ -26,7 +26,7 @@ import 'style/layout.scss';
 class AccountsDashboard extends React.Component {
     constructor(props) {
         super(props);
-        this.Store = this.props.flux.stores.hasOwnProperty('AccountStore') ? this.props.flux.stores.AccountStore : this.props.flux.createStore(AccountStore);
+        this.Store = this.props.flux.stores.hasOwnProperty('AccountStore') ? this.props.flux.stores.AccountStore : this.props.flux.createStore(AccountStore, "AccountStore");
         this.state = this.Store.getState();
     }
     componentWillMount() {
