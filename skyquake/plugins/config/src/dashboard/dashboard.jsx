@@ -15,7 +15,7 @@ import Button from 'widgets/button/rw.button.js';
 class ConfigDashboard extends React.Component {
     constructor(props) {
         super(props);
-        this.Store = this.props.flux.stores.hasOwnProperty('ConfigStore') ? this.props.flux.stores.ConfigStore : this.props.flux.createStore(ConfigStore);
+        this.Store = this.props.flux.stores.hasOwnProperty('ConfigStore') ? this.props.flux.stores.ConfigStore : this.props.flux.createStore(ConfigStore, "ConfigStore");
         this.state = this.Store.getState();
     }
     componentWillMount() {
