@@ -311,4 +311,15 @@ Utils.cleanImageDataURI = (imageString, type, id) => {
     return require('style/img/catalog-default.svg');
 }
 
+Utils.parseError = (error) => {
+    let displayMsg = JSON.parse(error);
+    if (displayMsg.errorMessage && displayMsg.errorMessage.body) {
+        displayMsg = displayMsg.errorMessage.body;
+        if(displayMsg['last-error'] && displayMsg['last-error']['rpc-error'] && displayMsg['last-error']['rpc-error']['error-message']) {
+            displayMsg = displayMsg['last-error']['rpc-error']['error-message'];
+        }
+    }
+    return displayMsg
+}
+
 module.exports = Utils;
