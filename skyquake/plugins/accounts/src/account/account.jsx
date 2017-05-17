@@ -23,6 +23,7 @@ import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx'
 import Crouton from 'react-crouton';
 import TextInput from 'widgets/form_controls/textInput.jsx';
 import {AccountConnectivityStatus} from '../account_sidebar/accountSidebar.jsx';
+import Utils from 'utils/utils.js';
 import 'style/common.scss';
 import './account.scss';
 class Account extends React.Component {
@@ -107,7 +108,7 @@ class Account extends React.Component {
             self.props.flux.actions.global.hideScreenLoader.defer();
         },
          function(error) {
-            self.props.flux.actions.global.showNotification(error);
+            self.props.flux.actions.global.showNotification(Utils.parseError(error));
             self.props.flux.actions.global.hideScreenLoader.defer();
          });
     }

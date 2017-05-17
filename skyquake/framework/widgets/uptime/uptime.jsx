@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,7 +79,7 @@ export default class UpTime extends React.Component {
       }
       let timeNow = args.timeNow ? args.timeNow : Date.now();
       if (initialTime) {
-        return Math.floor((timeNow/ 1000)) - initialTime;
+        return Math.floor((timeNow / 1000)) - initialTime;
       } else {
         return 0;
       }
