@@ -140,7 +140,7 @@ class LaunchNetworkServiceStore {
             Alt.actions.global.showNotification.defer({type: 'warning', msg: 'One or more VIM accounts have failed to connect'});
         }
         if(cloudAccounts && cloudAccounts.length > 0) {
-            newState.selectedCloudAccount = cloudAccounts[0];
+            newState.selectedCloudAccount = newState.cloudAccounts[0];
             if (cloudAccounts[0]['account-type'] == 'openstack') {
                 newState.displayPlacementGroups = true;
             } else {
@@ -707,6 +707,10 @@ class LaunchNetworkServiceStore {
         if (this.state.ro && this.state.ro['account-type'] == 'openmano') {
             payload['om-datacenter'] = this.state.dataCenterID;
         } else {
+            if(!this.state.selectedCloudAccount) {
+                Alt.actions.global.showNotification.defer("No VIM Account Selected");
+                return;
+            }
             payload["cloud-account"] = this.state.selectedCloudAccount.name;
         }
         if (this.state.hasConfigureNSD) {
