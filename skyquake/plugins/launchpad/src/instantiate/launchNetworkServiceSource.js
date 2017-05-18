@@ -128,7 +128,7 @@ export default function(Alt){
           }).fail(function(xhr){
             //Authentication and the handling of fail states should be wrapped up into a connection class.
             Utils.checkAuthentication(xhr.status);
-            var error;
+            var error = null;
             if(xhr.responseText) {
               try {
                 error = JSON.parse(xhr.responseText);
