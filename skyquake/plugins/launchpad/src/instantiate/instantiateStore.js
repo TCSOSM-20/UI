@@ -191,6 +191,9 @@ class LaunchNetworkServiceStore {
     }
     launchNSRError(data) {
         var msg = 'Something went wrong while trying to instantiate. Check the error logs for more information';
+        if(data) {
+            msg = data;
+        }
         if (data.error) {
             msg = data.error;
         }
