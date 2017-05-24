@@ -57,7 +57,6 @@ function createItem (type) {
 		UID.assignUniqueId(newItem.uiState);
 		newItem.uiState.isNew = true;
 		newItem.uiState.modified = true;
-		newItem.uiState['instance-ref-count'] = 0;
 	}
 	return newItem;
 }
@@ -189,17 +188,12 @@ class CatalogDataStore {
 		});
 		updatedCatalogs.filter(d => d.type === 'nsd').forEach(catalog =>  {
 			catalog.descriptors = catalog.descriptors.map(descriptor => {
-				const instanceRefCount = parseInt(descriptor.uiState['instance-ref-count'], 10);
 				if (descriptor['constituent-vnfd']) {
 					descriptor.vnfd = descriptor['constituent-vnfd'].map(d => {
 						const vnfdId = d['vnfd-id-ref'];
 						const vnfd = vnfdLookup[vnfdId];
 						if (!vnfd) {
 							throw new ReferenceError('no VNFD found in the VNFD Catalog for the constituent-vnfd: ' + d);
-						}
-						if (!isNaN(instanceRefCount) && instanceRefCount > 0) {
-							// this will notify user that this item cannot be updated when/if they make a change to it
-							vnfd.uiState['instance-ref-count'] = instanceRefCount;
 						}
 						// create an instance of this vnfd to carry transient ui state properties
 						const instance = _cloneDeep(vnfd);
@@ -319,17 +313,9 @@ class CatalogDataStore {
 						// compare just the catalog uiState data (id, name, short-name, description, etc.)
 						const modified = !areCatalogItemsMetaDataEqual(d, item);
 						if (modified) {
-							if (d.uiState['instance-ref-count'] > 0) {
-								console.log('cannot edit NSD/VNFD with references to instantiated Network Services');
-								ComposerAppActions.showError.defer({
-									errorMessage: 'Cannot edit NSD/VNFD with references to instantiated Network Services'
-								});
-								return _cloneDeep(d);
-							} else {
-								item.uiState.modified = modified;
-								requiresSave = true;
-								this.addSnapshot(item);
-							}
+							item.uiState.modified = modified;
+							requiresSave = true;
+							this.addSnapshot(item);
 						}
 						return item;
 					}
@@ -353,17 +339,9 @@ class CatalogDataStore {
 				// replace the old descriptor with the updated one
 				catalog.descriptors = catalog.descriptors.map(d => {
 					if (d.id === descriptorId) {
-						if (d.uiState['instance-ref-count'] > 0) {
-							console.log('cannot edit NSD/VNFD with references to instantiated Network Services');
-							ComposerAppActions.showError.defer({
-								errorMessage: 'Cannot edit NSD/VNFD with references to instantiated Network Services'
-							});
-							return _cloneDeep(d);
-						} else {
-							itemDescriptor.model.uiState.modified = true;
-							this.addSnapshot(itemDescriptor.model);
-							return itemDescriptor.model;
-						}
+						itemDescriptor.model.uiState.modified = true;
+						this.addSnapshot(itemDescriptor.model);
+						return itemDescriptor.model;
 					}
 					return d;
 				});
@@ -415,27 +393,19 @@ class CatalogDataStore {
 			if (item.uiState.isNew) {
 				CatalogDataStore.confirmDelete(remove, confirmDeleteCancel);
 			} else {
-				if (item.uiState['instance-ref-count'] > 0) {
-					console.log('cannot delete NSD/VNFD with references to instantiated Network Services');
-					ComposerAppActions.showError.defer({
-						errorMessage: 'Cannot delete NSD/VNFD with references to instantiated Network Services'
-					});
-					undo();
-				} else {
-					const confirmDeleteOK = event => {
-						event.preventDefault();
-						item.uiState.deleted = true;
-						this.setState({catalogs: this.getCatalogs()});
-						ModalOverlayActions.showModalOverlay.defer();
-						this.getInstance().deleteCatalogItem(item.uiState.type, item.id)
-							.then(remove, undo)
-							.then(ModalOverlayActions.hideModalOverlay, ModalOverlayActions.hideModalOverlay)
-							.catch(function() {
-								console.log('overcoming ES6 unhandled rejection red herring');
-							});
-					};
-					CatalogDataStore.confirmDelete(confirmDeleteOK, confirmDeleteCancel);
-				}
+				const confirmDeleteOK = event => {
+					event.preventDefault();
+					item.uiState.deleted = true;
+					this.setState({catalogs: this.getCatalogs()});
+					ModalOverlayActions.showModalOverlay.defer();
+					this.getInstance().deleteCatalogItem(item.uiState.type, item.id)
+						.then(remove, undo)
+						.then(ModalOverlayActions.hideModalOverlay, ModalOverlayActions.hideModalOverlay)
+						.catch(function() {
+							console.log('overcoming ES6 unhandled rejection red herring');
+						});
+				};
+				CatalogDataStore.confirmDelete(confirmDeleteOK, confirmDeleteCancel);
 			}
 		}
 	}
@@ -528,13 +498,6 @@ class CatalogDataStore {
 
 	saveItem(item) {
 		if (item) {
-			if (item.uiState['instance-ref-count'] > 0) {
-				console.log('cannot save NSD/VNFD with references to instantiated Network Services');
-				ComposerAppActions.showError.defer({
-					errorMessage: 'Cannot save NSD/VNFD with references to instantiated Network Services'
-				});
-				return;
-			}
 			const success = () => {
 				delete item.uiState.modified;
 				if (item.uiState.isNew) {

@@ -324,7 +324,7 @@ export default function EditDescriptorModelProperties(props) {
 			// We stick in a string when the user actually sets it to simplify things
 			// but the correct thing happens when we serialize to user data
 			let isEmptyLeafPresent = (value === EMPTY_LEAF_PRESENT || value === null); 
-			let present = isEmptyLeafPresent ? EMPTY_LEAF_PRESENT : "";
+			let present = isEmptyLeafPresent ? EMPTY_LEAF_PRESENT : [null];
 			const options = [
 				<option key={'true'} value={EMPTY_LEAF_PRESENT}>Enabled</option>,
 				<option key={'false'} value="">Not Enabled</option>

@@ -88,8 +88,6 @@ const CatalogItems = React.createClass({
 			const isOpenForEdit = d.uiState.isOpenForEdit;
 			const spanClassNames = ClassNames({'-is-selected': isSelected, '-is-open-for-edit': isOpenForEdit});
 			const sectionClassNames = ClassNames('catalog-item', {'-is-modified': isModified, '-is-deleted': isDeleted});
-			const instanceCount = d.uiState['instance-ref-count'];
-			const instanceCountLabel = isNSD && instanceCount ? <span>({instanceCount})</span> : null;
 			let type;
 			if(isNSD) {
 				type = 'nsd';
@@ -104,7 +102,7 @@ const CatalogItems = React.createClass({
 							{isModified ? <div className="-is-modified-indicator" title="This descriptor has changes."></div> : null}
 							<div className="type-header">{type}</div>
 							<dl>
-								<dt className="name">{d.name} {instanceCountLabel}</dt>
+								<dt className="name">{d.name}</dt>
 								<dd className="logo">
 								<img className="logo" src={cleanDataURI(d['logo'], type, d.id)} draggable="false"  onError={self.handleImageError} />
 								</dd>

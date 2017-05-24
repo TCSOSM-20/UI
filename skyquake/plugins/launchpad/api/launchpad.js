@@ -266,8 +266,7 @@ Catalog.get = function(req) {
                 response[0].descriptors = JSON.parse(result[0].body).collection['nsd:nsd'];
                 if (result[2].body) {
                     var data = JSON.parse(result[2].body);
-                    if (data && data["nsr:ns-instance-opdata"] && data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"]) {
-                        var nsdRefCountCollection = data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"];
+                    if (data && data["nsr:ns-instance-opdata"]) {
                         response[0].descriptors.map(function(nsd) {
                             if (!nsd["meta"]) {
                                 nsd["meta"] = {};
@@ -275,9 +274,6 @@ Catalog.get = function(req) {
                             if (typeof nsd['meta'] == 'string') {
                                 nsd['meta'] = JSON.parse(nsd['meta']);
                             }
-                            nsd["meta"]["instance-ref-count"] = _.findWhere(nsdRefCountCollection, {
-                                "nsd-id-ref": nsd.id
-                            })["instance-ref-count"];
                             nsd["constituent-vnfd"] && nsd["constituent-vnfd"].map(function(v) {
                                 v.name = vnfdDict[v["vnfd-id-ref"]];
                             })
