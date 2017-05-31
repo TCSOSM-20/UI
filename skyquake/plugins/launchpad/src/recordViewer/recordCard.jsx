@@ -156,9 +156,9 @@ export default class RecordCard extends React.Component {
                     return p;
                  }
                 volumesHTML.push(
-                    <div key={vi}>
+                    <div key={index + vi}>
                       <div className="launchpadCard_title">
-                        VOLUME
+                        VOLUME ({vdur['name']})
                       </div>
                       <div style={{display: 'flex', flexDirection: 'column'}}>
                       {
