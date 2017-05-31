@@ -57,8 +57,13 @@ class JobListCard extends React.Component {
     }
     getJobDetails(job) {
         let jobDetails = null;
-        if (job['job-status-details']) {
-            let jobDetailsArray = job['job-status-details'].split(/\\n/);
+        if (job['job-status-details'] || job['execution-error-details']) {
+            let jobDetailsArray = [];
+            if (job['job-status-details']) {
+                jobDetailsArray = job['job-status-details'].split(/\\n/);
+            } else if (job['execution-error-details']) {
+                jobDetailsArray = job['execution-error-details'].split(/\\n/);
+            }
             let jobDetailsText = [];
             jobDetailsArray && jobDetailsArray.map((jobDetail) => {
                 jobDetailsText.push(jobDetail);
@@ -140,6 +145,7 @@ class JobListCard extends React.Component {
         let self = this;
         let jobListStatus = this.getStatusColor(props['execution-status'] );
         let hideParameters = this.state.hideParameters;
+        let jobDetailsHTML = this.getJobDetails(this.props);
         return (
             <div className="jobListCard">
                 <div className="jobListCard--header">
@@ -169,6 +175,7 @@ class JobListCard extends React.Component {
                         </div>
                     </div>
                 </div>
+                {jobDetailsHTML}
             </div>
         )
     }
