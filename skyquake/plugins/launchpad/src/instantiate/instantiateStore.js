@@ -310,14 +310,16 @@ class LaunchNetworkServiceStore {
                     dataCenterID: JSON.parse(dataCenter.target.value)
                 });
             },
-            placementGroupUpdate: (i, k, value) => {
+            placementGroupUpdate: (i, k, event) => {
+                let value = event.target.value;
                 let pg = self['ns-placement-groups'];
                 pg[i][k] = value;
                 self.setState({
                     'ns-placement-groups': pg
                 })
             },
-            hostAggregateUpdate: (pgi, hai, k, value) => {
+            hostAggregateUpdate: (pgi, hai, k, event) => {
+                let value = event.target.value;
                 let pg = self['ns-placement-groups'];
                 let ha = pg[pgi]['host-aggregate'][hai];
                 ha[k] = value;
@@ -349,14 +351,16 @@ class LaunchNetworkServiceStore {
     vnfFn = () => {
         let self = this;
         return {
-            placementGroupUpdate: (i, k, value) => {
+            placementGroupUpdate: (i, k, event) => {
+                let value = event.target.value;
                 let pg = self['vnf-placement-groups'];
                 pg[i][k] = value;
                 self.setState({
                     'vnf-placement-groups': pg
                 })
             },
-            hostAggregateUpdate: (pgi, hai, k, value) => {
+            hostAggregateUpdate: (pgi, hai, k, event) => {
+                let value = event.target.value;
                 let pg = self['vnf-placement-groups'];
                 let ha = pg[pgi]['host-aggregate'][hai];
                 ha[k] = value;

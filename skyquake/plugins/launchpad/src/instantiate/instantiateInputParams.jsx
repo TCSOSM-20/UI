@@ -168,8 +168,8 @@ export default class InstantiateInputParams extends Component {
                             return (
 
                                   <div className="input_group" key={j}>
-                                    <TextInput type="text" onChange={props.nsFn.placementGroupUpdate.bind(self, i, j, 'key')} placeholder="KEY" value={key} />
-                                    <TextInput type="text" onChange={props.nsFn.placementGroupUpdate.bind(self, i, j, 'value')} placeholder="VALUE"  value={value} />
+                                    <TextInput type="text" onChange={props.nsFn.hostAggregateUpdate.bind(self, i, j, 'key')} placeholder="KEY" value={key} />
+                                    <TextInput type="text" onChange={props.nsFn.hostAggregateUpdate.bind(self, i, j, 'value')} placeholder="VALUE"  value={value} />
                                     <span onClick={props.nsFn.removeHostAggregate.bind(self, i, j)} className="removeInput"><img src={imgRemove} />Remove</span>
                                   </div>
                             )
