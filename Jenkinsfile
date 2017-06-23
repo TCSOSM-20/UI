@@ -1,30 +1,30 @@
-pipeline {
-	agent {
-		label "pipeline"
-	}
-	stages {
-		stage("Build") {
-			agent {
-				dockerfile true
-			}
-			steps {
-				sh 'make NOT_DEVELOPER_BUILD=TRUE -j16 package'
-				stash name: "deb-files", includes: ".build/*.deb"
-			}
-		}
-		stage("Repo Component") {
-			agent any
-			steps {
-				unstash "deb-files"
-				sh '''
-					mkdir -p pool/UI
-					mv .build/*.deb pool/UI/
-					mkdir -p dists/$RELEASE/UI/binary-amd64
-					apt-ftparchive packages pool/UI > dists/$RELEASE/UI/binary-amd64/Packages
-					gzip -9fk dists/$RELEASE/UI/binary-amd64/Packages
-					'''
-				archiveArtifacts artifacts: "dists/**,pool/UI/*.deb"
-			}
-		}
-	}
+properties([
+    parameters([
+        string(defaultValue: env.BRANCH_NAME, description: '', name: 'GERRIT_BRANCH'),
+        string(defaultValue: 'osm/UI', description: '', name: 'GERRIT_PROJECT'),
+        string(defaultValue: env.GERRIT_REFSPEC, description: '', name: 'GERRIT_REFSPEC'),
+        string(defaultValue: env.GERRIT_PATCHSET_REVISION, description: '', name: 'GERRIT_PATCHSET_REVISION'),
+        string(defaultValue: 'https://osm.etsi.org/gerrit', description: '', name: 'PROJECT_URL_PREFIX'),
+        booleanParam(defaultValue: false, description: '', name: 'TEST_INSTALL'),
+    ])
+])
+
+def devops_checkout() {
+    dir('devops') {
+        git url: "${PROJECT_URL_PREFIX}/osm/devops", branch: params.GERRIT_BRANCH
+    }
+}
+
+node {
+    checkout scm
+    devops_checkout()
+
+    ci_helper = load "devops/jenkins/ci-pipelines/ci_stage_2.groovy"
+    ci_helper.ci_pipeline( 'UI',
+                           params.PROJECT_URL_PREFIX,
+                           params.GERRIT_PROJECT,
+                           params.GERRIT_BRANCH,
+                           params.GERRIT_REFSPEC,
+                           params.GERRIT_PATCHSET_REVISION,
+                           params.TEST_INSTALL)
 }
