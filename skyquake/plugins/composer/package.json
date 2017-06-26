@@ -41,7 +41,8 @@
     "react-crouton": "^0.2.7",
     "react-dom": "^0.14.3",
     "react-popout": "^0.4.0",
-    "react-treeview": "^0.4.2",
+    "react-select": "^1.0.0-rc.4",
+    "react-treeview": "0.4.2",
     "request-promise": "^3.0.0",
     "require-json": "0.0.1",
     "uuid": "^3.0.0"
