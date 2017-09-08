@@ -11,7 +11,7 @@ properties([
 
 def devops_checkout() {
     dir('devops') {
-        git url: "${PROJECT_URL_PREFIX}/osm/devops"
+        git url: "${PROJECT_URL_PREFIX}/osm/devops", branch: params.GERRIT_BRANCH
     }
 }
 
