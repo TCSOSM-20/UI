@@ -6,6 +6,7 @@ properties([
         string(defaultValue: env.GERRIT_PATCHSET_REVISION, description: '', name: 'GERRIT_PATCHSET_REVISION'),
         string(defaultValue: 'https://osm.etsi.org/gerrit', description: '', name: 'PROJECT_URL_PREFIX'),
         booleanParam(defaultValue: true, description: '', name: 'BUILD_SYSTEM'),
+        string(defaultValue: 'artifactory-osm', description: '', name: 'ARTIFACTORY_SERVER'),
     ])
 ])
 
@@ -26,5 +27,6 @@ node {
                            params.GERRIT_BRANCH,
                            params.GERRIT_REFSPEC,
                            params.GERRIT_PATCHSET_REVISION,
-                           params.BUILD_SYSTEM)
+                           params.BUILD_SYSTEM,
+                           params.ARTIFACTORY_SERVER)
 }
