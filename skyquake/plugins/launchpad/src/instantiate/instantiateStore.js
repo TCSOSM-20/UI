@@ -255,9 +255,13 @@ class LaunchNetworkServiceStore {
             ipProfiles: NSD['ip-profiles']
         };
         newState.selectedNSD = data;
+        newState['input-parameters'] = [];
         if (NSD['input-parameter-xpath']) {
             newState.hasConfigureNSD = true;
-            newState['input-parameters'] = NSD['input-parameter-xpath'];
+            NSD['input-parameter-xpath'].map(function(p) {
+                newState.hasConfigureNSD = true;
+                newState['input-parameters'].push(_cloneDeep(p));
+            })
         } else {
             newState.hasConfigureNSD = false;
             newState['input-parameters'] = null;
@@ -716,12 +720,16 @@ class LaunchNetworkServiceStore {
             }
             payload["cloud-account"] = this.state.selectedCloudAccount.name;
         }
+        //Clean Input Parameters
         if (this.state.hasConfigureNSD) {
-            let ips = this.state['input-parameters'];
+            let ips = _cloneDeep(this.state['input-parameters']);
+
             let ipsToSend = ips.filter(function(ip) {
                 if (ip.value && ip.value != "") {
-                    ip.uuid = GUID();
+                    delete ip.label;
                     delete ip.name;
+                    delete ip['default-value'];
+
                     return true;
                 }
                 return false;
