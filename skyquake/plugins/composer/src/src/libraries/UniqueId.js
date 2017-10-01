@@ -45,8 +45,16 @@ export default class UID {
 		return !!UID.from(obj);
 	}
 
-	static assignUniqueId(obj) {
-		return obj[UID.propertyName] = UID.create();
+	static assignUniqueId(obj, uid = null) {
+		if (!obj || /undefined|null/.test(obj)) {
+			return;
+		}
+		uid = uid || UID.create();
+		if (obj.uiState) {
+			obj.uiState[UID.propertyName] = uid;
+		} else {
+			obj[UID.propertyName] = uid;
+		}
 	}
 
 }

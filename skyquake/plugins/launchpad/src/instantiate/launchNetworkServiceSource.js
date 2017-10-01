@@ -46,26 +46,6 @@ export default function(Alt){
       success: Alt.actions.global.getCatalogSuccess,
       error: Alt.actions.global.getCatalogError
   },
-  getCloudAccount:{
-      remote (state, cb) {
-        return new Promise((resolve, reject) => {
-          $.ajax({
-            url: 'api/cloud-account?api_server=' +
-              API_SERVER,
-              type: 'GET',
-              beforeSend: Utils.addAuthorizationStub,
-              success: function (data) {
-                resolve(data);
-                if(cb) {
-                  cb();
-                }
-              }
-          })
-        })
-      },
-      success: Alt.actions.global.getLaunchCloudAccountSuccess,
-      error: Alt.actions.global.getLaunchCloudAccountError
-  },
   getDataCenters:{
       remote () {
         return new Promise((resolve, reject) => {
@@ -128,16 +108,7 @@ export default function(Alt){
           }).fail(function(xhr){
             //Authentication and the handling of fail states should be wrapped up into a connection class.
             Utils.checkAuthentication(xhr.status);
-            var error = null;
-            if(xhr.responseText) {
-              try {
-                error = JSON.parse(xhr.responseText);
-                error = JSON.parse(error.error)['rpc-reply']['rpc-error']['error-message'];
-              } catch(e){
-                console.log(e);
-              }
-            }
-            reject(error);
+            reject(xhr.responseText || 'An error occurred. Check your logs for more information');
           });
         })
       },
@@ -170,7 +141,7 @@ export default function(Alt){
       remote(state) {
         return new Promise((resolve, reject) => {
           $.ajax({
-            url: 'api/nsd/' + NSDId + '/input-param?api_server=' + API_SERVER,
+            url: 'api/nsd/' + encodeURIComponent(NSDId) + '/input-param?api_server=' + API_SERVER,
             type: 'GET',
               beforeSend: Utils.addAuthorizationStub,
               success: function (data) {
@@ -200,22 +171,19 @@ export default function(Alt){
       success: Alt.actions.global.getConfigAgentSuccess,
       error: Alt.actions.global.getConfigAgentError
   },
-  getResourceOrchestrator: {
-          remote: function() {
+  getResourceOrchestratorAccounts: {
+          remote: function(state, cb) {
               return new Promise(function(resolve, reject) {
                 $.ajax({
-                  url: 'passthrough/data/api/running/resource-orchestrator' + '?api_server=' + API_SERVER,
+                  url: 'api/ro-account' + '?api_server=' + API_SERVER,
                   type: 'GET',
                   beforeSend: Utils.addAuthorizationStub,
                   contentType: "application/json",
                   success: function(data) {
-                    let returnedData;
-                    if (data.hasOwnProperty("rw-launchpad:resource-orchestrator")) {
-                      returnedData = data['rw-launchpad:resource-orchestrator'];
-                    } else {
-                      returnedData = {};
+                    if(cb) {
+                      cb();
                     }
-                    resolve(returnedData);
+                    resolve(data);
                   },
                   error: function(error) {
                     console.log("There was an error updating the account: ", arguments);
@@ -231,11 +199,10 @@ export default function(Alt){
           interceptResponse: interceptResponse({
             'error': 'There was an error retrieving the resource orchestrator information.'
           }),
-          success: Alt.actions.global.getResourceOrchestratorSuccess,
+          success: Alt.actions.global.getResourceOrchestratorAccountsSuccess,
                     loading: Alt.actions.global.showScreenLoader,
-          error: Alt.actions.global.showNotification
+          error: Alt.actions.global.handleServerReportedError
         }
-
   }
 }
 function interceptResponse (responses) {

@@ -42,11 +42,11 @@ export default {
           }
           console.log(nsr_id)
           $.ajax({
-            url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling?api_server=' + API_SERVER,
+            url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling',
             type: 'POST',
             beforeSend: Utils.addAuthorizationStub,
             data: {
-              url: API_SERVER + ':' + NODE_PORT + '/launchpad/nsr/' + nsr_id + '/vnfr?api_server=' + API_SERVER,
+              url: API_SERVER + ':' + NODE_PORT + '/launchpad/nsr/' + encodeURIComponent(nsr_id) + '/vnfr?api_server=' + API_SERVER,
             },
             success: function(data) {
               Utils.checkAndResolveSocketRequest(data, resolve, reject);

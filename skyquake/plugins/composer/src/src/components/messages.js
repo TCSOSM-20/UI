@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,11 +29,11 @@ const message = {
 	detailsWelcome() {
 		return <p className="welcome-message">Select an object to view details.</p>;
 	},
-	canvasWelcome() {
+	canvasWelcome(isValid) {
 		return (
 			<span>
 				<p className="welcome-message">Double-click a Descriptor to open.</p>
-				<p className="welcome-message">Or drag a Descriptor to add to Canvas.</p>
+				{isValid ? <p className="welcome-message">Or drag a Descriptor to add to Canvas.</p> : null}
 			</span>
 		);
 	},
@@ -43,8 +43,8 @@ const message = {
 	get showLessTitle() {
 		return 'Show Less';
 	},
-	get catalogWelcome() {
-		return <p className="welcome-message">To onboard a descriptor, drag the package to the catalog or click the Onboard button (<img style={{width: '20px'}} src={imgOnboard} />) to select the package.</p>;
+	catalogWelcome(isValid) {
+		return isValid ? <p className="welcome-message">To onboard a descriptor, drag the package to the catalog or click the Onboard button (<img style={{width: '20px'}} src={imgOnboard} />) to select the package.</p> : <p className="welcome-message"> No descriptors have been onboarded</p> ;
 	},
 	getSaveActionLabel(isNew) {
 		return isNew ? 'Onboard' : 'Update';

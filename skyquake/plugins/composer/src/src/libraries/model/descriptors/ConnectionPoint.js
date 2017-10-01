@@ -45,8 +45,8 @@ export default class ConnectionPoint extends DescriptorModel {
 		return 'vnfd.' + ConnectionPoint.type;
 	}
 
-	constructor(model, parent) {
-		super(model, parent);
+	constructor(model, parent, readonly) {
+		super(model, parent, readonly);
 		this.type = ConnectionPoint.type;
 		this.uiState['qualified-type'] = ConnectionPoint.qualifiedType;
 		this.className = 'VirtualNetworkFunctionConnectionPoint';

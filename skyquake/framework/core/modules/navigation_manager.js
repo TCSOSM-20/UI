@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +42,6 @@ function addNavigation(plugin_name, routes) {
 	if (!NAVIGATION[plugin_name]) {
 		NAVIGATION[plugin_name] = {};
 	}
-
 	if (!NAVIGATION[plugin_name].routes) {
 		NAVIGATION[plugin_name].routes = routes;
 	} else {
@@ -69,6 +68,20 @@ function addLabel(plugin_name, label) {
 	NAVIGATION[plugin_name].label = label || 'RW.UI Plugin';
 }
 
+function addAllow(plugin_name, allow) {
+	if (!NAVIGATION[plugin_name]) {
+		NAVIGATION[plugin_name] = {};
+	}
+	NAVIGATION[plugin_name].allow = allow || '*';
+}
+
+function addAdminFlag(plugin_name, admin_link) {
+	if (!NAVIGATION[plugin_name]) {
+		NAVIGATION[plugin_name] = {};
+	}
+	NAVIGATION[plugin_name].admin_link = admin_link || false;
+}
+
 function getNavigation() {
 	return NAVIGATION;
 }
@@ -82,6 +95,8 @@ function onNavigationDiscovered(plugin_name, plugin) {
 	addOrder(plugin_name, plugin.order);
 	addPriority(plugin_name, plugin.priority);
 	addLabel(plugin_name, plugin.name);
+	addAllow(plugin_name, plugin.allow);
+	addAdminFlag(plugin_name, plugin.admin_link);
 }
 
 function init() {

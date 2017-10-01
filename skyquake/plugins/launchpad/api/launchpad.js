@@ -38,6 +38,7 @@ var ComputeTopology = {};
 var NetworkTopology = {};
 var VDUR = {};
 var CloudAccount = {};
+var ResourceOrchestratorAccount = {};
 var ConfigAgentAccount = {};
 var RPC = {};
 var SSHkey = {};
@@ -48,18 +49,19 @@ APIConfig.NfviMetrics = ['vcpu', 'memory'];
 RPC.executeNSServicePrimitive = function(req) {
     var api_server = req.query['api_server'];
     return new Promise(function(resolve, reject) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/exec-ns-service-primitive');
         var jsonData = {
-            "input": req.body
+            "input": utils.addProjectContextToRPCPayload(req, uri, req.body)
         };
 
         var headers = _.extend({},
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/operations/exec-ns-service-primitive',
+            url: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -81,18 +83,20 @@ RPC.getNSServicePrimitiveValues = function(req) {
     // var nsr_id = req.body['nsr_id_ref'];
     // var nsConfigPrimitiveName = req.body['name'];
     return new Promise(function(resolve, reject) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/get-ns-service-primitive-values');
+
         var jsonData = {
-            "input": req.body
+            "input": utils.addProjectContextToRPCPayload(req, uri, req.body)
         };
 
         var headers = _.extend({},
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operations/get-ns-service-primitive-values',
+            uri: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -133,16 +137,20 @@ RPC.refreshAccountConnectionStatus = function(req) {
         }
     }
     jsonData.input[rpcInfo[Type].label] = Name;
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operations/' + rpcInfo[Type].rpc);
+
+    jsonData.input = utils.addProjectContextToRPCPayload(req, uri, jsonData.input);
+
     var headers = _.extend({},
         constants.HTTP_HEADERS.accept.data,
         constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         }
     );
     return new Promise(function(resolve, reject) {
-
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operations/' + rpcInfo[Type].rpc,
+            uri: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -168,33 +176,34 @@ var DataCenters = {};
 Catalog.get = function(req) {
     var api_server = req.query['api_server'];
     var results = {}
+    var projectPrefix = req.session.projectId ? "project-" : "";
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -207,7 +216,7 @@ Catalog.get = function(req) {
             //   headers: _.extend({},
             //     constants.HTTP_HEADERS.accept.collection,
             //     {
-            //       'Authorization': req.get('Authorization')
+            //       'Authorization': req.session && req.session.authorization
             //     }),
             //   forever: constants.FOREVER_ON,
             // rejectUnauthorized: false,
@@ -258,16 +267,16 @@ Catalog.get = function(req) {
             var vnfdCatalog = null;
             var vnfdDict = {};
             if (result[1].body) {
-                vnfdCatalog = JSON.parse(result[1].body).collection['vnfd:vnfd'].map(function(v, i) {
+                response[1].descriptors = utils.dataToJsonSansPropNameNamespace(result[1].body).collection['vnfd'];
+                vnfdCatalog = response[1].descriptors.map(function(v, i) {
                     vnfdDict[v.id] = v['short-name'] || v.name;
                 })
             }
             if (result[0].body) {
-                response[0].descriptors = JSON.parse(result[0].body).collection['nsd:nsd'];
+                response[0].descriptors = utils.dataToJsonSansPropNameNamespace(result[0].body).collection['nsd'];
                 if (result[2].body) {
                     var data = JSON.parse(result[2].body);
-                    if (data && data["nsr:ns-instance-opdata"] && data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"]) {
-                        var nsdRefCountCollection = data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"];
+                    if (data && data["ns-instance-opdata"]) {
                         response[0].descriptors.map(function(nsd) {
                             if (!nsd["meta"]) {
                                 nsd["meta"] = {};
@@ -275,9 +284,6 @@ Catalog.get = function(req) {
                             if (typeof nsd['meta'] == 'string') {
                                 nsd['meta'] = JSON.parse(nsd['meta']);
                             }
-                            nsd["meta"]["instance-ref-count"] = _.findWhere(nsdRefCountCollection, {
-                                "nsd-id-ref": nsd.id
-                            })["instance-ref-count"];
                             nsd["constituent-vnfd"] && nsd["constituent-vnfd"].map(function(v) {
                                 v.name = vnfdDict[v["vnfd-id-ref"]];
                             })
@@ -285,12 +291,6 @@ Catalog.get = function(req) {
                     }
                 }
             };
-            if (result[1].body) {
-                response[1].descriptors = JSON.parse(result[1].body).collection['vnfd:vnfd'];
-            };
-            // if (result[2].body) {
-            //   response[2].descriptors = JSON.parse(result[2].body).collection['pnfd:pnfd'];
-            // };
             resolve({
                 statusCode: response.statusCode || 200,
                 data: JSON.stringify(response)
@@ -315,10 +315,10 @@ Catalog.delete = function(req) {
     console.log('Deleting', catalogType, id, 'from', api_server);
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + encodeURIComponent(id)),
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -334,7 +334,7 @@ Catalog.delete = function(req) {
 Catalog.getVNFD = function(req) {
     var api_server = req.query['api_server'];
     var vnfdID = req.body.data;
-    var authorization = req.get('Authorization');
+    var authorization = req.session && req.session.authorization;
     var VNFDs = [];
     if (typeof(vnfdID) == "object" && vnfdID.constructor.name == "Array") {
         vnfdID.map(function(id) {
@@ -361,9 +361,9 @@ Catalog.getVNFD = function(req) {
 
     function requestVNFD(id) {
         return new Promise(function(resolve, reject) {
-            var url = utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd' + (id ? '/' + id : '') + '?deep';
+            var url = utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd' + (id ? '/' + encodeURIComponent(id) : '') + '?deep';
             request({
-                uri: url,
+                uri: utils.projectContextUrl(req, url),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': authorization
@@ -399,10 +399,10 @@ Catalog.create = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -429,10 +429,10 @@ Catalog.update = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + encodeURIComponent(id)),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -508,35 +508,40 @@ NSR.get = function(req) {
     var nsrPromises = [];
     var api_server = req.query["api_server"];
     var id = req.params.id;
-    var nsdInfo = new Promise(function(resolve, reject) {
+    var projectPrefix = req.session.projectId ? "project-" : "";
+    var vnfdInfo = new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd'),
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
         }, function(error, response, body) {
-            if (utils.validateResponse('NSR.get nsd-catalog', error, response, body, resolve, reject)) {
+            if (utils.validateResponse('NSR.get vnfd-catalog', error, response, body, resolve, reject)) {
                 var data;
                 var isString = typeof(response.body) == "string";
                 if (isString && response.body == '') return resolve('empty');
                 data = isString ? JSON.parse(response.body) : response.body;
-                var nsdData = data.collection["nsd:nsd"];
-                if (nsdData.constructor.name == "Object") {
-                    nsdData = [nsdData];
+                var vnfdData = data.collection[projectPrefix + "vnfd:vnfd"];
+                if (vnfdData.constructor.name == "Object") {
+                    vnfdData = [vnfdData];
                 }
-                resolve(nsdData);
+                var vnfdDict = {};
+                vnfdData.map(function(v, i) {
+                    vnfdDict[v.id] = v;
+                })
+                resolve(vnfdDict);
             };
-        })
+        })//
     })
     var config = new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-config/nsr' + (id ? '/' + id : '') + '?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-config/nsr' + (id ? '/' + encodeURIComponent(id) : '') + '?deep'),
             method: 'GET',
             headers: _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -557,10 +562,10 @@ NSR.get = function(req) {
     });
     var opData = new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr' + (id ? '/' + id : '') + '?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr' + (id ? '/' + encodeURIComponent(id) : '') + '?deep'),
             method: 'GET',
             headers: _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -591,13 +596,14 @@ NSR.get = function(req) {
     });
     return new Promise(function(resolve, reject) {
         //Need smarter error handling here
-        Promise.all([config, opData]).then(function(resolves) {
+        Promise.all([config, opData, vnfdInfo]).then(function(resolves) {
             var aggregate = {};
             // resolves[0] ==> ns-instance-config
             // resolves[1] ==> ns-instance-opdata
 
             var nsInstanceConfig = resolves[0] && resolves[0];
             var nsInstanceOpdata = resolves[1] && resolves[1];
+            var vnfdCatalog = resolves[2];
 
             if (!nsInstanceConfig && !nsInstanceOpdata) {
                 return resolve({
@@ -620,7 +626,9 @@ NSR.get = function(req) {
                                 'member-vnf-index-ref': vnfd['member-vnf-index-ref']
                             });
                             if (vnfrObj) {
+                                var vnfdId = _.findWhere(v.nsd['constituent-vnfd'], {'member-vnf-index': vnfrObj['member-vnf-index-ref']})['vnfd-id-ref'];                                
                                 vnfd['short-name'] = vnfrObj['short-name'];
+                                vnfd['vnfd'] = {id: vnfrObj.id, logo: vnfdCatalog[vnfdId]['logo']}
                             }
                         })
                     })
@@ -651,7 +659,12 @@ NSR.get = function(req) {
                             }
                         });
                     });
-                })
+                });
+
+                v['vnfrs'] && v['vnfrs'].map(function(vnfrObj){
+                    var vnfdId = _.findWhere(v.nsd['constituent-vnfd'], {'member-vnf-index': vnfrObj['member-vnf-index-ref']})['vnfd-id-ref'];
+                    vnfrObj.vnfd = vnfdCatalog[vnfdId];
+                });
             });
             var nsrsData = nsInstanceConfig;
             nsrsData.sort(function(a, b) {
@@ -739,7 +752,7 @@ NSR.addVlrDataPromise = function(req, nsrs) {
     function decorateNSRWithVLR(nsr, nsrVLRObject, vlr) {
         var vlrObject = _.extend(nsrVLRObject, vlr);
         vlrObject['vnfr-connection-point-ref'] && vlrObject['vnfr-connection-point-ref'].map(function(vnfrCP) {
-            var vnfrName = nsr['vnfrs'] && _.find(nsr['vnfrs'], {id: vnfrCP['vnfr-id']})['name'];
+            var vnfrName = nsr['vnfrs'] && nsr['vnfrs'].length && _.findWhere(nsr['vnfrs'], {id: vnfrCP['vnfr-id']})['name'];
             vnfrName && (vnfrCP['vnfr-name'] = vnfrName);
         });
         nsr['decorated-vlrs'].splice(_.sortedIndex(nsr['decorated-vlrs'], vlrObject, 'name'), 0, vlrObject);
@@ -816,7 +829,7 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
 
         vnfr && vnfr['vdur'] && vnfr['vdur'].map(function(vdur) {
             // This console-url is what front-end will hit to generate a real console-url
-            vdur['console-url'] = 'api/vnfr/' + vnfr.id + '/vdur/' + vdur.id + '/console-url';
+            vdur['console-url'] = 'api/vnfr/' + encodeURIComponent(vnfr.id) + '/vdur/' + encodeURIComponent(vdur.id) + '/console-url';
             nsr['console-urls'].push({
                 id: vdur.id,
                 name: vnfr.name,
@@ -834,7 +847,7 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
             "nsr-id": nsr['ns-instance-config-ref'],
             "name": vnfr['name'],
             "vdur": vnfr["vdur"],
-            "cloud-account": vnfr["cloud-account"]
+            "datacenter": vnfr["datacenter"]
         };
         var vnfrSg = nsr['vnfr-scaling-groups'];
         var vnfrName = vnfr["name"];
@@ -844,7 +857,7 @@ NSR.addVnfrDataPromise = function(req, nsrs) {
             }
         }
         var vnfrNfviMetrics = buildNfviGraphs(vnfr.vdur, vnfrName);
-        if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) {
+        if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['config-primitive'] && vnfr['vnf-configuration']['config-primitive'].length > 0) {
             vnfrObj['service-primitives-present'] = true;
         } else {
             vnfrObj['service-primitives-present'] = false;
@@ -866,10 +879,10 @@ NSR.create = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -910,10 +923,10 @@ NSR.delete = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(id)),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1006,10 +1019,10 @@ NSR.setStatus = function(req) {
         }
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/admin-status/',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(id) + '/admin-status/'),
             method: 'PUT',
             headers: requestHeaders,
             json: {
@@ -1059,12 +1072,12 @@ NSR.createScalingGroupInstance = function(req) {
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data,
             {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/scaling-group/' + scaling_group_id + '/instance',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(id) + '/scaling-group/' + encodeURIComponent(scaling_group_id) + '/instance'),
             method: 'POST',
             headers: requestHeaders,
             json: jsonData,
@@ -1108,12 +1121,12 @@ NSR.deleteScalingGroupInstance = function(req) {
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data,
             {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + id + '/scaling-group/' + scaling_group_id + '/instance/' + scaling_instance_id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(id) + '/scaling-group/' + encodeURIComponent(scaling_group_id) + '/instance/' + encodeURIComponent(scaling_instance_id)),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1152,12 +1165,12 @@ NSR.nsd.vld.get = function(req) {
         _.extend(requestHeaders,
             vld_id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection,
             {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld' + (vld_id ? '/' + vld_id : '')  +'?deep',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(nsr_id) + '/nsd/vld' + (vld_id ? '/' + encodeURIComponent(vld_id) : '')  +'?deep'),
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1197,10 +1210,10 @@ NSR.nsd.vld.create = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld' + (vld_id ? '/' + vld_id : ''),
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(nsr_id) + '/nsd/vld' + (vld_id ? '/' + encodeURIComponent(vld_id) : '')),
             method: vld_id ? 'PUT' : 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1239,12 +1252,12 @@ NSR.nsd.vld.delete = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
 
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + nsr_id + '/nsd/vld/' + vld_id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/ns-instance-config/nsr/' + encodeURIComponent(nsr_id) + '/nsd/vld/' + encodeURIComponent(vld_id)),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1264,13 +1277,13 @@ VNFR.get = function(req) {
     var api_server = req.query["api_server"];
     var id = req.params.id;
     var uri = utils.confdPort(api_server);
-    uri += APIVersion + '/api/operational/vnfr-catalog/vnfr' + (id ? '/' + id : '') + '?deep';
+    uri += APIVersion + '/api/operational/vnfr-catalog/vnfr' + (id ? '/' + encodeURIComponent(id) : '') + '?deep';
     var headers = _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1278,14 +1291,14 @@ VNFR.get = function(req) {
         }, function(error, response, body) {
             if (utils.validateResponse('VNFR.get', error, response, body, resolve, reject)) {
                 var data = JSON.parse(response.body);
-                var returnData = id ? [data["vnfr:vnfr"]] : data.collection["vnfr:vnfr"];
+                var returnData = id ? (data["vnfr:vnfr"] ? [data["vnfr:vnfr"]] : []) : data.collection["vnfr:vnfr"];
                 returnData.forEach(function(vnfr) {
-                    vnfr['nfvi-metrics'] = buildNfviGraphs(vnfr.vdur);
-                    vnfr['epa-params'] = epa_aggregator(vnfr.vdur);
-                    vnfr['service-primitives-present'] = (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) ? true : false;
+                    vnfr['nfvi-metrics'] = vnfr.vdur ? buildNfviGraphs(vnfr.vdur) : [];
+                    vnfr['epa-params'] = vnfr.vdur ? epa_aggregator(vnfr.vdur) : [];
+                    vnfr['service-primitives-present'] = (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['config-primitive'] && vnfr['vnf-configuration']['config-primitive'].length > 0) ? true : false;
                     vnfr['vdur'] && vnfr['vdur'].map(function(vdur, vdurIndex) {
                         // This console-url is what front-end will hit to generate a real console-url
-                        vdur['console-url'] = 'api/vnfr/' + vnfr.id + '/vdur/' + vdur.id + '/console-url';
+                        vdur['console-url'] = 'api/vnfr/' + encodeURIComponent(vnfr.id) + '/vdur/' + encodeURIComponent(vdur.id) + '/console-url';
                     });
                 });
                 return resolve(returnData);
@@ -1339,9 +1352,9 @@ VNFR.getByNSR = function(req) {
     var uri = utils.confdPort(api_server);
     var reqClone = _.clone(req);
     delete reqClone.params.id;
-    uri += APIVersion + '/api/operational/ns-instance-opdata/nsr/' + id + '?deep';
+    uri += APIVersion + '/api/operational/ns-instance-opdata/nsr/' + encodeURIComponent(id) + '?deep';
     var headers = _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         if (VNFR.cachedNSR[id]) {
@@ -1352,7 +1365,7 @@ VNFR.getByNSR = function(req) {
             });
         } else {
             request({
-                url: uri,
+                url: utils.projectContextUrl(req, uri),
                 method: 'GET',
                 headers: headers,
                 forever: constants.FOREVER_ON,
@@ -1386,13 +1399,13 @@ VLR.get = function(req) {
     var api_server = req.query["api_server"];
     var id = req.params.id;
     var uri = utils.confdPort(api_server);
-    uri += APIVersion + '/api/operational/vlr-catalog/vlr' + (id ? '/' + id : '') + '?deep';
+    uri += APIVersion + '/api/operational/vlr-catalog/vlr' + (id ? '/' + encodeURIComponent(id) : '') + '?deep';
     var headers = _.extend({}, id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1416,10 +1429,10 @@ RIFT.api = function(req) {
     var url = req.path;
     return new Promise(function(resolve, reject) {
         request({
-            url: uri + url + '?deep',
+            url: utils.projectContextUrl(req, uri + url + '?deep'),
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -1444,11 +1457,11 @@ ComputeTopology.get = function(req) {
     return new Promise(function(resolve, reject) {
         var nsrPromise = new Promise(function(success, failure) {
             request({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr/' + nsr_id + '?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata/nsr/' + encodeURIComponent(nsr_id) + '?deep'),
                 method: 'GET',
                 headers: _.extend({},
                     constants.HTTP_HEADERS.accept.data, {
-                        'Authorization': req.get('Authorization')
+                        'Authorization': req.session && req.session.authorization
                     }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -1493,10 +1506,10 @@ ComputeTopology.get = function(req) {
                     vnfrPromises.push(
                         new Promise(function(success, failure) {
                             rp({
-                                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/vnfr-catalog/vnfr/' + vnfrId + '?deep',
+                                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/vnfr-catalog/vnfr/' + encodeURIComponent(vnfrId) + '?deep'),
                                 method: 'GET',
                                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                                    'Authorization': req.get('Authorization')
+                                    'Authorization': req.session && req.session.authorization
                                 }),
                                 forever: constants.FOREVER_ON,
                                 rejectUnauthorized: false,
@@ -1587,11 +1600,11 @@ NetworkTopology.get = function(req) {
     var uri = utils.confdPort(api_server);
     uri += APIVersion + '/api/operational/network?deep';
     var headers = _.extend({}, constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1616,13 +1629,13 @@ VDUR.get = function(req) {
     var vnfrID = req.params.vnfr_id;
     var vdurID = req.params.vdur_id;
     var uri = utils.confdPort(api_server);
-    uri += APIVersion + '/api/operational/vnfr-catalog/vnfr/' + vnfrID + '/vdur/' + vdurID + '?deep';
+    uri += APIVersion + '/api/operational/vnfr-catalog/vnfr/' + encodeURIComponent(vnfrID) + '/vdur/' + encodeURIComponent(vdurID) + '?deep';
     var headers = _.extend({}, constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1643,13 +1656,13 @@ VDUR.consoleUrl.get = function(req) {
     var vnfrID = req.params.vnfr_id;
     var vdurID = req.params.vdur_id;
     var uri = utils.confdPort(api_server);
-    uri += APIVersion + '/api/operational/vnfr-console/vnfr/' + vnfrID + '/vdur/' + vdurID + '/console-url' + '?deep';
+    uri += APIVersion + '/api/operational/vnfr-console/vnfr/' + encodeURIComponent(vnfrID) + '/vdur/' + encodeURIComponent(vdurID) + '/console-url' + '?deep';
     var headers = _.extend({}, constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1672,11 +1685,11 @@ CloudAccount.get = function(req) {
     var uri = utils.confdPort(api_server);
     uri += APIVersion + '/api/operational/cloud/account?deep';
     var headers = _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
     });
     return new Promise(function(resolve, reject) {
         request({
-            url: uri,
+            url: utils.projectContextUrl(req, uri),
             method: 'GET',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -1692,6 +1705,114 @@ CloudAccount.get = function(req) {
             };
         });
     });
+}
+ResourceOrchestratorAccount.get = function(req) {
+var self = this;
+    var api_server = req.query["api_server"];
+    var accountID = req.params.id || req.params.name;
+
+    return new Promise(function(resolve, reject) {
+        var requestHeaders = {};
+        _.extend(requestHeaders,
+            constants.HTTP_HEADERS.accept.collection, {
+                'Authorization': req.session && req.session.authorization
+            }
+        );
+        var urlOp =  utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ro-account/account');
+        var urlConfig =  utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ro-account-state/account');
+        if(accountID) {
+            urlOp = url + '/' + encodeURIComponent(accountID);
+            urlConfig = url + '/' + encodeURIComponent(accountID);
+        }
+        var allRequests = [];
+        var roOpData = new Promise(function(resolve, reject) {
+            request({
+                url: urlOp,
+                type: 'GET',
+                headers: requestHeaders,
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false
+                },
+                function(error, response, body) {
+                    var data;
+                    if (utils.validateResponse('RoAccount.get', error, response, body, resolve, reject)) {
+                        try {
+                            data = JSON.parse(response.body).collection['rw-ro-account:account']
+                        } catch (e) {
+                            console.log('Problem with "RoAccount.get"', e);
+                            var err = {};
+                            err.statusCode = 500;
+                            err.errorMessage = {
+                                error: 'Problem with "RoAccount.get": ' + e // + e.toString()
+                            }
+                            return reject(err);
+                        }
+                        return resolve({
+                            statusCode: response.statusCode,
+                            data: data
+                        });
+                    };
+                }
+            );
+        });
+        var roConfigData = new Promise(function(resolve, reject){
+            request({
+                url: urlConfig,
+                type: 'GET',
+                headers: requestHeaders,
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false
+                },
+                function(error, response, body) {
+                    var data;
+                    if (utils.validateResponse('RoAccount.get', error, response, body, resolve, reject)) {
+                        try {
+                            data = JSON.parse(response.body).collection['rw-ro-account:account']
+                        } catch (e) {
+                            console.log('Problem with "RoAccount.get"', e);
+                            var err = {};
+                            err.statusCode = 500;
+                            err.errorMessage = {
+                                error: 'Problem with "RoAccount.get": ' + e // + e.toString()
+                            }
+                            return reject(err);
+                        }
+                        return resolve({
+                            statusCode: response.statusCode,
+                            data: data
+                        });
+                    };
+                }
+            );
+        });
+
+        allRequests.push(roOpData);
+        allRequests.push(roConfigData);
+        Promise.all(allRequests).then(function(data) {
+            var state = data[1].data;
+            var op = data[0].data;
+            var result = [];
+            var dict = {"rift":{}};
+            if (!accountID) {
+                state.length && state.map(function(s){
+                    dict[s.name] = s;
+                });
+                op.length && op.map(function(o) {
+                    dict[o.name] = _.extend(dict[o.name], o);
+                });
+                Object.keys(dict).map(function(d) {
+                    result.push(dict[d]);
+                })
+            } else {
+                result = _.extend(op, state);
+            }
+            resolve({
+                statusCode: 200,
+                data: result
+            })
+        })
+
+    })
 }
 
 
@@ -1709,11 +1830,11 @@ ConfigAgentAccount.get = function(req) {
             var requestHeaders = {};
             _.extend(requestHeaders,
                 constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 });
 
             request({
-                    url: utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account',
+                    url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account'),
                     type: 'GET',
                     headers: requestHeaders,
                     forever: constants.FOREVER_ON,
@@ -1749,11 +1870,11 @@ ConfigAgentAccount.get = function(req) {
             var requestHeaders = {};
             _.extend(requestHeaders,
                 constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 });
 
             request({
-                    url: utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account/' + id,
+                    url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/config-agent/account/' + encodeURIComponent(id)),
                     type: 'GET',
                     headers: requestHeaders,
                     forever: constants.FOREVER_ON,
@@ -1802,11 +1923,11 @@ ConfigAgentAccount.create = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
 
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/config-agent',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/config-agent'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1841,11 +1962,11 @@ ConfigAgentAccount.update = function(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
 
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + id,
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + encodeURIComponent(id)),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1883,10 +2004,10 @@ ConfigAgentAccount.delete = function(req) {
         var requestHeaders = {};
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + id,
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/config-agent/account/' + encodeURIComponent(id)),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1909,10 +2030,10 @@ DataCenters.get = function(req) {
         var requestHeaders = {};
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/operational/datacenters?deep',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/datacenters?deep'),
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1950,10 +2071,10 @@ SSHkey.get  = function(req) {
         var requestHeaders = {};
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
-            url: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair?deep',
+            url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair?deep'),
             method: 'GET',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -1987,10 +2108,10 @@ SSHkey.delete = function(req) {
     console.log('Deleting ssk-key', id);
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/' + encodeURIComponent(id)),
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -2008,10 +2129,10 @@ SSHkey.post = function(req) {
     var data = req.body;
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/'),
             method: 'POST',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             json: data,
             forever: constants.FOREVER_ON,
@@ -2031,10 +2152,10 @@ SSHkey.put = function(req) {
     var data = req.body;
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/key-pair/'),
             method: 'PUT',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             json: data,
             forever: constants.FOREVER_ON,
@@ -2063,6 +2184,7 @@ module.exports.computeTopology = ComputeTopology;
 module.exports.networkTopology = NetworkTopology;
 module.exports.config = Config;
 module.exports.cloud_account = CloudAccount;
+module.exports.ResourceOrchestratorAccount = ResourceOrchestratorAccount;
 module.exports['config-agent-account'] = ConfigAgentAccount;
 module.exports.rpc = RPC;
 module.exports.data_centers = DataCenters;

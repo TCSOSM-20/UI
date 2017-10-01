@@ -43,14 +43,17 @@ const ASSET_TYPE = {
         { id: 'ICONS', folder: 'icons', title: "Icons", allowFolders: false },
         { id: 'SCRIPTS', folder: 'scripts', title: "scripts", allowFolders: true },
         { id: 'NS_CONFIG', folder: 'ns_config', title: "NS Config", allowFolders: false },
-        { id: 'VNF_CONFIG', folder: 'vnf_config', title: "VNF Config", allowFolders: false }
+        { id: 'VNF_CONFIG', folder: 'vnf_config', title: "VNF Config", allowFolders: false },
+        { id: 'DOC', folder: 'doc', title: "Doc", allowFolders: false },
+        { id: 'TEST', folder: 'test', title: "Test", allowFolders: false }
     ],
     'vnfd': [
         { id: 'ICONS', folder: 'icons', title: "Icons", allowFolders: false },
         { id: 'CHARMS', folder: 'charms', title: "charms", allowFolders: true },
         { id: 'SCRIPTS', folder: 'scripts', title: "scripts", allowFolders: true },
-        { id: 'IMAGES', folder: 'images', title: "images", allowFolders: false },
         { id: 'CLOUD_INIT', folder: 'cloud_init', title: "cloud_init", allowFolders: false },
+        { id: 'DOC', folder: 'doc', title: "Doc", allowFolders: false },
+        { id: 'TEST', folder: 'test', title: "Test", allowFolders: false },
         { id: 'README', folder: '.', title: "readme", allowFolders: false }
     ]
 }
@@ -73,10 +76,16 @@ function normalizeAssets(packageType, assetInfo, filesStatus) {
             folders.reverse();
             assets[assetGroup.id] = folders.map(fullName => {
                 let path = fullName.slice(typeFolder.length + 1);
-                let files = assetInfo.data[fullName].map(info => ({
-                    name: info.name.startsWith(fullName) ? info.name.slice(fullName.length + 1) : info.name,
-                    status: filesStatus[info.name]
-                }));
+                let files = assetInfo.data[fullName].reduce((assets, info) =>
+                    {
+                        let name = info.name.startsWith(fullName) ? info.name.slice(fullName.length + 1) : info.name;
+                        let status = filesStatus[info.name];
+                        if (fullName !== '.' || !(name.endsWith('.yaml') || name.startsWith('checksum'))) {
+                            assets.push({ name, status });
+                        }
+                        return assets;
+                    }
+                , []);
                 return { path, files };
             });
         }
@@ -105,8 +114,13 @@ class FileManager extends React.Component {
     }
     render() {
         let { files, filesState, type, item, actions } = this.props;
+        if (!item) {
+            return null;
+        }
         let assets = normalizeAssets(type, files, filesState);
         let children = [];
+        const User = this.props.User || {};
+        const ProjectID =  User.projectId;
         let assetTypes = ASSET_TYPE[type];
         assetTypes.forEach(assetGroup => {
             const typeFolder = assetGroup.folder;
@@ -129,6 +143,7 @@ class FileManager extends React.Component {
                     allowsFolders={assetGroup.allowFolders}
                     folders={subFolders}
                     showNotification={actions.showNotification}
+                    ProjectID={ProjectID}
                 />
             )
         }, this);
@@ -201,7 +216,7 @@ class AssetGroup extends React.Component {
             <Panel title={title} itemClassName="nested" no-corners>
                 {folderCreateComponent}
                 <div className="folder">
-                    <FileAssetList files={files} path={path} packageId={packageId} packageType={packageType} assetGroup={assetGroup} />
+                    <FileAssetList files={files} path={path} packageId={packageId} packageType={packageType} assetGroup={assetGroup} ProjectID={this.props.ProjectID} />
                     <Panel className="addFileSection" no-corners>
                         <ItemUpload packageType={packageType} packageId={packageId} path={path} assetGroup={assetGroup} />
                         <div style={{ marginLeft: '0.5rem' }}>
@@ -227,7 +242,7 @@ function FileAssetList(props) {
     if (files) {
         children = files.map(function (file, i) {
             if (!file.hasOwnProperty('contents')) {
-                return <FileAsset key={file.name} file={file} path={path} id={packageId} type={packageType} assetGroup={assetGroup} />
+                return <FileAsset ProjectID={props.ProjectID} key={file.name} file={file} path={path} id={packageId} type={packageType} assetGroup={assetGroup} />
             }
         })
     }
@@ -240,7 +255,7 @@ function FileAssetList(props) {
 }
 
 function FileAsset(props) {
-    let { file, path, type, assetGroup, id } = props;
+    let { file, path, type, assetGroup, id, ProjectID } = props;
     const name = file.name;
     const downloadHost = API_SERVER.match('localhost') || API_SERVER.match('127.0.0.1') ? `${window.location.protocol}//${window.location.hostname}` : API_SERVER;
     //{`${window.location.protocol}//${API_SERVER}:4567/api/package${type}/${id}/${path}/${name}`}
@@ -253,7 +268,7 @@ function FileAsset(props) {
                         {file.status && (file.status == 'IN_PROGRESS' || file.status == 'DOWNLOADING') ? <LoadingIndicator size={2} /> : file.status}
                     </div>
                     <div className="file-name">
-                        <a target="_blank" href={`${downloadHost}:4567/api/package/${type}/${id}/${assetGroup.folder}${path}/${name}`}>{name}</a>
+                        <a target="_blank" href={`${downloadHost}:8008/mano/api/package/${type}/${ProjectID}/${id}/${assetGroup.folder}${path}/${name}`}>{name}</a>
                     </div>
                 </div>
                 <div className="file-action"

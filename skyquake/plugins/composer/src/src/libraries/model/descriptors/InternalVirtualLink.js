@@ -36,8 +36,8 @@ export default class InternalVirtualLink extends DescriptorModel {
 		return 'vnfd.' + InternalVirtualLink.type;
 	}
 
-	constructor(model, parent) {
-		super(model, parent);
+	constructor(model, parent, readonly) {
+		super(model, parent, readonly);
 		this.type = InternalVirtualLink.type;
 		this.uiState['qualified-type'] = InternalVirtualLink.qualifiedType;
 		this.className = InternalVirtualLink.className;

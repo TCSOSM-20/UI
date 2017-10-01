@@ -26,13 +26,14 @@ export default class NsCardPanel extends React.Component {
                         return  (
                           <LaunchpadCard deleting={nsr.deleting}
                                 slideno={this.props.slideno}
-                                key={index}
+                                key={nsr_id}
                                 id={nsr_id}
                                 name={nsr.name}
                                 data={nsr.data}
                                 nsr={nsr}
                                 isActive={nsr["admin-status"] == "ENABLED"}
-                                closeButtonAction={this.onCloseCard(nsr.id)}/>
+                                closeButtonAction={this.onCloseCard(nsr.id)}
+                                hasAccess={this.props.hasAccess}/>
                         );
                       }
                     }

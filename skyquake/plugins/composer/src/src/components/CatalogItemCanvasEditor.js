@@ -27,31 +27,28 @@ import ComposerAppStore from '../stores/ComposerAppStore'
 import '../styles/CatalogItemCanvasEditor.scss'
 import '../styles/DescriptorGraph.scss'
 
-const CatalogItemCanvasEditor = React.createClass({
-	mixins: [PureRenderMixin],
-	getInitialState() {
-		return {
-			graph: null
-		};
-	},
-	getDefaultProps() {
-		return {
+class CatalogItemCanvasEditor extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			graph: null,
 			zoom: 100,
 			containers: [],
 			isShowingMoreInfo: false
 		};
-	},
-	componentWillMount() {
-	},
+	}
+
 	componentDidMount() {
 		const element = ReactDOM.findDOMNode(this.refs.descriptorGraph);
 		const options = {
-			zoom: this.props.zoom
+			zoom: this.props.zoom,
+			readOnly: this.props.readOnly
 		};
 		const graph = new DescriptorGraph(element, options);
 		graph.containers = this.props.containers;
 		this.setState({graph: graph});
-	},
+	}
+
 	componentDidUpdate() {
 		this.state.graph.containers = this.props.containers;
 		const isNSD = this.props.containers[0] && this.props.containers[0].uiState.type === 'nsd';
@@ -61,10 +58,12 @@ const CatalogItemCanvasEditor = React.createClass({
 			this.state.graph.showMoreInfo = true;
 		}
 		this.state.graph.update();
-	},
+	}
+
 	componentWillUnmount() {
 		this.state.graph.destroy();
-	},
+	}
+
 	render() {
 		const graph = this.state.graph;
 		if (graph) {
@@ -78,6 +77,6 @@ const CatalogItemCanvasEditor = React.createClass({
 			</div>
 		);
 	}
-});
+};
 
 export default CatalogItemCanvasEditor;

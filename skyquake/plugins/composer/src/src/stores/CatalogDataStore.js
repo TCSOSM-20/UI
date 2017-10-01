@@ -21,6 +21,8 @@
 import _pick from 'lodash/pick'
 import _isEqual from 'lodash/isEqual'
 import _cloneDeep from 'lodash/cloneDeep'
+import _merge from 'lodash/merge'
+import _debounce from 'lodash/debounce';
 import cc from 'change-case'
 import alt from '../alt'
 import UID from '../libraries/UniqueId'
@@ -28,6 +30,7 @@ import guid from '../libraries/guid'
 import React from 'react'
 import DescriptorModel from '../libraries/model/DescriptorModel'
 import DescriptorModelMetaFactory from '../libraries/model/DescriptorModelMetaFactory'
+import DescriptorModelFactory from '../libraries/model/DescriptorModelFactory'
 import CatalogPackageManagerActions from '../actions/CatalogPackageManagerActions'
 import CatalogDataSourceActions from '../actions/CatalogDataSourceActions'
 import CatalogItemsActions from '../actions/CatalogItemsActions'
@@ -43,21 +46,27 @@ const defaults = {
 	catalogItemExportGrammars: ['osm', 'tosca']
 };
 
-const areCatalogItemsMetaDataEqual = function (a, b) {
-	const metaProps = ['id', 'name', 'short-name', 'description', 'vendor', 'version'];
-	const aMetaData = _pick(a, metaProps);
-	const bMetaData = _pick(b, metaProps);
-	return _isEqual(aMetaData, bMetaData);
+const areCatalogItemsMetaDataEqual = function (catItem, activeItem) {
+	function getDefaultPositionMap() {
+		if (!activeItem.uiState.containerPositionMap) {
+			return activeItem.uiState.containerPositionMap;
+		}
+		let defaultPositionMap = {};
+		defaultPositionMap[activeItem.id] = activeItem.uiState.defaultLayoutPosition;
+		return defaultPositionMap;
+	}
+	const activeItemMetaData = activeItem.uiState.containerPositionMap;
+	const catItemMetaData = catItem.uiState.containerPositionMap;
+	return catItemMetaData === undefined || _isEqual(catItemMetaData, activeItemMetaData);
 };
 
-function createItem (type) {
+function createItem(type) {
 	let newItem = DescriptorModelMetaFactory.createModelInstanceForType(type);
-	if (newItem){
+	if (newItem) {
 		newItem.id = guid();
-		UID.assignUniqueId(newItem.uiState);
+		UID.assignUniqueId(newItem);
 		newItem.uiState.isNew = true;
 		newItem.uiState.modified = true;
-		newItem.uiState['instance-ref-count'] = 0;
 	}
 	return newItem;
 }
@@ -67,7 +76,6 @@ class CatalogDataStore {
 	constructor() {
 		this.catalogs = defaults.catalogs;
 		this.isLoading = true;
-		this.requiresSave = false;
 		this.snapshots = {};
 		this.selectedFormat = defaults.catalogItemExportFormats[0];
 		this.selectedGrammar = defaults.catalogItemExportGrammars[0];
@@ -75,13 +83,15 @@ class CatalogDataStore {
 		this.bindActions(CatalogDataSourceActions);
 		this.bindActions(CatalogItemsActions);
 		this.exportPublicMethods({
-            getCatalogs: this.getCatalogs,
-            getCatalogItemById: this.getCatalogItemById,
-            getCatalogItemByUid: this.getCatalogItemByUid,
-            getTransientCatalogs: this.getTransientCatalogs,
-            getTransientCatalogItemById: this.getTransientCatalogItemById,
-            getTransientCatalogItemByUid: this.getTransientCatalogItemByUid
-        });
+			getCatalogs: this.getCatalogs,
+			getCatalogItemById: this.getCatalogItemById,
+			getCatalogItemByUid: this.getCatalogItemByUid,
+			getTransientCatalogs: this.getTransientCatalogs,
+			getTransientCatalogItemById: this.getTransientCatalogItemById,
+			getTransientCatalogItemByUid: this.getTransientCatalogItemByUid,
+			setUserProfile: this.setUserProfile
+		});
+		this.queueDirtyCheck = _debounce(() => this.saveDirtyDescriptorsToSessionStorage(), 500);
 	}
 
 	resetSelectionState = () => {
@@ -91,6 +101,61 @@ class CatalogDataStore {
 
 	getCatalogs() {
 		return this.catalogs || (this.catalogs = []);
+	}
+
+	saveDirtyDescriptorsToSessionStorage() {
+		const dirtyCatalogs = this.catalogs.reduce((result, catalog) => {
+			const dirtyDescriptors = catalog.descriptors.reduce((result, descriptor) => {
+				if (descriptor.uiState.modified && !descriptor.uiState.deleted) {
+					result.push(descriptor);
+				}
+				return result;
+			}, []);
+			if (dirtyDescriptors.length) {
+				let newCatalog = Object.assign({}, catalog);
+				newCatalog.descriptors = dirtyDescriptors;
+				result.push(newCatalog);
+			}
+			return result;
+		}, []);
+		window.sessionStorage.setItem(this.userProfile.userId + '@' + this.userProfile.domain, JSON.stringify({
+			dirtyCatalogs
+		}));
+	}
+
+	mergeDirtyDescriptorsFromSessionStorage(catalogs) {
+		let userProfileDirtyCatalogs = window.sessionStorage.getItem(this.userProfile.userId + '@' + this.userProfile.domain);
+		let dirtyCatalogs = [];
+		if (userProfileDirtyCatalogs) {
+			dirtyCatalogs = JSON.parse(userProfileDirtyCatalogs).dirtyCatalogs;
+		}
+		dirtyCatalogs.forEach((dirtyCatalog) => {
+			let catalog = catalogs.find((c) => c.id === dirtyCatalog.id);
+			dirtyCatalog.descriptors.forEach((dirtyDescriptor, index) => {
+				let descriptor = catalog.descriptors.find((d) => d.id === dirtyDescriptor.id);
+				if (descriptor) {
+					this.addSnapshot(descriptor);
+					_merge(descriptor, dirtyDescriptor);
+				} else {
+					dirtyCatalog.descriptors.splice(index, 1);
+					this.queueDirtyCheck();
+				}
+			})
+		});
+		this.isNotMergedWithSessionStorage = false;
+		return catalogs;
+	}
+
+	setUserProfile = (userProfile) => {
+		if (!this.userProfile) {
+			this.userProfile = userProfile;
+			if (this.catalogs.length) {
+				const catalogs = this.mergeDirtyDescriptorsFromSessionStorage(this.catalogs);
+				this.setState({ catalogs });
+			} else {
+				this.isNotMergedWithSessionStorage = true;
+			}
+		}
 	}
 
 	getTransientCatalogs() {
@@ -187,19 +252,14 @@ class CatalogDataStore {
 			});
 			return catalog;
 		});
-		updatedCatalogs.filter(d => d.type === 'nsd').forEach(catalog =>  {
+		updatedCatalogs.filter(d => d.type === 'nsd').forEach(catalog => {
 			catalog.descriptors = catalog.descriptors.map(descriptor => {
-				const instanceRefCount = parseInt(descriptor.uiState['instance-ref-count'], 10);
 				if (descriptor['constituent-vnfd']) {
 					descriptor.vnfd = descriptor['constituent-vnfd'].map(d => {
 						const vnfdId = d['vnfd-id-ref'];
 						const vnfd = vnfdLookup[vnfdId];
 						if (!vnfd) {
 							throw new ReferenceError('no VNFD found in the VNFD Catalog for the constituent-vnfd: ' + d);
-						}
-						if (!isNaN(instanceRefCount) && instanceRefCount > 0) {
-							// this will notify user that this item cannot be updated when/if they make a change to it
-							vnfd.uiState['instance-ref-count'] = instanceRefCount;
 						}
 						// create an instance of this vnfd to carry transient ui state properties
 						const instance = _cloneDeep(vnfd);
@@ -228,7 +288,7 @@ class CatalogDataStore {
 			}
 			return catalog;
 		});
-		this.setState({catalogs: catalogs});
+		this.setState({ catalogs: catalogs });
 	}
 
 	mergeEditsIntoLatestFromServer(catalogsFromServer = []) {
@@ -279,30 +339,47 @@ class CatalogDataStore {
 
 	loadCatalogsSuccess(context) {
 		const fromServer = this.updateCatalogIndexes(context.data);
-		const catalogs = this.mergeEditsIntoLatestFromServer(fromServer);
+		let catalogs = this.mergeEditsIntoLatestFromServer(fromServer);
+		if (this.isNotMergedWithSessionStorage) {
+			catalogs = this.mergeDirtyDescriptorsFromSessionStorage(catalogs);
+		}
 		this.setState({
 			catalogs: catalogs,
 			isLoading: false
 		});
 	}
 
-	deleteCatalogItemSuccess (response) {
+	deleteCatalogItemSuccess(response) {
 		let catalogType = response.catalogType;
 		let itemId = response.itemId;
 		const catalogs = this.getCatalogs().map(catalog => {
 			if (catalog.type === catalogType) {
-				catalog.descriptors = catalog.descriptors.filter(d => d.id !== itemId);
+				catalog.descriptors = catalog.descriptors.map(d => {
+					// We are just going to mark it as deleted here so it will be hidden from view.
+					// We will let the next catalog refresh actually remove it from the in memory store.
+					// This is to avoid having it reappear because a timing issue with a catalog refresh.
+					// The incoming refresh may still contain the item and it would then reappear till the next refresh.
+					if (d.id === itemId) {
+						d.uiState.deleted = true;
+						const activeItem = ComposerAppStore.getState().item;
+						if (activeItem && activeItem.id === itemId) {
+							ComposerAppActions.showDescriptor.defer();
+							CatalogItemsActions.editCatalogItem.defer(null);
+						}
+					}
+					return d;
+				});
 			}
 			return catalog;
 		});
-
-		this.setState({catalogs: catalogs});
+		this.setState({ catalogs: catalogs });
+		this.queueDirtyCheck();
 	}
 
-	deleteCatalogItemError (data) {
+	deleteCatalogItemError(data) {
 		console.log('Unable to delete', data.catalogType, 'id:', data.itemId, 'Error:', data.error.responseText);
 		ComposerAppActions.showError.defer({
-			errorMessage: 'Unable to delete ' + data.catalogType + ' id: ' + data.itemId + '. Check if it is in use'
+			errorMessage: 'Unable to delete ' + data.catalogType + ' id: ' + data.itemId + '. Check to see if it is in use.'
 		});
 	}
 
@@ -312,34 +389,14 @@ class CatalogDataStore {
 
 	catalogItemMetaDataChanged(item) {
 		let requiresSave = false;
-		const catalogs = this.getCatalogs().map(catalog => {
-			if (catalog.id === item.uiState.catalogId) {
-				catalog.descriptors = catalog.descriptors.map(d => {
-					if (d.id === item.id) {
-						// compare just the catalog uiState data (id, name, short-name, description, etc.)
-						const modified = !areCatalogItemsMetaDataEqual(d, item);
-						if (modified) {
-							if (d.uiState['instance-ref-count'] > 0) {
-								console.log('cannot edit NSD/VNFD with references to instantiated Network Services');
-								ComposerAppActions.showError.defer({
-									errorMessage: 'Cannot edit NSD/VNFD with references to instantiated Network Services'
-								});
-								return _cloneDeep(d);
-							} else {
-								item.uiState.modified = modified;
-								requiresSave = true;
-								this.addSnapshot(item);
-							}
-						}
-						return item;
-					}
-					return d;
-				});
-			}
-			return catalog;
-		});
-		if (requiresSave) {
-			this.setState({catalogs: catalogs, requiresSave: true});
+		let previousVersion = this.getLatestSnapshot(item);
+		// compare just the catalog uiState data 
+		const modified = !areCatalogItemsMetaDataEqual(previousVersion, item);
+		if (modified) {
+			item.uiState.modified = true;
+			this.updateCatalogItem(item);
+			this.addSnapshot(item);
+			this.queueDirtyCheck();
 		}
 	}
 
@@ -353,24 +410,17 @@ class CatalogDataStore {
 				// replace the old descriptor with the updated one
 				catalog.descriptors = catalog.descriptors.map(d => {
 					if (d.id === descriptorId) {
-						if (d.uiState['instance-ref-count'] > 0) {
-							console.log('cannot edit NSD/VNFD with references to instantiated Network Services');
-							ComposerAppActions.showError.defer({
-								errorMessage: 'Cannot edit NSD/VNFD with references to instantiated Network Services'
-							});
-							return _cloneDeep(d);
-						} else {
-							itemDescriptor.model.uiState.modified = true;
-							this.addSnapshot(itemDescriptor.model);
-							return itemDescriptor.model;
-						}
+						itemDescriptor.model.uiState.modified = true;
+						this.addSnapshot(itemDescriptor.model);
+						return itemDescriptor.model;
 					}
 					return d;
 				});
 			}
 			return catalog;
 		});
-		this.setState({catalogs: catalogs, requiresSave: true})
+		this.setState({ catalogs: catalogs })
+		this.queueDirtyCheck();
 	}
 
 	deleteSelectedCatalogItem() {
@@ -384,63 +434,21 @@ class CatalogDataStore {
 	}
 
 	deleteCatalogItem(item) {
-		const snapshot = JSON.stringify(item);
-		function confirmDeleteCancel(event) {
-			undo();
-			event.preventDefault();
-			ModalOverlayActions.hideModalOverlay();
-		}
-		const remove = () => {
-			// item is deleted or does not exist on server, so remove from ui
-			this.removeCatalogItem(item);
-			this.setState({catalogs: this.getCatalogs()});
-			const activeItem = ComposerAppStore.getState().item;
-			if (activeItem && activeItem.id === item.id) {
-				CatalogItemsActions.editCatalogItem.defer(null);
-			}
-			ModalOverlayActions.hideModalOverlay();
-		};
-		const undo = () => {
-			// item failed to delete on server so revert ui
-			const revertTo = JSON.parse(snapshot);
-			this.updateCatalogItem(revertTo);
-			const activeItem = ComposerAppStore.getState().item;
-			if (activeItem && activeItem.id === revertTo.id) {
-				SelectionManager.select(activeItem);
-				CatalogItemsActions.editCatalogItem.defer(revertTo);
-				SelectionManager.refreshOutline();
-			}
-		};
 		if (item) {
-			if (item.uiState.isNew) {
-				CatalogDataStore.confirmDelete(remove, confirmDeleteCancel);
-			} else {
-				if (item.uiState['instance-ref-count'] > 0) {
-					console.log('cannot delete NSD/VNFD with references to instantiated Network Services');
-					ComposerAppActions.showError.defer({
-						errorMessage: 'Cannot delete NSD/VNFD with references to instantiated Network Services'
+			CatalogDataStore.confirmDelete(event => {
+				event.preventDefault();
+				ModalOverlayActions.showModalOverlay.defer();
+				this.getInstance().deleteCatalogItem(item.uiState.type, item.id)
+					.then(ModalOverlayActions.hideModalOverlay, ModalOverlayActions.hideModalOverlay)
+					.catch(function () {
+						console.log('overcoming ES6 unhandled rejection red herring');
 					});
-					undo();
-				} else {
-					const confirmDeleteOK = event => {
-						event.preventDefault();
-						item.uiState.deleted = true;
-						this.setState({catalogs: this.getCatalogs()});
-						ModalOverlayActions.showModalOverlay.defer();
-						this.getInstance().deleteCatalogItem(item.uiState.type, item.id)
-							.then(remove, undo)
-							.then(ModalOverlayActions.hideModalOverlay, ModalOverlayActions.hideModalOverlay)
-							.catch(function() {
-								console.log('overcoming ES6 unhandled rejection red herring');
-							});
-					};
-					CatalogDataStore.confirmDelete(confirmDeleteOK, confirmDeleteCancel);
-				}
-			}
+			}, );
 		}
 	}
 
 	static confirmDelete(onClickYes, onClickCancel) {
+		const cancelDelete = onClickCancel || (e => ModalOverlayActions.hideModalOverlay.defer());
 		ModalOverlayActions.showModalOverlay.defer((
 			<div className="actions panel">
 				<div className="panel-header">
@@ -448,7 +456,7 @@ class CatalogDataStore {
 				</div>
 				<div className="panel-body">
 					<a className="action confirm-yes primary-action Button" onClick={onClickYes}>Yes, delete selected catalog item</a>
-					<a className="action cancel secondary-action Button" onClick={onClickCancel}>No, cancel</a>
+					<a className="action cancel secondary-action Button" onClick={cancelDelete}>No, cancel</a>
 				</div>
 			</div>
 		));
@@ -472,8 +480,28 @@ class CatalogDataStore {
 			if (!this.snapshots[item.id]) {
 				this.snapshots[item.id] = [];
 			}
+			// save the snapshot with a new id for an in memory instance
+			let uid = UID.from(item);
+			UID.assignUniqueId(item);
 			this.snapshots[item.id].push(JSON.stringify(item));
+			UID.assignUniqueId(item, uid);
 		}
+	}
+
+	getLatestSnapshot(item) {
+		if (this.snapshots[item.id]) {
+			return JSON.parse(this.snapshots[item.id][this.snapshots[item.id].length - 1]);
+		}
+		this.getCatalogs().forEach(catalog => {
+			if (catalog.id === item.uiState.catalogId) {
+				catalog.descriptors.forEach(d => {
+					if (d.id === item.id) {
+						return d;
+					}
+				});
+			}
+		});
+		return {};
 	}
 
 	resetSnapshots(item) {
@@ -499,7 +527,7 @@ class CatalogDataStore {
 				});
 				return catalog;
 			});
-			this.setState({catalogs: catalogs});
+			this.setState({ catalogs: catalogs });
 			this.catalogItemMetaDataChanged(item);
 		}
 	}
@@ -513,8 +541,8 @@ class CatalogDataStore {
 				this.updateCatalogItem(revertTo);
 				// TODO should the cancel action clear the undo/redo stack back to the beginning?
 				this.resetSnapshots(revertTo);
-				this.setState({requiresSave: false});
 				CatalogItemsActions.editCatalogItem.defer(revertTo);
+				this.queueDirtyCheck();
 			}
 		}
 	}
@@ -528,13 +556,6 @@ class CatalogDataStore {
 
 	saveItem(item) {
 		if (item) {
-			if (item.uiState['instance-ref-count'] > 0) {
-				console.log('cannot save NSD/VNFD with references to instantiated Network Services');
-				ComposerAppActions.showError.defer({
-					errorMessage: 'Cannot save NSD/VNFD with references to instantiated Network Services'
-				});
-				return;
-			}
 			const success = () => {
 				delete item.uiState.modified;
 				if (item.uiState.isNew) {
@@ -547,6 +568,7 @@ class CatalogDataStore {
 				this.resetSnapshots(item);
 				ModalOverlayActions.hideModalOverlay.defer();
 				CatalogItemsActions.editCatalogItem.defer(item);
+				this.queueDirtyCheck();
 			};
 			const failure = () => {
 				ModalOverlayActions.hideModalOverlay.defer();
@@ -574,13 +596,32 @@ class CatalogDataStore {
 			this.resetSelectionState();
 		}
 	}
-	saveCatalogItemError(data){
-		let error = JSON.parse(data.error.responseText);
-		const errorMsg = error && error.body && error.body['rpc-reply'] && JSON.stringify(error.body['rpc-reply']['rpc-error'], null, ' ')
+	saveCatalogItemError(data) {
+		const descriptor = this.getCatalogs().reduce((gotIt, catalog) => {
+			if (!gotIt && (catalog.type === data.catalogType)) {
+				return catalog.descriptors.find(d => {
+					if (d.id === data.itemId) {
+						return d;
+					}
+				});
+			}
+			return gotIt;
+		}, null);
+		const container = data.catalogType === 'nsd' ?
+			DescriptorModelFactory.newNetworkService(descriptor, null)
+			: DescriptorModelFactory.newVirtualNetworkFunction(descriptor, null)
 		ComposerAppActions.showError.defer({
-			errorMessage: 'Unable to save the descriptor.\n' + errorMsg
+			errorMessage: 'Unable to save the descriptor.',
+			rpcError: data.error.responseText
 		});
+		ComposerAppActions.recordDescriptorError.defer({
+			descriptor: container,
+			type: data.catalogType,
+			id: data.itemId,
+			error: data.error.responseText
+		})
 	}
 }
 
 export default alt.createStore(CatalogDataStore, 'CatalogDataStore');
+

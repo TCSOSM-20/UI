@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -120,10 +120,8 @@ class About extends React.Component {
     if (this.state != null) {
       var html = (
               <div className="table-container-wrapper">
-                {fossInfoComponent}
-                {uptimeComponent}
                 <div className="table-container">
-                  <h2> Version Info </h2>
+                  <h2>RIFT.ware Version Info </h2>
                   <table>
                     <thead>
                       <tr>
@@ -153,6 +151,7 @@ class About extends React.Component {
                     </tbody>
                   </table>
                 </div>
+                {uptimeComponent}
                 <div className="table-container">
                   <h2> Component Info </h2>
                   <table>
@@ -171,6 +170,36 @@ class About extends React.Component {
                     </thead>
                     <tbody>
                       {vcs_info}
+                    </tbody>
+                  </table>
+                </div>
+                {fossInfoComponent}
+                <div className="table-container">
+                  <h2>RIFT.ware Copyright </h2>
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>
+                          Open Source Version
+                        </td>
+                        <td>
+                          (c) Copyright 2014 – {new Date().getUTCFullYear()} RIFT.io Inc., All rights reserved
+                        </td>
+                        <td>
+                          <a href="https://support.riftio.com" target="_blank">https://open.riftio.com/</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Commercial Version
+                        </td>
+                        <td>
+                          (c) Copyright 2014 – {new Date().getUTCFullYear()} RIFT.io Inc., All rights reserved
+                        </td>
+                        <td>
+                          <a href="https://riftio.com/contact/" target="_blank">https://riftio.com/contact/</a>
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>

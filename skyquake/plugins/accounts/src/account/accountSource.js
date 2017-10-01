@@ -38,7 +38,7 @@ module.exports = function(Alt) {
                 return resolve(false);
               }
                $.ajax({
-                url: '/socket-polling?api_server=' + API_SERVER,
+                url: '/socket-polling',
                 type: 'POST',
                 beforeSend: Utils.addAuthorizationStub,
                 data: {
@@ -76,7 +76,7 @@ module.exports = function(Alt) {
                     }
 
                     function refreshStatus(type, name) {
-                        let url = type + '/' + name + '/refresh?api_server=' + API_SERVER;
+                        let url = type + '/' + encodeURIComponent(name) + '/refresh?api_server=' + API_SERVER;
                         setTimeout(function(){
                           Refreshing.next();
                         },100);
@@ -102,7 +102,7 @@ module.exports = function(Alt) {
           remote: function(state, name, type) {
             return new Promise(function(resolve, reject) {
               $.ajax({
-                url: type + '/' + name + '/refresh?api_server=' + API_SERVER,
+                url: type + '/' + encodeURIComponent(name) + '/refresh?api_server=' + API_SERVER,
                 type: 'POST',
                 beforeSend: Utils.addAuthorizationStub,
                 success: function(account) {
@@ -117,12 +117,21 @@ module.exports = function(Alt) {
         create: {
           remote: function(state, account, type, cb) {
             delete account['connection-status'];
+            var payload = account;
+            var accountKey = payload.hasOwnProperty('account-type') ? 'account-type' : 'ro-account-type';
+            var payloadKeys = Object.keys(payload[payload[accountKey]]);
+            var accountData = payload[payload[accountKey]];
+            payloadKeys.map(function(k) {
+              if (!accountData[k] || accountData[k].trim() == '') {
+                delete payload[payload[accountKey]][k];
+              }
+            });
             return new Promise(function(resolve, reject) {
               $.ajax({
                 url: type + '?api_server=' + API_SERVER,
                 type:'POST',
                 beforeSend: Utils.addAuthorizationStub,
-                data: JSON.stringify(account),
+                data: JSON.stringify(payload),
                 contentType: "application/json",
                 success: function(data) {
                   resolve({data, cb});
@@ -146,9 +155,12 @@ module.exports = function(Alt) {
         update: {
           remote: function(state, account, type, cb) {
             var payload = Object.assign({}, account);
+            delete payload["instance-ref-count"]
             delete payload['connection-status'];
             delete payload['params'];
             delete payload['pools'];
+            delete payload['datacenters'];
+            delete payload['config-data'];
             (
               (payload.nestedParams == null) &&
               delete payload.nestedParams
@@ -160,10 +172,17 @@ module.exports = function(Alt) {
               delete payload.nestedParams
             );
 
+            var payloadKeys = Object.keys(payload[payload['account-type']]);
+            var accountData = payload[payload['account-type']];
+            payloadKeys.map(function(k) {
+              if (!accountData[k] || accountData[k].trim() == '') {
+                delete payload[payload['account-type']][k];
+              }
+            });
 
             return new Promise(function(resolve, reject) {
               $.ajax({
-                url: type + '/' + account.name + '?api_server=' + API_SERVER,
+                url: type + '/' + encodeURIComponent(account.name) + '?api_server=' + API_SERVER,
                 type:'PUT',
                 beforeSend: Utils.addAuthorizationStub,
                 data: JSON.stringify(payload),
@@ -173,7 +192,6 @@ module.exports = function(Alt) {
                 },
                 error: function(error) {
                   console.log("There was an error updating the account: ", arguments);
-
                 }
               }).fail(function(xhr){
                 //Authentication and the handling of fail states should be wrapped up into a connection class.
@@ -188,13 +206,13 @@ module.exports = function(Alt) {
           }),
           success: Alt.actions.global.createAccountSuccess,
           loading: Alt.actions.global.createAccountLoading,
-          error: Alt.actions.global.showNotification
+          error: Alt.actions.global.createAccountFail
       },
         delete: {
           remote: function(state, type, name, cb) {
             return new Promise(function(resolve, reject) {
               $.ajax({
-                url: type + '/' + name + '/?api_server=' + API_SERVER,
+                url: type + '/' + encodeURIComponent(name) + '/?api_server=' + API_SERVER,
                 type:'DELETE',
                 dataType : 'html',
                 beforeSend: Utils.addAuthorizationStub,
@@ -213,43 +231,8 @@ module.exports = function(Alt) {
             'error': 'Something went wrong while trying to delete the account. Check the error logs for more information' }),
           success: Alt.actions.global.deleteAccountSuccess,
           loading: Alt.actions.global.deleteAccountLoading,
-          error: Alt.actions.global.showNotification
-      },
-        getResourceOrchestrator: {
-          remote: function() {
-              return new Promise(function(resolve, reject) {
-                $.ajax({
-                  url: 'passthrough/data/api/running/resource-orchestrator' + '?api_server=' + API_SERVER,
-                  type: 'GET',
-                  beforeSend: Utils.addAuthorizationStub,
-                  contentType: "application/json",
-                  success: function(data) {
-                    let returnedData;
-                    if (data.hasOwnProperty("rw-launchpad:resource-orchestrator")) {
-                      returnedData = data;
-                    } else {
-                      returnedData = {};
-                    }
-                    resolve(returnedData);
-                  },
-                  error: function(error) {
-                    console.log("There was an error updating the account: ", arguments);
-
-                  }
-                }).fail(function(xhr){
-                  //Authentication and the handling of fail states should be wrapped up into a connection class.
-                  Utils.checkAuthentication(xhr.status);
-                  return reject('error');
-                });
-              });
-          },
-          interceptResponse: interceptResponse({
-            'error': 'There was an error retrieving the resource orchestrator information.'
-          }),
-          success: Alt.actions.global.getResourceOrchestratorSuccess,
-          loading: Alt.actions.global.showScreenLoader,
-          error: Alt.actions.global.showNotification
-        },
+          error: Alt.actions.global.deleteAccountFail
+      }
     }
 }
 

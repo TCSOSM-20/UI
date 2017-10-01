@@ -23,10 +23,15 @@ import catalogUtils from '../libraries/utils'
 import CatalogPackageManagerActions from '../actions/CatalogPackageManagerActions'
 import Utils from 'utils/utils.js';
 
+let API_SERVER = catalogUtils.getSearchParams(window.location).api_server;
+const FILE_SERVER = window.location.hostname === 'localhost' 
+	? API_SERVER : window.location.protocol + '//' + window.location.hostname;
+
+
 const getAuthorization = () => 'Basic ' + window.sessionStorage.getItem("auth");
 
 const getStateApiPath = (operation, id) => 
-	catalogUtils.getSearchParams(window.location).upload_server + ':4567/api/' + operation + '/' + id + '/state';
+	FILE_SERVER + ':8008/mano/' + operation + '/' + id + '/state';
 
 const getComposerApiPath = (api) =>
 	window.location.origin + '/composer/api/' + api + '?api_server=' + catalogUtils.getSearchParams(window.location).api_server;
@@ -185,7 +190,7 @@ const CatalogPackageManagerSource = {
 					const failHandler = (response) => {
 						reject(Object.assign({}, operation, FAILED));
 					};
-					const path = getComposerApiPath('package-manager/jobs/' + operation.transactionId);
+					const path = getComposerApiPath('package-copy/jobs/' + operation.transactionId);
 					ajaxFetch(path, operation, successHandler, failHandler);
 				});
 			},
@@ -199,8 +204,8 @@ const CatalogPackageManagerSource = {
 			remote: function (state, upload) {
 				const transactionId = upload.transactionId;
 				return new Promise(function (resolve, reject) {
-					const action = upload.riftAction === 'onboard' ? 'upload' : 'update';
-					const path = getStateApiPath(action, transactionId);
+					const action = upload.riftAction === 'onboard' ? 'import' : 'update';
+					const path = getComposerApiPath('package-'+action+'/jobs/' + transactionId);
 					ajaxFetch(path, upload, resolve, reject);
 				});
 			},

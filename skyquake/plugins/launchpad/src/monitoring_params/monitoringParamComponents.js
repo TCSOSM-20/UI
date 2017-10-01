@@ -49,15 +49,15 @@ function Component(node, prop, count, length) {
     //' + String((100/length) - 5) + '%'
     switch(node["widget-type"]) {
       case 'GAUGE':
-        // Disabled for OSM
+        // Disabked fir OSM
         // return (
-        //     <div
-        //     className="monitoring_params_component"
-        //     key={prop + '-' + prop.name+ '-' + count}
-        //     mp={node["mp-id"]}>
-        //         <div>{node.name}</div>
-        //         <Components.default.Gauge value={node[valueProperty] || 0} min={numericConstraintsMinPresent ? node['numeric-constraints']['min-value'] : 0} max={numericConstraintsMaxPresent ? node['numeric-constraints']['max-value'] : 100} units={node['units'] || ''} />
-        //     </div>);
+        //    <div
+        //    className="monitoring_params_component"
+        //    key={prop + '-' + prop.name+ '-' + count}
+        //    mp={node["mp-id"]}>
+        //        <div>{node.name}</div>
+        //        <Components.default.Gauge value={node[valueProperty] || 0} min={numericConstraintsMinPresent ? node['numeric-constraints']['min-value'] : 0} max={numericConstraintsMaxPresent ? node['numeric-constraints']['max-value'] : 100} units={node['units'] || ''} />
+        //    </div>);
         // break;
       case 'TEXTBOX':
       case 'COUNTER':

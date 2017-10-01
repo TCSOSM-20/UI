@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,8 @@
 @import 'style/_colors.scss';
 .accountSidebar {
     -ms-flex:1 1 100%;
-        flex:1 1 100%;
+        -webkit-box-flex:1;
+            flex:1 1 100%;
     max-width:300px;
     h1 {
       margin-left:1rem;
@@ -36,29 +37,43 @@
             background:white;
             padding-left:0.5rem;
             display:-ms-flexbox;
+            display:-webkit-box;
             display:flex;
                 -ms-flex-align:start;
-                    align-items:flex-start;
+                    -webkit-box-align:start;
+                        align-items:flex-start;
             text-transform:uppercase;
             h3 {
                 display:-ms-flexbox;
+                display:-webkit-box;
                 display:flex;
                 -ms-flex:1;
-                    flex:1;
+                    -webkit-box-flex:1;
+                        flex:1;
                 -ms-flex-pack:justify;
-                    justify-content:space-between;
+                    -webkit-box-pack:justify;
+                        justify-content:space-between;
                 -ms-flex-align: center;
-                    align-items: center;
+                    -webkit-box-align: center;
+                        align-items: center;
                  padding-left:0.5rem;
             }
         }
+        &--name {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 170px;
+        }
         &--content {
             display:-ms-flexbox;
+            display:-webkit-box;
             display:flex;
             -ms-flex-pack:start;
-            justify-content:flex-start;
+            -webkit-box-pack:start;
+                    justify-content:flex-start;
             -ms-flex-align: center;
-                align-items: center;
+                -webkit-box-align: center;
+                    align-items: center;
             height:70px;
         }
         &--logo{
@@ -82,21 +97,27 @@
             a.link-item {
                 background-color: $dark-gray;
                 display: -ms-flexbox;
+                display: -webkit-box;
                 display: flex;
                 -ms-flex-direction: row;
-                    flex-direction: row;
+                    -webkit-box-orient: horizontal;
+                    -webkit-box-direction: normal;
+                        flex-direction: row;
                 padding: 1rem;
                 -ms-flex-pack: start;
-                    justify-content: flex-start;
+                    -webkit-box-pack: start;
+                        justify-content: flex-start;
                 text-decoration: none;
                 color: black;
             }
             a.empty-pool {
                 margin-top:0.125rem;
                 display:-ms-flexbox;
+                display:-webkit-box;
                 display:flex;
                 -ms-flex-pack: justify;
-                    justify-content: space-between;
+                    -webkit-box-pack: justify;
+                        justify-content: space-between;
                 img {
                     height:1rem;
                 }
@@ -119,9 +140,11 @@
         }
         &_create {
             display:-ms-flexbox;
+            display:-webkit-box;
             display:flex;
             -ms-flex-pack:justify;
-                justify-content:space-between;
+                -webkit-box-pack:justify;
+                    justify-content:space-between;
             padding:1rem;
             font-size: 0.85rem;
             text-transform:uppercase;
@@ -150,9 +173,11 @@
         margin-left: 1rem;
         margin-bottom:1rem;
         display:-ms-flexbox;
+        display:-webkit-box;
         display:flex;
         -ms-flex-align:center;
-        align-items:center;
+        -webkit-box-align:center;
+                align-items:center;
         padding: 0.5rem;
         cursor: pointer;
         text-transform:uppercase;

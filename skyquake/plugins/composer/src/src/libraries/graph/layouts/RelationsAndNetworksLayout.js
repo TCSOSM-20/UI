@@ -253,7 +253,7 @@ export default function RelationsAndNetworksLayout() {
 					// warn assigning same instance (e.g. pass by reference) so that changes will reflect thru
 					cpRef.position = source.position;
 					connectionPointRefList.push(cpRef);
-				} catch(e) {
+				} catch (e) {
 					return;
 				}
 			});
@@ -408,14 +408,16 @@ export default function RelationsAndNetworksLayout() {
 		test.render();
 	}
 
-	function drawRelationPointsAndPaths (graph, relationEdges) {
+	function drawRelationPointsAndPaths(graph, relationEdges) {
 
 		const paths = graph.paths.selectAll('.relation').data(relationEdges, DescriptorModelFactory.containerIdentity);
 
 		paths.enter().append('path')
 			.attr({
 				'class': d => {
-					return ClassNames('relation', d.type, {'-is-selected': d.uiState && SelectionManager.isSelected(d) /*d.uiState && d.uiState.selected*/});
+					return ClassNames('relation', d.type, {
+						'-is-selected': d.uiState && SelectionManager.isSelected(d) /*d.uiState && d.uiState.selected*/
+					});
 				},
 				stroke: 'red',
 				fill: 'transparent',
@@ -505,7 +507,9 @@ export default function RelationsAndNetworksLayout() {
 			// todo extract drag behavior into class DescriptorGraphDrag
 
 			const drag = this.drag = d3.behavior.drag()
-				.origin(function(d) { return d; })
+				.origin(function (d) {
+					return d;
+				})
 				.on('drag.graph', function (d) {
 					uiTransientState.isDragging = true;
 					const mouse = d3.mouse(graph.g.node());
@@ -549,7 +553,9 @@ export default function RelationsAndNetworksLayout() {
 					container.props.descriptorWidth = layoutInfo.width;
 					container.props.descriptorHeight = layoutInfo.height;
 				}
-				container.dragHandler = drag;
+				if (!props.readOnly) {
+					container.dragHandler = drag;
+				}
 				container.addContainers(containerList);
 				return container;
 			});

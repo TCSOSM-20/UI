@@ -19,6 +19,7 @@
 import React from 'react';
 import Button from 'widgets/button/rw.button.js';
 import _cloneDeep from 'lodash/cloneDeep';
+import _isEmpty from 'lodash/isEmpty';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import Crouton from 'react-crouton';
 import TextInput from 'widgets/form_controls/textInput.jsx';
@@ -26,21 +27,41 @@ import {AccountConnectivityStatus} from '../account_sidebar/accountSidebar.jsx';
 import Utils from 'utils/utils.js';
 import 'style/common.scss';
 import './account.scss';
+
+function isAccessDenied (error) {
+    const rpcResult = Utils.rpcError(error);
+    return rpcResult && rpcResult['rpc-reply']['rpc-error']['error-tag'] === 'access-denied';
+}
+
 class Account extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {};
-        this.state.account = {};
+
+        // console.log(this.state.account)
     }
     storeListener = (state) => {
-        if(!state.account) {
-            this.setUp(this.props)
+        if(state.socket) {
+            if((!state.account || _isEmpty(state.account)) && state.userProfile) {
+                this.setUp(this.props, state.savedData)
+            }
+            state.account && state.account.params && this.setState({
+                account: state.account,
+                accountType: state.accountType,
+                types: state.types,
+                sdnOptions: state.sdnOptions,
+                savedData: state.savedData,
+                userProfile: state.userProfile
+            })
         }
-        state.account && this.setState({account: state.account,accountType: state.accountType, types: state.types, sdnOptions: state.sdnOptions})
     }
     componentWillMount() {
+        this.state = this.props.store.getState();
         this.props.store.listen(this.storeListener);
-        this.setUp(this.props);
+    }
+    componentWillUpdate(nextProps, nextState, nextContext) {
+        if(!_isEmpty(nextContext.userProfile) && !nextState.userProfile) {
+            this.props.store.getTransientAccountForUser(nextContext.userProfile)
+        }
     }
     componentWillReceiveProps(nextProps) {
         if(JSON.stringify(nextProps.params) != JSON.stringify(this.props.params)){
@@ -48,13 +69,22 @@ class Account extends React.Component {
         }
     }
     componentWillUnmount() {
+        console.log('unmounting')
+        // this.setState({account: null, accountType: null, types: []})
         this.props.store.unlisten(this.storeListener);
     }
-    setUp(props){
-        if(props.params.name != 'create') {
-            this.props.store.viewAccount({type: props.params.type, name: props.params.name});
+    setUp(props, savedData){
+        console.log('Setting up');
+        var SD = savedData || this.state.savedData;
+        if(props.params.name && props.params.name != 'create') {
+            if (SD && SD == props.params.name) {
+                this.props.store.viewAccount({type: props.params.type, name: props.params.name}, SD);
+            } else {
+                this.props.store.viewAccount({type: props.params.type, name: props.params.name});
+            }
+
         } else {
-            this.props.store.setAccountTemplate(props.params.type);
+            this.props.store.setAccountTemplate(props.params.type, null, SD);
         }
     }
     create(e) {
@@ -66,69 +96,74 @@ class Account extends React.Component {
             self.props.flux.actions.global.showNotification("Please give the account a name");
             return;
         } else {
-            var type = Account['account-type'];
-            var params = Account.params;
-
-            if(params) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i].ref;
-                    if (typeof(Account[type]) == 'undefined' || typeof(Account[type][param]) == 'undefined' || Account[type][param] == "") {
-                        if (!params[i].optional) {
-                            self.props.flux.actions.global.showNotification("Please fill all account details");
-                            return;
-                        }
-                    }
-                }
-            }
-
-            let nestedParams = Account.nestedParams && Account.nestedParams;
-            if (nestedParams && nestedParams.params) {
-                for (let i = 0; i < nestedParams.params.length; i++) {
-                    let nestedParam = nestedParams.params[i].ref;
-                    if (typeof(Account[type]) == 'undefined' || typeof(Account[type][nestedParams['container-name']][nestedParam]) == 'undefined' || Account[type][nestedParams['container-name']][nestedParam] == "") {
-                        if (!nestedParams.params[i].optional) {
-                            self.props.flux.actions.global.showNotification("Please fill all account details");
-                            return;
-                        }
-                    }
-                }
+            if(!wasAllDetailsFilled(Account)) {
+                self.props.flux.actions.global.showNotification("Please fill all account details");
+                return;
             }
         }
 
         let newAccount = _cloneDeep(removeTrailingWhitespace(Account));
+
         delete newAccount.params;
+
         newAccount.nestedParams &&
-            newAccount.nestedParams['container-name'] &&
-            delete newAccount[newAccount.nestedParams['container-name']];
+        newAccount.nestedParams['container-name'] &&
+        delete newAccount[newAccount.nestedParams['container-name']];
+
         delete newAccount.nestedParams;
 
+        if(AccountType == 'resource-orchestrator') {
+            newAccount['ro-account-type'] = newAccount['account-type'] || newAccount['ro-account-type'];
+            delete newAccount['account-type'];
+        }
+        if(AccountType == 'cloud' && self.props.vduInstanceTimeout != '') {
+            newAccount['vdu-instance-timeout'] = self.props.vduInstanceTimeout;
+        }
         this.props.flux.actions.global.showScreenLoader();
-        this.props.store.create(newAccount, AccountType).then(function() {
-            self.props.router.push({pathname:'accounts'});
-            self.props.flux.actions.global.hideScreenLoader.defer();
-        },
-         function(error) {
-            self.props.flux.actions.global.showNotification(Utils.parseError(error));
-            self.props.flux.actions.global.hideScreenLoader.defer();
-         });
+        this.props.store.create(newAccount, AccountType).then(
+            function() {
+                self.props.router.push({pathname:'accounts'});
+                self.props.flux.actions.global.hideScreenLoader.defer();
+            },
+            function(error) {
+                self.props.flux.actions.global.showNotification(error);
+                self.props.flux.actions.global.hideScreenLoader.defer();
+            }
+        );
     }
     update(e) {
         e.preventDefault();
         var self = this;
         var Account = this.state.account;
         let AccountType = this.state.accountType;
-        this.props.flux.actions.global.showScreenLoader();
-        this.props.store.update(Account, AccountType).then(function() {
-            self.props.router.push({pathname:'accounts'});
-             self.props.flux.actions.global.hideScreenLoader();
-        },
-        function() {
 
-        });
+        if(!wasAllDetailsFilled(Account)) {
+            self.props.flux.actions.global.showNotification("Please fill all account details");
+            return;
+        }
+
+        if(AccountType == 'cloud' && self.props.vduInstanceTimeout != '') {
+            Account['vdu-instance-timeout'] = self.props.vduInstanceTimeout;
+        }
+        this.props.flux.actions.global.showScreenLoader();
+        this.props.store.update(Account, AccountType).then(
+            function() {
+                self.props.router.push({pathname:'accounts'});
+                self.props.flux.actions.global.hideScreenLoader();
+            },
+            function(error){
+                let msg = isAccessDenied(error) ?
+                    "Update of account failed. No authorization to modify accounts."
+                    : "Update of account failed. This could be because the account is in use or no longer exists.";
+                self.props.flux.actions.global.hideScreenLoader.defer();
+                self.props.flux.actions.global.showNotification.defer(msg);
+            }
+        );
     }
     cancel = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        this.props.flux.actions.global.handleCancelAccount();
         this.props.router.push({pathname:'accounts'});
     }
     handleDelete = () => {
@@ -136,22 +171,27 @@ class Account extends React.Component {
         let msg = 'Preparing to delete "' + self.state.account.name + '"' +
         ' Are you sure you want to delete this ' + self.state.accountType + ' account?"';
         if (window.confirm(msg)) {
-            this.props.store.delete(self.state.accountType, self.state.account.name).then(function() {
-                self.props.flux.actions.global.hideScreenLoader();
-                self.props.router.push({pathname:'accounts'});
-            }, function(){
-                // self.props.flux.actions.global.hideScreenLoader.defer();
-                // console.log('Delete Account Fail');
-            });
-        } else {
-           self.props.flux.actions.global.hideScreenLoader();
+            this.props.flux.actions.global.showScreenLoader();
+            this.props.store.delete(self.state.accountType, self.state.account.name).then(
+                function() {
+                    self.props.flux.actions.global.hideScreenLoader();
+                    self.props.router.push({pathname:'accounts'});
+                },
+                function(error){
+                    let msg = isAccessDenied(error) ?
+                        "Deletion of account failed. No authorization to delete accounts."
+                        : "Deletion of account failed. This could be because the account is in use or has already been deleted.";
+                    self.props.flux.actions.global.hideScreenLoader.defer();
+                    self.props.flux.actions.global.showNotification.defer(msg);
+                }
+            );
         }
     }
     handleNameChange(event) {
        this.props.store.handleNameChange(event);
     }
-    handleAccountTypeChange(node, event) {
-        this.props.store.handleAccountTypeChange(node, event);
+    handleAccountTypeChange(node, isRo, event) {
+        this.props.store.handleAccountTypeChange(node, isRo, event);
     }
     handleSelectSdnAccount = (e) => {
         var tmp = this.state.account;
@@ -163,6 +203,9 @@ class Account extends React.Component {
             }
         }
         console.log(e, tmp)
+    }
+    updateVduInstanceTimeout(event) {
+        this.props.store.updateVduTimeout(event)
     }
     preventDefault = (e) => {
         e.preventDefault();
@@ -185,11 +228,11 @@ class Account extends React.Component {
         let {store, ...props} = this.props;
         // This section builds elements that only show up on the create page.
         // var name = <label>Name <input type="text" onChange={this.handleNameChange.bind(this)} style={{'textAlign':'left'}} /></label>;
-        var name = <TextInput label="Name"  onChange={this.handleNameChange.bind(this)} required={true} />;
+        let Account = this.state.account || {};
+        var name = <TextInput label="Name"  onChange={this.handleNameChange.bind(this)} required={true} value={Account &&Account.name || ''} />;
         let params = null;
         let selectAccount = null;
         let resfreshStatus = null;
-        let Account = this.state.account;
         // AccountType is for the view, not the data account-type value;
         let AccountType = this.state.accountType;
         let Types = this.state.types;
@@ -197,9 +240,9 @@ class Account extends React.Component {
         var buttons;
         let cloudResources = Account['cloud-resources-state'] && Account['cloud-resources-state'][Account['account-type']];
         let cloudResourcesStateHTML = null;
-
         // Account Type Radio
         var selectAccountStack = [];
+        let setVduTimeout = null;
         if (!isEdit) {
             buttons = [
                 <Button key="0" onClick={this.cancel} className="cancel light" label="Cancel"></Button>,
@@ -207,14 +250,15 @@ class Account extends React.Component {
             ]
             for (var i = 0; i < Types.length; i++) {
                 var node = Types[i];
-                var isSelected = (Account['account-type'] == node['account-type']);
+                const isRo = node.hasOwnProperty('ro-account-type');
+                var isSelected = (Account['account-type'] || Account['ro-account-type']) == (node['account-type'] || node['ro-account-type']);
                 selectAccountStack.push(
                   <label key={i} className={"accountSelection " + (isSelected ? "accountSelection--isSelected" : "")}>
                     <div className={"accountSelection-overlay" + (isSelected ? "accountSelection-overlay--isSelected" : "")}></div>
                     <div className="accountSelection-imageWrapper">
-                        <img src={store.getImage(node['account-type'])}/>
+                        <img src={store.getImage(node['account-type'] || node['ro-account-type'])}/>
                     </div>
-                    <input type="radio" name="account" onChange={this.handleAccountTypeChange.bind(this, node)} defaultChecked={node.name == Types[0].name} value={node['account-type']} />{node.name}
+                    <input type="radio" name="account" onChange={this.handleAccountTypeChange.bind(this, node, isRo)} defaultChecked={node.name == Types[0].name} value={node['account-type'] || node['ro-account-type']} />{node.name}
                   </label>
                 )
             }
@@ -249,23 +293,67 @@ class Account extends React.Component {
             }
         }
          //END Cloud Account: SDN Account Option
+
+         setVduTimeout = <TextInput
+                        className="accountForm-input"
+                        label="VIM Instantiation Timeout (Seconds)"
+                        onChange={this.updateVduInstanceTimeout.bind(this)}
+                        value={this.props.vduInstanceTimeout}
+                        readonly={self.props.readonly}
+                        placeholder={300}
+                        />
+
          //
         // This sections builds the parameters for the account details.
         if (Account.params) {
             var paramsStack = [];
             var optionalField = '';
+            var isRo = Account.hasOwnProperty('ro-account-type');
             for (var i = 0; i < Account.params.length; i++) {
                 var node = Account.params[i];
                 var value = ""
-                if (Account[Account['account-type']]) {
-                    value = Account[Account['account-type']][node.ref]
+                if(isRo) {
+                    if (Account[Account['ro-account-type']] && Account[Account['ro-account-type']][node.ref]) {
+                        value = Account[Account['ro-account-type']][node.ref]
+                    }
+                } else  {
+                    if (Account[Account['account-type']] && Account[Account['account-type']][node.ref]) {
+                        value = Account[Account['account-type']][node.ref]
+                    }
                 }
                 if (this.props.edit && Account.params) {
                     value = Account.params[node.ref];
                 }
-                paramsStack.push(
-                    <TextInput key={node.label} className="accountForm-input" label={node.label} required={!node.optional}  onChange={this.props.store.handleParamChange(node)} value={value} />
-                );
+                if(node.ref == "password" || node.ref == "secret") {
+                    let displayValue = value;
+                    if (self.props.readonly) {
+                        displayValue = new Array(value.length + 1).join( '*' );
+                    }
+                    paramsStack.push(
+                        <TextInput
+                            key={node.label}
+                            className="accountForm-input"
+                            label={node.label}
+                            required={!node.optional}
+                            onChange={this.props.store.handleParamChange(node, isRo)}
+                            value={displayValue}
+                            readonly={self.props.readonly}
+                            type="password"
+                        />
+                    );
+                } else {
+                    paramsStack.push(
+                        <TextInput
+                            key={node.label}
+                            className="accountForm-input"
+                            label={node.label}
+                            required={!node.optional}
+                            onChange={this.props.store.handleParamChange(node, isRo)}
+                            value={value}
+                            readonly={self.props.readonly}
+                        />
+                    );
+                }
             }
 
             let nestedParamsStack = null;
@@ -287,9 +375,37 @@ class Account extends React.Component {
                     //       <input className="create-fleet-pool-input" type="text" onChange={this.props.store.handleNestedParamChange(Account.nestedParams['container-name'], node)} value={value}/>
                     //     </label>
                     // );
-                    nestedParamsStack.push(
-                          <TextInput key={node.label} label={node.label} required={!node.optional} className="create-fleet-pool-input" type="text" onChange={this.props.store.handleNestedParamChange(Account.nestedParams['container-name'], node)} value={value}/>
-                    );
+                    if(node.ref == "password" || node.ref == "secret") {
+                        let displayValue = value;
+                        if (self.props.readonly) {
+                            displayValue = new Array(value.length + 1).join( '*' );
+                        }
+                        nestedParamsStack.push(
+                              <TextInput
+                                key={node.label}
+                                label={node.label}
+                                required={!node.optional}
+                                className="create-fleet-pool-input"
+                                type="password"
+                                onChange={this.props.store.handleNestedParamChange(Account.nestedParams['container-name'], node)}
+                                value={displayValue}
+                                readonly={self.props.readonly}
+                                />
+                        );
+                    } else {
+                            nestedParamsStack.push(
+                              <TextInput
+                                key={node.label}
+                                label={node.label}
+                                required={!node.optional}
+                                className="create-fleet-pool-input"
+                                type="text"
+                                onChange={this.props.store.handleNestedParamChange(Account.nestedParams['container-name'], node)}
+                                value={value}
+                                readonly={self.props.readonly}
+                                />
+                        );
+                    }
                 }
             }
 
@@ -331,7 +447,9 @@ class Account extends React.Component {
                             <AccountConnectivityStatus status={Account['connection-status'].status} />
                             {Account['connection-status'] && Account['connection-status'].status &&  Account['connection-status'].status.toUpperCase()}
                         </div>
-                            <Button className="refreshList light" onClick={this.props.store.refreshAccount.bind(this, Account.name, AccountType)} label="REFRESH STATUS"></Button>
+                        { self.props.readonly ? null :
+                            <Button is-disabled={self.props.readonly} className="refreshList light" onClick={this.props.store.refreshAccount.bind(this, Account.name, AccountType)} label="REFRESH STATUS" />
+                        }
                     </div>
                     {
                         (Account['connection-status'] && Account['connection-status'].status && Account['connection-status'].status.toUpperCase()) === 'FAILURE' ?
@@ -339,25 +457,7 @@ class Account extends React.Component {
                     }
                 </div>
             ) : null;
-            // cloudResourcesStateHTML = (
-            //     <div className="accountForm">
-            //         <h3 className="accountForm-title">Resources Status</h3>
-            //         <div className="accountForm-content" >
-            //         <ul>
-            //             {
-            //                 cloudResources && props.AccountMeta.resources[Account['account-type']].map(function(r, i) {
 
-            //                     return (
-            //                         <li key={i}>
-            //                             {r}: {cloudResources[r]}
-            //                         </li>
-            //                     )
-            //                 }) || 'No Additional Resources'
-            //             }
-            //         </ul>
-            //         </div>
-            //     </div>
-            // )
         }
 
         var html = (
@@ -369,15 +469,23 @@ class Account extends React.Component {
                 <div className="associateSdnAccount accountForm">
                     <h3 className="accountForm-title">Account</h3>
                     <div className="accountForm-content" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <h4 style={{flex: '1'}}>{name}</h4>
+                        {name}
                         { isEdit ?
                             (
                                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                    <img src={store.getImage(Account['account-type'])}/> {props.AccountMeta.labelByType[Account['account-type']]}
+                                    <img src={store.getImage(Account['account-type'] || Account['ro-account-type'])}/> {props.AccountMeta.labelByType[Account['account-type'] || Account['ro-account-type']]}
                                 </div>)
                             : null
                         }
                     </div>
+                     {
+                        AccountType == 'cloud' ? (
+                                <div className="accountForm-content">
+                                    {setVduTimeout}
+                                </div>
+                            )
+                        : null
+                    }
                 </div>
 
                   {selectAccount}
@@ -388,12 +496,17 @@ class Account extends React.Component {
                       {params}
                   </ol>
                   <div className="form-actions">
-                      {buttons}
+                      {!self.props.readonly ? buttons : null}
                   </div>
               </form>
         )
-        return html;
+        return Types.length ? html : null;
     }
+}
+
+Account.contextTypes = {
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 }
 
 function displayFailureMessage(msg) {
@@ -436,8 +549,37 @@ SelectOption.defaultProps = {
   }
 }
 
+function wasAllDetailsFilled(Account) {
+    var type = Account['account-type'] || Account['ro-account-type'];
+    var params = Account.params;
+
+    if(params) {
+        for (var i = 0; i < params.length; i++) {
+            var param = params[i].ref;
+            if (typeof(Account[type]) == 'undefined' || typeof(Account[type][param]) == 'undefined' || Account[type][param] == "") {
+                if (!params[i].optional) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    let nestedParams = Account.nestedParams && Account.nestedParams;
+    if (nestedParams && nestedParams.params) {
+        for (let i = 0; i < nestedParams.params.length; i++) {
+            let nestedParam = nestedParams.params[i].ref;
+            if (typeof(Account[type]) == 'undefined' || typeof(Account[type][nestedParams['container-name']][nestedParam]) == 'undefined' || Account[type][nestedParams['container-name']][nestedParam] == "") {
+                if (!nestedParams.params[i].optional) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 function removeTrailingWhitespace(Account) {
-             var type = Account['account-type'];
+            var type = Account['account-type'] || Account['ro-account-type'];
             var params = Account.params;
 
             if(params) {

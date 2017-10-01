@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,25 +30,38 @@ export default class LaunchpadCardCloudAccount extends React.Component {
   render() {
     let html;
     let isDisplayed = this.props.display;
-    let status = [];
-    if (this.props.nsr['cloud-account']) {
-      status.push(
-        (<li key="nsr"><h3>NSR: {this.props.nsr['cloud-account']}</h3></li>)
-      )
-    }
-    this.props.nsr['vnfrs'] && this.props.nsr['vnfrs'].map(function(v,i) {
-      if(v.hasOwnProperty('cloud-account')) {
-        status.push(
-          (<li key={i}><h3>VNFR {v['short-name']}: {v['cloud-account']}</h3></li>)
-        )
-      }
-    })
-    html = (
-          <ul>
-            {status}
-          </ul>
-      )
-    return (<div className={this.props.className + (isDisplayed ? '_open':'_close')}><h2>VIM Accounts</h2>{html}</div>);
+    let nsrDataCenter = this.props.nsr['resource-orchestrator'] ? this.props.nsr['resource-orchestrator'] : 'RIFT';
+    return (
+            <div className={this.props.className + (isDisplayed ? '_open':'_close')}>
+              <h2>Accounts</h2>
+              <div className={'dataCenterTable'}>
+                <div className="dataCenterTable-header">
+                  <div>TYPE</div>
+                  <div>NAME</div>
+                  <div>RESOURCE ORCHESTRATOR</div>
+                  <div>DATACENTER</div>
+                </div>
+                <div>
+                  <div>NSR</div>
+                  <div>{this.props.nsr['short-name']}</div>
+                  <div>{nsrDataCenter}</div>
+                  <div>{this.props.nsr['datacenter']}</div>
+                </div>
+                {
+                  this.props.nsr && this.props.nsr['vnfrs'] && this.props.nsr['vnfrs'].map(function(v,i) {
+                    if(v.hasOwnProperty('datacenter')) {
+                      return  <div>
+                                <div>VNFR</div>
+                                <div>{v['short-name']}</div>
+                                <div>{nsrDataCenter}</div>
+                                <div>{v['datacenter']}</div>
+                              </div>
+                    }
+                  })
+                }
+              </div>
+            </div>
+    );
   }
 }
 

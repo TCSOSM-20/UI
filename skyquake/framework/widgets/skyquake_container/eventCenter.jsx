@@ -16,12 +16,12 @@
  *
  */
 
- /**
-  * EventCenter module to display a list of events from the system
-  * @module framework/widgets/skyquake_container/EventCenter
-  * @author Kiran Kashalkar <kiran.kashalkar@riftio.com>
-  *
-  */
+/**
+ * EventCenter module to display a list of events from the system
+ * @module framework/widgets/skyquake_container/EventCenter
+ * @author Kiran Kashalkar <kiran.kashalkar@riftio.com>
+ *
+ */
 
 import React from 'react';
 import { Link } from 'react-router';
@@ -31,6 +31,8 @@ import TreeView from 'react-treeview';
 import _isEqual from 'lodash/isEqual';
 import _merge from 'lodash/merge';
 import _indexOf from 'lodash/indexOf';
+import _isArray from 'lodash/isArray';
+import _sortBy from 'lodash/sortBy';
 import '../../../node_modules/react-treeview/react-treeview.css';
 import './eventCenter.scss';
 
@@ -44,7 +46,6 @@ export default class EventCenter extends React.Component {
 	componentWillReceiveProps(props) {
 		let stateObject = {};
 
-		let notificationList = sessionStorage.getItem('notificationList');
 		let latestNotification = sessionStorage.getItem('latestNotification');
 
 		if (props.newNotificationEvent && props.newNotificationMsg) {
@@ -67,21 +68,16 @@ export default class EventCenter extends React.Component {
 			stateObject.newNotificationEvent = false;
 			stateObject.newNotificationMsg = null;
 		}
+		stateObject.notifications = props.notifications;
 
-		if (notificationList) {
-			stateObject.notifications = _merge(notificationList, props.notifications);
-		} else {
-			stateObject.notifications = props.notifications;
-		}
-		sessionStorage.setItem('notifications', JSON.stringify(stateObject.notifications));
 		this.setState(stateObject);
 	}
 
 	newNotificationReset = () => {
-        this.setState({
-            newNotificationEvent: false
-        });
-    }
+		this.setState({
+			newNotificationEvent: false
+		});
+	}
 
 	onClickToggleOpenClose(event) {
 		this.props.onToggle();
@@ -92,13 +88,13 @@ export default class EventCenter extends React.Component {
 	constructTree(details) {
 		let markup = [];
 		for (let key in details) {
-			if (typeof(details[key]) == "object") {
-			    let html = (
-			      	<TreeView key={key} nodeLabel={key}>
-			          {this.constructTree(details[key])}
-			      	</TreeView>
-			    );
-			    markup.push(html);
+			if (typeof (details[key]) == "object") {
+				let html = (
+					<TreeView key={key} nodeLabel={key}>
+						{this.constructTree(details[key])}
+					</TreeView>
+				);
+				markup.push(html);
 			} else {
 				markup.push((<div key={key} className="info">{key} = {details[key].toString()}</div>));
 			}
@@ -142,40 +138,42 @@ export default class EventCenter extends React.Component {
 			);
 		}
 
-		this.state.notifications && this.state.notifications.map((notification, notifIndex) => {
-			let notificationFields = {};
+		this.state.notifications &&
+			_isArray(this.state.notifications) &&
+			this.state.notifications.map((notification, notifIndex) => {
+				let notificationFields = {};
 
-			notificationFields = this.getNotificationFields(notification);
+				notificationFields = this.getNotificationFields(notification);
 
-			displayNotifications.push(
-				<tr key={notifIndex} className='notificationItem'>
-					<td className='source column'> {notificationFields.source} </td>
-					<td className='timestamp column'> {notificationFields.eventTime} </td>
-					<td className='event column'> {notificationFields.eventKey} </td>
-					<td className='details column'>
-						<TreeView key={notifIndex + '-detail'} nodeLabel='Event Details'>
-							{this.constructTree(notificationFields.details)}
-						</TreeView>
-					</td>
-				</tr>
-			);
-		});
+				displayNotifications.push(
+					<tr key={notifIndex} className='notificationItem'>
+						<td className='source column'> {notificationFields.source} </td>
+						<td className='timestamp column'> {notificationFields.eventTime} </td>
+						<td className='event column'> {notificationFields.eventKey} </td>
+						<td className='details column'>
+							<TreeView key={notifIndex + '-detail'} nodeLabel='Event Details'>
+								{this.constructTree(notificationFields.details)}
+							</TreeView>
+						</td>
+					</tr>
+				);
+			});
 
 		let openedClassName = this.state.isOpen ? 'open' : 'closed';
 		html = (
 			<div className={'eventCenter ' + openedClassName}>
 
-                        <div className='notification'>
-                            <Crouton
-                                id={Date.now()}
-                                message={this.getNotificationFields(this.state.newNotificationMsg).eventKey +
-                                	' notification received. Check Event Center for more details.'}
-                                type={'info'}
-                                hidden={!(this.state.newNotificationEvent && this.state.newNotificationMsg)}
-                                onDismiss={this.newNotificationReset}
-                                timeout={this.props.dismissTimeout}
-                            />
-                        </div>
+				<div className='notification'>
+					<Crouton
+						id={Date.now()}
+						message={this.getNotificationFields(this.state.newNotificationMsg).eventKey +
+							' notification received. Check Event Center for more details.'}
+						type={'info'}
+						hidden={!(this.state.newNotificationEvent && this.state.newNotificationMsg)}
+						onDismiss={this.newNotificationReset}
+						timeout={this.props.dismissTimeout}
+					/>
+				</div>
 				<h1 className='title' data-open-close-icon={this.state.isOpen ? 'open' : 'closed'}
 					onClick={this.onClickToggleOpenClose.bind(this)}>
 					EVENT CENTER

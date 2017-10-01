@@ -40,11 +40,11 @@ Cloud.get = function(req) {
       var requestHeaders = {};
       _.extend(requestHeaders,
         constants.HTTP_HEADERS.accept.collection, {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         });
 
       request({
-          url: utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account',
+          url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account'),
           type: 'GET',
           headers: requestHeaders,
           forever: constants.FOREVER_ON,
@@ -77,11 +77,11 @@ Cloud.get = function(req) {
       var requestHeaders = {};
       _.extend(requestHeaders,
         constants.HTTP_HEADERS.accept.data, {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         });
 
       request({
-          url: utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account/' + id,
+          url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account/' + id),
           type: 'GET',
           headers: requestHeaders,
           forever: constants.FOREVER_ON,
@@ -128,11 +128,11 @@ Cloud.create = function(req) {
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data,
       constants.HTTP_HEADERS.content_type.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
-      url: utils.confdPort(api_server) + APIVersion + '/api/config/cloud',
+      url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/cloud'),
       method: 'POST',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -167,11 +167,11 @@ Cloud.update = function(req) {
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data,
       constants.HTTP_HEADERS.content_type.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
-      url: utils.confdPort(api_server) + APIVersion + '/api/config/cloud/account/' + id,
+      url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/cloud/account/' + id),
       method: 'PUT',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -209,10 +209,10 @@ Cloud.delete = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
     request({
-      url: utils.confdPort(api_server) + APIVersion + '/api/config/cloud/account/' + id,
+      url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/cloud/account/' + id),
       method: 'DELETE',
       headers: requestHeaders,
       forever: constants.FOREVER_ON,
@@ -237,11 +237,11 @@ Cloud.getResources = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
-        url: utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account/' + cloudAccount + '/resources?deep',
+        url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account/' + cloudAccount + '/resources?deep'),
         type: 'GET',
         headers: requestHeaders,
         forever: constants.FOREVER_ON,
@@ -280,11 +280,11 @@ Cloud.getPools = function(req) {
     var requestHeaders = {};
     _.extend(requestHeaders,
       constants.HTTP_HEADERS.accept.data, {
-        'Authorization': req.get('Authorization')
+        'Authorization': req.session && req.session.authorization
       });
 
     request({
-        url: utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account/' + cloudAccount + '/pools',
+        url: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/cloud/account/' + cloudAccount + '/pools'),
         type: 'GET',
         headers: requestHeaders,
         forever: constants.FOREVER_ON,

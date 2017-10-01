@@ -153,14 +153,15 @@ const FileManagerSource = {
     openDownloadMonitoringSocket: function() {
         return {
             remote: function(state, packageID) {
+                let encodedId = encodeURIComponent(packageID);
                 return new Promise(function(resolve, reject) {
                     //api/operational/download-jobs/job/
                    $.ajax({
-                    url: '/socket-polling?api_server=' + API_SERVER,
+                    url: '/socket-polling',
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
-                      url: 'composer/api/file-manager/jobs/' + packageID + '?api_server=' + API_SERVER,
+                      url: 'composer/api/file-manager/jobs/' + encodedId + '?api_server=' + API_SERVER,
                     },
                     success: function(data, textStatus, jqXHR) {
                         Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -178,14 +179,15 @@ const FileManagerSource = {
     openFileMonitoringSocket: function() {
         return {
             remote: function(state, id, type) {
+                let encodedId = encodeURIComponent(id);
                 return new Promise(function(resolve, reject) {
                     //api/operational/download-jobs/job/
                    $.ajax({
-                    url: '/socket-polling?api_server=' + API_SERVER,
+                    url: '/socket-polling',
                     type: 'POST',
                     beforeSend: Utils.addAuthorizationStub,
                     data: {
-                      url: 'composer/api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + id
+                      url: 'composer/api/file-manager?api_server=' + utils.getSearchParams(window.location).api_server +'&package_type=' + type + '&package_id=' + encodedId
                     },
                     success: function(data, textStatus, jqXHR) {
                         Utils.checkAndResolveSocketRequest(data, resolve, reject);

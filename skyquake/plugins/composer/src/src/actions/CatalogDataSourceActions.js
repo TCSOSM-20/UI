@@ -24,9 +24,14 @@ import alt from '../alt';
 class CatalogDataSourceActions {
 
 	constructor() {
-		this.generateActions('loadCatalogsSuccess', 'loadCatalogsError', 'deleteCatalogItemSuccess', 'deleteCatalogItemError', 'saveCatalogItemSuccess', 'saveCatalogItemError');
-	}
-
+		this.generateActions(
+			'loadCatalogsSuccess', 
+			'loadCatalogsError', 
+			'deleteCatalogItemSuccess', 
+			'deleteCatalogItemError',
+			'saveCatalogItemSuccess', 
+			'saveCatalogItemError');
+	    }
 }
 
 export default alt.createActions(CatalogDataSourceActions);

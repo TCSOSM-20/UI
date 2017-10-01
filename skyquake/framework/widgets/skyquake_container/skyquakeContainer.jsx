@@ -18,17 +18,23 @@
 import React from 'react';
 import AltContainer from 'alt-container';
 import Alt from './skyquakeAltInstance.js';
-import SkyquakeNav from './skyquakeNav.jsx';
+ import _cloneDeep from 'lodash/cloneDeep';
+import SkyquakeNav from '../skyquake_nav/skyquakeNav.jsx';
 import EventCenter from './eventCenter.jsx';
 import SkyquakeContainerActions from './skyquakeContainerActions.js'
 import SkyquakeContainerStore from './skyquakeContainerStore.js';
 // import Breadcrumbs from 'react-breadcrumbs';
 import Utils from 'utils/utils.js';
 import Crouton from 'react-crouton';
+import SkyquakeNotification from '../skyquake_notification/skyquakeNotification.jsx';
 import ScreenLoader from 'widgets/screen-loader/screenLoader.jsx';
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
 import './skyquakeApp.scss';
 // import 'style/reset.css';
 import 'style/core.css';
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 export default class skyquakeContainer extends React.Component {
     constructor(props) {
         super(props);
@@ -39,13 +45,21 @@ export default class skyquakeContainer extends React.Component {
         this.state.eventCenterIsOpen = false;
         this.state.currentPlugin = SkyquakeContainerStore.currentPlugin;
     }
-
+    getChildContext() {
+        return {
+          userProfile: this.state.user
+        };
+    }
+    getUserProfile() {
+        return this.state.user;
+    }
     componentWillMount() {
         let self = this;
 
         Utils.bootstrapApplication().then(function() {
             SkyquakeContainerStore.listen(self.listener);
             SkyquakeContainerStore.getNav();
+            SkyquakeContainerStore.getUserProfile();
             SkyquakeContainerStore.getEventStreams();
         });
 
@@ -82,12 +96,14 @@ export default class skyquakeContainer extends React.Component {
     }
 
     render() {
-        const {displayNotification, notificationMessage, displayScreenLoader, notificationType, ...state} = this.state;
+        const {displayNotification, notificationData, displayScreenLoader,...state} = this.state;
+        const User = this.state.user || {};
+        const rbacValid = isRBACValid(User, [PLATFORM.SUPER, PLATFORM.ADMIN, PLATFORM.OPER]);
         var html;
-
+        let nav = _cloneDeep(this.state.nav);
         if (this.matchesLoginUrl()) {
             html = (
-                <AltContainer>
+                <AltContainer flux={Alt}>
                     <div className="skyquakeApp">
                         {this.props.children}
                     </div>
@@ -100,29 +116,33 @@ export default class skyquakeContainer extends React.Component {
             html = (
                 <AltContainer flux={Alt}>
                     <div className="skyquakeApp wrap">
-                        <Crouton
-                            id={Date.now()}
-                            message={notificationMessage}
-                            type={notificationType}
-                            hidden={!(displayNotification && notificationMessage)}
+                        <SkyquakeNotification
+                            data={this.state.notificationData}
+                            visible={displayNotification}
                             onDismiss={SkyquakeContainerActions.hideNotification}
-                            timeout= {5000}
                         />
                         <ScreenLoader show={displayScreenLoader}/>
-                        <SkyquakeNav nav={this.state.nav}
+                        <SkyquakeNav nav={nav}
                             currentPlugin={this.state.currentPlugin}
-                            store={SkyquakeContainerStore} />
+                            currentUser={this.state.user.userId}
+                            currentProject={this.state.user.projectId}
+                            store={SkyquakeContainerStore}
+                            projects={this.state.projects} />
                         <div className="titleBar">
-                            <h1>{this.state.currentPlugin + tag}</h1>
+                            <h1>{(this.state.nav.name ? this.state.nav.name.replace('_', ' ').replace('-', ' ') : this.state.currentPlugin && this.state.currentPlugin.replace('_', ' ').replace('-', ' ')) + tag}</h1>
                         </div>
                         <div className={"application " + routeName}>
                             {this.props.children}
                         </div>
-                        <EventCenter className="eventCenter"
-                            notifications={this.state.notifications}
-                            newNotificationEvent={this.state.newNotificationEvent}
-                            newNotificationMsg={this.state.newNotificationMsg}
-                            onToggle={this.onToggle} />
+                        {
+                            rbacValid ?
+                                <EventCenter className="eventCenter"
+                                    notifications={this.state.notifications}
+                                    newNotificationEvent={this.state.newNotificationEvent}
+                                    newNotificationMsg={this.state.newNotificationMsg}
+                                    onToggle={this.onToggle} />
+                            : null
+                        }
                     </div>
                 </AltContainer>
             );
@@ -130,6 +150,9 @@ export default class skyquakeContainer extends React.Component {
         return html;
     }
 }
+skyquakeContainer.childContextTypes = {
+  userProfile: React.PropTypes.object
+};
 skyquakeContainer.contextTypes = {
     router: React.PropTypes.object
   };

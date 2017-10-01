@@ -20,19 +20,25 @@
 import Alt from './skyquakeAltInstance.js';
 import SkyquakeContainerSource from './skyquakeContainerSource.js';
 import SkyquakeContainerActions from './skyquakeContainerActions';
+let Utils = require('utils/utils.js');
 import _indexOf from 'lodash/indexOf';
+import _isEqual from 'lodash/isEqual';
 //Temporary, until api server is on same port as webserver
 import rw from 'utils/rw.js';
 
 var API_SERVER = rw.getSearchParams(window.location).api_server;
-var UPLOAD_SERVER = rw.getSearchParams(window.location).upload_server;
+const MAX_STORED_EVENTS = 20;
 
 class SkyquakeContainerStore {
     constructor() {
         this.currentPlugin = getCurrentPlugin();
         this.nav = {};
-        this.notifications = [];
+		let notificationList = null;
+		try {notificationList = JSON.parse(sessionStorage.getItem('notifications'));} catch (e) {}
+		this.notifications = notificationList || [];
         this.socket = null;
+        this.projects = null;
+        this.user = {};
         //Notification defaults
         this.notificationMessage = '';
         this.displayNotification = false;
@@ -96,6 +102,9 @@ class SkyquakeContainerStore {
         ws.onmessage = (socket) => {
             try {
                 var data = JSON.parse(socket.data);
+                if(data.hasOwnProperty('map')) {
+                    data = [];
+                }
                 if (!data.notification) {
                     console.warn('No notification in the received payload: ', data);
                 } else {
@@ -105,12 +114,14 @@ class SkyquakeContainerStore {
                         // newly appreared event.
                         // Add to the notifications list and setState
                         self.notifications.unshift(data.notification);
+                        (self.notifications.length > MAX_STORED_EVENTS) && self.notifications.pop();
                         self.setState({
                             newNotificationEvent: true,
                             newNotificationMsg: data.notification,
                             notifications: self.notifications,
                             isLoading: false
                         });
+                        sessionStorage.setItem('notifications', JSON.stringify(self.notifications));
                     }
                 }
             } catch(e) {
@@ -137,6 +148,7 @@ class SkyquakeContainerStore {
         console.log('Found streams: ', streams);
         let self = this;
 
+        streams &&
         streams['ietf-restconf-monitoring:streams'] &&
         streams['ietf-restconf-monitoring:streams']['stream'] &&
         streams['ietf-restconf-monitoring:streams']['stream'].map((stream) => {
@@ -162,23 +174,53 @@ class SkyquakeContainerStore {
         })
     }
 
+    openProjectSocketSuccess = (connection) => {
+        var self = this;
+        var ws = window.multiplexer.channel(connection);
+        if (!connection) return;
+        self.setState({
+            socket: ws.ws,
+            channelId: connection
+        });
+        ws.onmessage = function(socket) {
+            try {
+                var data = JSON.parse(socket.data);
+                Utils.checkAuthentication(data.statusCode, function() {
+                    self.closeSocket();
+                });
+                if (!data.project || !_isEqual(data.project, self.projects)) {
+                    let user = self.user;
+                    user.projects = data.project;
+                    self.setState({
+                        user: user,
+                        projects: data.project || {}
+                    });
+                }
+            } catch(e) {
+                console.log('HIT an exception in openProjectSocketSuccess', e);
+            }
+        };
+    }
+    getUserProfileSuccess = (user) => {
+        this.alt.actions.global.hideScreenLoader.defer();
+        this.setState({user})
+    }
+    selectActiveProjectSuccess = (projectId) => {
+        let user = this.user;
+        user.projectId = projectId;
+        this.setState({user});
+        window.location.href = window.location.origin;
+    }
     //Notifications
-    showNotification = (data) => {
-        let state = {
-                displayNotification: true,
-                notificationMessage: data,
-                notificationType: 'error',
-                displayScreenLoader: false
-            }
-        if(typeof(data) == 'string') {
-
-        } else {
-            state.notificationMessage = data.msg;
-            if(data.type) {
-                state.notificationType = data.type;
-            }
-        }
-        this.setState(state);
+    handleServerReportedError = (result) => {
+        this.hideScreenLoader();
+        this.alt.actions.global.showNotification.defer(result);
+    }
+    showNotification = (notificationData) => {
+        this.setState({
+            notificationData,
+            displayNotification: true
+        })
     }
     hideNotification = () => {
         this.setState({
@@ -211,7 +253,7 @@ function decorateAndTransformNav(nav, currentPlugin) {
             if (k != currentPlugin)  {
                 nav[k].routes.map(function(route, i) {
                     if (API_SERVER) {
-                        route.route = '/' + k + '/index.html?api_server=' + API_SERVER + '&upload_server=' + UPLOAD_SERVER + '#' + route.route;
+                        route.route = '/' + k + '/index.html?api_server=' + API_SERVER + '#' + route.route;
                     } else {
                         route.route = '/' + k + '/#' + route.route;
                     }

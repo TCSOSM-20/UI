@@ -18,6 +18,7 @@
 import React, {Component} from 'react';
 import 'style/core.css';
 import './panel.scss';
+import circleXImage from '../../../node_modules/open-iconic/svg/circle-x.svg';
 export class Panel extends Component {
     constructor(props) {
         super(props)
@@ -28,8 +29,15 @@ export class Panel extends Component {
         let classRoot = className ? ' ' + className : ' ';
         let hasCorners = this.props['no-corners'];
         let titleTag = title ? <header className="skyquakePanel-title">{title}</header> : '';
+        let closeButton = (
+            <a onClick={self.props.hasCloseButton}
+              className={"close-btn"}>
+              <img src={circleXImage} title="Close card" />
+              </a>
+        );
         return (
             <section className={'skyquakePanel' + classRoot} style={props.style}>
+                {  self.props.hasCloseButton ? closeButton : null}
                 { !hasCorners ? <i className="corner-accent top left"></i> : null }
                 { !hasCorners ? <i className="corner-accent top right"></i> : null }
                 {titleTag}
@@ -51,13 +59,23 @@ Panel.defaultProps = {
 
 export class PanelWrapper extends Component {
     render() {
+        let wrapperClass = 'skyquakePanelWrapper';
+        let {className, column, style, ...props} = this.props;
+        if(className) {
+            wrapperClass = `${wrapperClass} ${className}`
+        }
+        if(column) {
+            style.flexDirection = 'column';
+        }
         return (
-        <div className={'skyquakePanelWrapper ' + this.props.className} style={this.props.style}>
+        <div className={wrapperClass} style={style} {...props}>
             {this.props.children}
         </div>)
     }
 }
-
+PanelWrapper.defaultProps = {
+    style: {}
+}
 export default Panel;
 
 

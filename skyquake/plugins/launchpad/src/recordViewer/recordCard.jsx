@@ -35,9 +35,14 @@ import LaunchpadFleetStore from '../launchpadFleetStore.js';
 import _forEach from 'lodash/forEach';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
+import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
 
-export default class RecordCard extends React.Component {
+const PROJECT_ROLES = ROLES.PROJECT;
+
+class RecordCard extends React.Component {
   constructor(props) {
     super(props)
   }
@@ -77,6 +82,8 @@ export default class RecordCard extends React.Component {
 
     let notice = null;
 
+    let hasAccess = isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]);
+
     switch(this.props.type) {
       case 'vnfr' :
         cardData = this.props.data[0];
@@ -86,7 +93,7 @@ export default class RecordCard extends React.Component {
         if (displayConfigPrimitives) {
           configPrimitiveComponent = (
             <div className="flex vnfrConfigPrimitiveContainer">
-              <VnfrConfigPrimitives data={configPrimitivesProps} />
+              <VnfrConfigPrimitives data={configPrimitivesProps} hasAccess={hasAccess} />
             {/* <NsrPrimitiveJobList jobs={cardData['config-agent-job']}/> */}
             <div style={{display:'flex', flexDirection: 'column',     flex: '1 1 40%'}}>
                 <div className="launchpadCard_title">
@@ -193,7 +200,7 @@ export default class RecordCard extends React.Component {
         if (displayConfigPrimitives) {
           configPrimitiveComponent = (
             <div className="flex nsConfigPrimitiveContainer">
-              <NsrConfigPrimitives data={configPrimitivesProps} />
+              <NsrConfigPrimitives data={configPrimitivesProps} hasAccess={hasAccess}  />
               <div style={{display:'flex', flexDirection: 'column',     flex: '1 1 40%'}}>
                 <div className="launchpadCard_title">
                   JOB LIST
@@ -249,7 +256,7 @@ export default class RecordCard extends React.Component {
     let metricsAndParams = [];
 
 
-    let nfviMetrics = <LpCardNfviMetrics data={cardData["nfvi-metrics"]} />;
+    let nfviMetrics = null //<LpCardNfviMetrics data={cardData["nfvi-metrics"]} />;
     metricsAndParams.push(<div className="monitoringParams" key="mp">
                           {components.map(function(c, k) {
                             return <div key={k} className="mpSlide">{c.title}{c.component}</div>
@@ -331,7 +338,7 @@ export default class RecordCard extends React.Component {
           if (this.props.type == 'nsr') {
             primitivesTabTitle = 'Service Primitive';
           } else if (this.props.type == 'vnfr') {
-            primitivesTabTitle = 'Service Primitive'
+            primitivesTabTitle = 'Config Primitive'
           }
 
           tabList.push(
@@ -421,3 +428,9 @@ RecordCard.defaultProps = {
   isLoading: true,
   jobData: []
 }
+RecordCard.contextTypes = {
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
+};
+
+export default SkyquakeComponent(RecordCard);

@@ -15,38 +15,20 @@
  *   limitations under the License.
  *
  */
-//Login needs to be refactored. Too many cross dependencies
-var AuthActions = require('../widgets/login/loginAuthActions.js');
-var $ = require('jquery');
-import rw from './rw.js';
+import AuthActions from '../widgets/login/loginAuthActions';
+import $ from 'jquery';
+import rw from './rw';
+import appConfiguration from './appConfiguration'
+import SockJS from 'sockjs-client';
+
 var API_SERVER = rw.getSearchParams(window.location).api_server;
 let NODE_PORT = rw.getSearchParams(window.location).api_port || ((window.location.protocol == 'https:') ? 8443 : 8000);
-var SockJS = require('sockjs-client');
 
 var Utils = {};
 
 Utils.DescriptorModelMeta = null;
 
 var INACTIVITY_TIMEOUT = 600000;
-
-Utils.getInactivityTimeout = function() {
-    return new Promise(function(resolve, reject) {
-        $.ajax({
-            url: '/inactivity-timeout',
-            type: 'GET',
-            success: function(data) {
-                resolve(data);
-            },
-            error: function(error) {
-                console.log("There was an error getting the inactivity-timeout: ", error);
-                reject(error);
-            }
-        }).fail(function(xhr) {
-            console.log('There was an xhr error getting the inactivity-timeout', xhr);
-            reject(xhr);
-        });
-    });
-};
 
 Utils.isMultiplexerLoaded = function() {
     if (window.multiplexer) {
@@ -75,14 +57,19 @@ Utils.setupMultiplexClient = function() {
     loadChecker();
 };
 
-Utils.checkAndResolveSocketRequest = function(data, resolve, reject) {
+Utils.checkAndResolveSocketRequest = function(data, resolve, reject, successCallback) {
     const checker = () => {
         if (!Utils.isMultiplexerLoaded()) {
             setTimeout(() => {
                 checker();
             }, 500);
         } else {
-            resolve(data.id);
+            if (!successCallback) {
+                resolve(data.id);
+            } else {
+                //resolve handled in callback
+                successCallback(data.id)
+            }
         }
     };
 
@@ -90,9 +77,8 @@ Utils.checkAndResolveSocketRequest = function(data, resolve, reject) {
 };
 
 Utils.bootstrapApplication = function() {
-    var self = this;
-    return new Promise(function(resolve, reject) {
-        Promise.all([self.getInactivityTimeout()]).then(function(results) {
+    return new Promise((resolve, reject) => {
+        Promise.all([appConfiguration.get()]).then(function(results) {
             INACTIVITY_TIMEOUT = results[0]['inactivity-timeout'];
             resolve();
         }, function(error) {
@@ -129,8 +115,9 @@ Utils.getDescriptorModelMeta = function() {
 }
 
 Utils.addAuthorizationStub = function(xhr) {
-    var Auth = window.sessionStorage.getItem("auth");
-    xhr.setRequestHeader('Authorization', 'Basic ' + Auth);
+    // NO-OP now that we are dealing with it on the server
+    // var Auth = window.sessionStorage.getItem("auth");
+    // xhr.setRequestHeader('Authorization', 'Basic ' + Auth);
 };
 
 Utils.getByteDataWithUnitPrefix = function(number, precision) {
@@ -183,36 +170,30 @@ Utils.getPacketDataWithUnitPrefix = function(number, precision) {
     }
 }
 Utils.loginHash = "#/login";
-Utils.setAuthentication = function(username, password, cb) {
-    var self = this;
-    var AuthBase64 = btoa(username + ":" + password);
-    window.sessionStorage.setItem("auth", AuthBase64);
-    self.detectInactivity();
-    $.ajax({
-            url: '//' + window.location.hostname + ':' + window.location.port + '/check-auth?api_server=' + API_SERVER,
-            type: 'GET',
-            beforeSend: Utils.addAuthorizationStub,
-            success: function(data) {
-              //console.log("LoggingSource.getLoggingConfig success call. data=", data);
-                if (cb) {
-                    cb();
-                };
-            },
-            error: function(data) {
-                Utils.clearAuthentication();
-            }
-          });
-}
-Utils.clearAuthentication = function(callback) {
+
+Utils.clearAuthentication = function() {
     var self = this;
     window.sessionStorage.removeItem("auth");
     AuthActions.notAuthenticated();
     window.sessionStorage.setItem("locationRefHash", window.location.hash);
-    if (callback) {
-        callback();
-    } else {
-        window.location.hash = Utils.loginHash;
-    }
+    var reloadURL = '';
+    $.ajax({
+        url: '//' + window.location.hostname + ':' + window.location.port + '/session?api_server=' + API_SERVER + '&hash=' + encodeURIComponent(window.location.hash),
+        type: 'DELETE',
+        success: function(data) {
+            console.log('User logged out');
+            reloadURL = data['url'] + '?post_logout_redirect_uri=' +
+                 window.location.protocol + '//' +
+                 window.location.hostname + ':' +
+                 window.location.port +
+                 '/?api_server=' + API_SERVER;
+
+            window.location.replace(reloadURL);
+        },
+        error: function(data) {
+            console.log('Problem logging user out');
+        }
+    });
 }
 Utils.isNotAuthenticated = function(windowLocation, callback) {
     var self = this;
@@ -320,6 +301,26 @@ Utils.parseError = (error) => {
         }
     }
     return displayMsg
+}
+
+Utils.rpcError = (rpcResult) => {
+    try {
+        let info = JSON.parse(rpcResult);
+        let rpcError = info.body || info.errorMessage.body || info.errorMessage.error;
+        if (rpcError) {
+            if (typeof rpcError === 'string') {
+                const index = rpcError.indexOf('{');
+                if (index >= 0) {
+                    return JSON.parse(rpcError.substr(index));
+                }
+            } else {
+                return rpcError;
+            }
+        }
+    } catch (e) {
+    }
+    console.log('invalid rpc error: ', rpcResult);
+    return null;
 }
 
 module.exports = Utils;

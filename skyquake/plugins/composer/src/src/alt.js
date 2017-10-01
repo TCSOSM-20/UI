@@ -21,7 +21,5 @@
  */
 'use strict';
 
-var Alt = require('alt');
-var alt = new Alt();
-
-export default alt;
+import Alt from 'widgets/skyquake_container/skyquakeAltInstance.js';
+export default Alt;

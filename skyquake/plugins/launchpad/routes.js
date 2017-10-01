@@ -271,6 +271,13 @@ app.get('/api/nsr', cors(), function(req, res) {
             utils.sendErrorResponse(error, res);
         })
     });
+    app.get('/api/ro-account', cors(), function(req, res) {
+        launchpadAPI['ResourceOrchestratorAccount'].get(req).then(function(data) {
+            utils.sendSuccessResponse(data, res);
+        }, function(error) {
+            utils.sendErrorResponse(error, res);
+        })
+    });
     app.get('/api/config', cors(), function(req, res) {
         launchpadAPI['config'].get(req).then(function(data) {
             utils.sendSuccessResponse(data, res);

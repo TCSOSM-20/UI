@@ -29,4 +29,3 @@ node('docker') {
                            params.GERRIT_PATCHSET_REVISION,
                            params.TEST_INSTALL,
                            params.ARTIFACTORY_SERVER)
-}

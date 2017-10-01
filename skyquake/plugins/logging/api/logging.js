@@ -43,7 +43,7 @@ var Test = {};
 function buildGetRequestOptions(req, endpoint) {
   var headers = _.extend({},
     constants.HTTP_HEADERS.accept.data, {
-    'Authorization': req.get('Authorization')
+    'Authorization': req.session && req.session.authorization
   });
   var api_server = req.query["api_server"];
   var requestOptions = {
@@ -60,7 +60,7 @@ function buildPutRequestOptions(req, endpoint, jsonData) {
   var headers = _.extend({},
     constants.HTTP_HEADERS.accept.data,
     constants.HTTP_HEADERS.content_type.data, {
-    'Authorization': req.get('Authorization')
+    'Authorization': req.session && req.session.authorization
   });
   var api_server = req.query["api_server"];
   var requestOptions = {
@@ -79,7 +79,7 @@ function buildDeleteRequestOptions(req, endpoint) {
   var headers = _.extend({},
     constants.HTTP_HEADERS.accept.data,
     constants.HTTP_HEADERS.content_type.data, {
-    'Authorization': req.get('Authorization')
+    'Authorization': req.session && req.session.authorization
   });
   var api_server = req.query["api_server"];
   var requestOptions = {
@@ -447,7 +447,7 @@ SysLogViewer.get = function(req) {
       headers: _.extend({},
         constants.HTTP_HEADERS.accept.data,
         {
-          'Authorization': req.get('Authorization')
+          'Authorization': req.session && req.session.authorization
         }),
       forever: foreverOn,
       rejectUnauthorized: false

@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,11 @@ var configurationAPI = {};
 var _ = require('lodash');
 var GLOBAL_CONFIGURATION = {
     api_server: 'localhost',
-    ssl_enabled: true
+    ssl_enabled: true,
+    api_server_port_number: constants.SECURE_SERVER_PORT,
+    idp_server_address: constants.LAUNCHPAD_ADDRESS,
+    idp_server_protocol: constants.IDP_SERVER_PROTOCOL,
+    idp_server_port_number: constants.IDP_PORT_NUMBER
 };
 
 /**
@@ -91,5 +95,19 @@ configurationAPI.globalConfiguration.update = function(data) {
 configurationAPI.globalConfiguration.get = function() {
     return GLOBAL_CONFIGURATION;
 };
+
+var backendURL = null;
+configurationAPI.getBackendURL = function () {
+	if (!backendURL) {
+		backendURL = GLOBAL_CONFIGURATION.api_server_protocol + '://' + GLOBAL_CONFIGURATION.api_server + ':' + GLOBAL_CONFIGURATION.api_server_port_number;
+	}
+	return backendURL;
+}
+
+configurationAPI.getBackendAPI = function () {
+	return configurationAPI.getBackendURL() + '/v2/api';
+}
+
+
 
 module.exports = configurationAPI;

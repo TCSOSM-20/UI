@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,6 +65,7 @@ class NsrScalingGroups extends React.Component {
 							<td>{id}</td>
 							<td><UpTime initialTime={sgrInstance['create-time']} run={true} /></td>
 							<td>{sgrInstance['op-status']}</td>
+                                                        <td>{sgrInstance['config-status']}</td>
 							<td>
 								{sgrInstance['is-default'] == 'false' ? <a onClick={this.handleDeleteClick.bind(this, this.props.data.id, sgrName, id)} title="Delete">
 				                	<span className="oi" data-glyph="trash" aria-hidden="true"></span>
@@ -92,8 +93,9 @@ class NsrScalingGroups extends React.Component {
 			        <tr>
 			        	<th style={{width: '6%'}}></th>
 			            <th style={{width: '12%'}}>ID</th>
-			            <th style={{width: '37%'}}>Uptime</th>
-			            <th style={{width: '37%'}}>Status</th>
+			            <th style={{width: '24%'}}>Uptime</th>
+			            <th style={{width: '25%'}}>Status</th>
+                                    <th style={{width: '25%'}}>Config-Status</th>
 			            <th style={{width: '7%'}}> </th>
 			        </tr>
 			    </thead>

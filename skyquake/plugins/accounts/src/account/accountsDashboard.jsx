@@ -21,6 +21,14 @@ import AppHeader from 'widgets/header/header.jsx';
 import AccountStore from './accountStore.js';
 import AccountSidebar from '../account_sidebar/accountSidebar.jsx';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
+
+//Delete this line after testing is done
+// PROJECT_ROLES.ACCOUNT_ADMIN = '';
 import 'style/layout.scss';
 
 class AccountsDashboard extends React.Component {
@@ -32,7 +40,6 @@ class AccountsDashboard extends React.Component {
     componentWillMount() {
         this.Store.listen(this.updateState);
         this.Store.openAccountsSocket();
-        this.Store.getResourceOrchestrator();
     }
     componentWillUnmount() {
         this.Store.closeSocket();
@@ -44,11 +51,12 @@ class AccountsDashboard extends React.Component {
     render() {
         let self = this;
         let html;
+        let READONLY = !isRBACValid(this.context.userProfile, [PROJECT_ROLES.ACCOUNT_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]);
         html = (<div className="launchpad-account-dashboard content-wrapper">
                     <div className="flex">
-                      <AccountSidebar {...this.state} store={this.Store}/>
+                      <AccountSidebar {...this.state} readonly={READONLY} store={this.Store}/>
                       <div>
-                        { this.props.children ? React.cloneElement(this.props.children, {store: self.Store, ...self.state}) : 'Edit or Create New Accounts'
+                        { this.props.children ? React.cloneElement(this.props.children, {readonly: READONLY, store: self.Store, ...self.state}) : 'Edit or Create New Accounts'
                         }
                       </div>
                     </div>
@@ -57,7 +65,8 @@ class AccountsDashboard extends React.Component {
     }
 }
 AccountsDashboard.contextTypes = {
-    router: React.PropTypes.object
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 };
 
 export default SkyquakeComponent(AccountsDashboard);

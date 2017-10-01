@@ -55,7 +55,7 @@ class Instantiate extends Component {
                     sshFn={this.props.sshFn()}
                     updateName={this.props.nameUpdated}
                     updateInputParam={this.props.updateInputParam}
-
+                    updateVnfInputParam={this.props.updateVnfInputParam}
                     nsd={selectedNSD}
                     selectedNSDid={this.props.selectedNSDid}
                     name={this.props.name}
@@ -67,6 +67,7 @@ class Instantiate extends Component {
                     dataCenters={this.props.dataCenters}
                     configAgentAccounts={this.props.configAgentAccounts}
                     inputParameters={this.props['input-parameters']}
+                    vnfInputParams={this.props['vnf-input-parameter']}
 
                     displayPlacementGroups={this.props.displayPlacementGroups}
 
@@ -89,6 +90,13 @@ class Instantiate extends Component {
 
                     isOpenMano={this.props.isOpenMano}
 
+                    displayVIMAccounts={this.props.displayVIMAccounts}
+                    resourceOrchestrators={this.props.resourceOrchestrators}
+
+                    selectedResourceOrchestrator={this.props.selectedResourceOrchestrator}
+                    selectedDataCenterID={this.props.dataCenterID}
+
+                    vnfDataCenters={this.props.vnfDataCenters}
                 />
             </Panel>
         </PanelWrapper>

@@ -35,33 +35,34 @@ var DataCenters = {};
 Composer.get = function(req) {
     var api_server = req.query['api_server'];
     var results = {}
+    var projectPrefix = req.session.projectId ? "project-" : "";
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/nsd-catalog/nsd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true
             }),
             rp({
-                uri: utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep',
+                uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ns-instance-opdata?deep'),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -74,7 +75,7 @@ Composer.get = function(req) {
             //   headers: _.extend({},
             //     constants.HTTP_HEADERS.accept.collection,
             //     {
-            //       'Authorization': req.get('Authorization')
+            //       'Authorization': req.session && req.session.authorization
             //     }),
             //   forever: constants.FOREVER_ON,
             // rejectUnauthorized: false,
@@ -122,11 +123,10 @@ Composer.get = function(req) {
                 "descriptors": []
             }];
             if (result[0].body) {
-                response[0].descriptors = JSON.parse(result[0].body).collection['nsd:nsd'];
+                response[0].descriptors = utils.dataToJsonSansPropNameNamespace(result[0].body).collection['nsd'];
                 if (result[2].body) {
-                    var data = JSON.parse(result[2].body);
-                    if (data && data["nsr:ns-instance-opdata"] && data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"]) {
-                        var nsdRefCountCollection = data["nsr:ns-instance-opdata"]["rw-nsr:nsd-ref-count"];
+                    var data = utils.dataToJsonSansPropNameNamespace(result[2].body);
+                    if (data && data["nsr:ns-instance-opdata"]) {
                         response[0].descriptors.map(function(nsd) {
                             if (!nsd["meta"]) {
                                 nsd["meta"] = {};
@@ -134,19 +134,13 @@ Composer.get = function(req) {
                             if (typeof nsd['meta'] == 'string') {
                                 nsd['meta'] = JSON.parse(nsd['meta']);
                             }
-                            nsd["meta"]["instance-ref-count"] = _.findWhere(nsdRefCountCollection, {
-                                "nsd-id-ref": nsd.id
-                            })["instance-ref-count"];
                         });
                     }
                 }
             };
             if (result[1].body) {
-                response[1].descriptors = JSON.parse(result[1].body).collection['vnfd:vnfd'];
+                response[1].descriptors = utils.dataToJsonSansPropNameNamespace(result[1].body).collection['vnfd'];
             };
-            // if (result[2].body) {
-            //   response[2].descriptors = JSON.parse(result[2].body).collection['pnfd:pnfd'];
-            // };
             resolve({
                 statusCode: response.statusCode || 200,
                 data: JSON.stringify(response)
@@ -171,10 +165,10 @@ Composer.delete = function(req) {
     console.log('Deleting', catalogType, id, 'from', api_server);
     return new Promise(function(resolve, reject) {
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog/' + catalogType + '/' + encodeURIComponent(id)),
             method: 'DELETE',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
@@ -190,7 +184,7 @@ Composer.delete = function(req) {
 Composer.getVNFD = function(req) {
     var api_server = req.query['api_server'];
     var vnfdID = req.body.data;
-    var authorization = req.get('Authorization');
+    var authorization = req.session && req.session.authorization;
     var VNFDs = [];
     if (typeof(vnfdID) == "object" && vnfdID.constructor.name == "Array") {
         vnfdID.map(function(id) {
@@ -217,9 +211,9 @@ Composer.getVNFD = function(req) {
 
     function requestVNFD(id) {
         return new Promise(function(resolve, reject) {
-            var url = utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd' + (id ? '/' + id : '') + '?deep';
+            var url = utils.confdPort(api_server) + APIVersion + '/api/config/vnfd-catalog/vnfd' + (id ? '/' + encodeURIComponent(id) : '') + '?deep';
             request({
-                uri: url,
+                uri: utils.projectContextUrl(req, url),
                 method: 'GET',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
                     'Authorization': authorization
@@ -255,10 +249,10 @@ Composer.create = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + '/api/config/' + catalogType + '-catalog',
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/config/' + catalogType + '-catalog'),
             method: 'POST',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -285,10 +279,10 @@ Composer.updateSave = function(req) {
     return new Promise(function(resolve, reject) {
         var requestHeaders = {};
         _.extend(requestHeaders, constants.HTTP_HEADERS.accept.data, constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         });
         request({
-            uri: utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + id,
+            uri: utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/config/' + catalogType + '-catalog' + '/' + catalogType + '/' + encodeURIComponent(id)),
             method: 'PUT',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -316,24 +310,40 @@ PackageManager.upload = function(req) {
         download_host = req.protocol + '://' + req.get('host');//req.api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
 
+    var input = {
+        'external-url': download_host + '/composer/' + constants.BASE_PACKAGE_UPLOAD_DESTINATION + '/' + req.file.filename,
+        'package-type': 'VNFD',
+        'package-id': uuid()
+    }
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-create');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
+    var authorization = {};
+    if (req.session && req.session.authorization) {
+        authorization = {
+            'Authorization': req.session && req.session.authorization
+        };
+    } else {
+        // For RIFT-16894: onboard_pkg script | Upload packages through command line
+        authorization = {
+            'Authorization': req.get('Authorization')
+        };
+    }
+
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-create',
+                uri: uri,
                 method: 'POST',
-                headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
-                }),
+                headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, authorization),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true,
                 json: true,
                 body: {
-                    input: {
-                        'external-url': download_host + '/composer/upload/' + req.file.filename,
-                        'package-type': 'VNFD',
-                        'package-id': uuid()
-                    }
+                    input: input
                 }
             })
         ]).then(function(result) {
@@ -341,7 +351,7 @@ PackageManager.upload = function(req) {
             data['transaction_id'] = result[0].body['output']['transaction-id'];
 
             // Add a status checker on the transaction and then to delete the file later
-            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id']);
+            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], 'create');
 
             // Return status to composer UI to update the status.
             resolve({
@@ -372,17 +382,22 @@ PackageManager.update = function(req) {
         download_host = req.protocol + '://' + req.get('host');//api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
     var input = {
-        'external-url': download_host + '/composer/update/' + req.file.filename,
+        'external-url': download_host + '/composer/' + constants.BASE_PACKAGE_UPLOAD_DESTINATION + '/' + req.file.filename,
         'package-type': 'VNFD',
         'package-id': uuid()
-    }
+    };
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-update');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-update',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -397,7 +412,7 @@ PackageManager.update = function(req) {
             data['transaction_id'] = result[0].body['output']['transaction-id'];
 
             // Add a status checker on the transaction and then to delete the file later
-            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], true);
+            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], 'update');
 
             // Return status to composer UI to update the status.
             resolve({
@@ -419,19 +434,22 @@ PackageManager.update = function(req) {
 PackageManager.export = function(req) {
     // /api/operations/package-export
     var api_server = req.query['api_server'];
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-export');
+    var input = req.body;
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-export',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true,
                 json: true,
-                body: { "input": req.body}
+                body: { "input": input }
             })
         ]).then(function(result) {
             var data = {};
@@ -454,19 +472,23 @@ PackageManager.export = function(req) {
 PackageManager.copy = function(req) {
     // /api/operations/package-copy
     var api_server = req.query['api_server'];
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-copy');
+    var input = req.body;
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-copy',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
                 resolveWithFullResponse: true,
                 json: true,
-                body: { "input": req.body}
+                body: { "input": input}
             })
         ]).then(function(result) {
             var data = {};
@@ -487,40 +509,56 @@ PackageManager.copy = function(req) {
 }
 
 /**
- * This methods retrieves the status of package operations. It takes an optional 
+ * These methods retrieves the status of package operations. It takes an optional
  * transaction id (id) this if present will return only that status otherwise
  * an array of status' will be response.
  */
-PackageManager.getJobStatus = function(req) {
+PackageManager.getJobStatus = function(req, jobType) {
     var api_server = req.query["api_server"];
     var uri = utils.confdPort(api_server);
     var id = req.params['id'];
-    var url = uri + '/api/operational/copy-jobs' + (id ? '/job/' + id : '');
+    var url = utils.projectContextUrl(req, uri + '/api/operational/' + jobType + (id ? '/job/' + id : ''));
     return new Promise(function(resolve, reject) {
         request({
             url: url,
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false
         }, function(error, response, body) {
-            if (utils.validateResponse('restconfAPI.streams', error, response, body, resolve, reject)) {
+            if (utils.validateResponse('PackageManager.getJobStatus', error, response, body, resolve, reject)) {
                 var returnData;
+                var jsonResponse = JSON.parse(response.body);
                 if (id) {
-                    returnData = JSON.parse(response.body)['rw-pkg-mgmt:job'];
+                    returnData = jsonResponse['rw-pkg-mgmt:job'];
+                    if (!returnData){
+                        returnData = {
+                            status: 'failure',
+                            errors: [{value: "Internal error"}]
+                        }
+                    }
                 } else {
-                    var data = JSON.parse(response.body)['rw-pkg-mgmt:copy-jobs'];
+                    var data = jsonResponse['rw-pkg-mgmt:' + jobType];
                     returnData = (data && data.job) || [];
                 }
                 resolve({
                     statusCode: response.statusCode,
                     data: returnData
-                })
-            };
+                });
+            }
         })
     })
+}
+PackageManager.getCopyJobStatus = function(req) {
+    return PackageManager.getJobStatus(req, 'copy-jobs');
+}
+PackageManager.getImportJobStatus = function(req) {
+    return PackageManager.getJobStatus(req, 'create-jobs');
+}
+PackageManager.getUpdateJobStatus = function(req) {
+    return PackageManager.getJobStatus(req, 'update-jobs');
 }
 
 function makeAssetTypeParamName (type) {
@@ -533,24 +571,31 @@ FileManager.addFile = function(req) {
     var package_id = req.query['package_id'];
     var package_type = req.query['package_type'].toUpperCase();
     var package_path = req.query['package_path'];
-     if (!download_host) {
+    if (!download_host) {
         download_host = req.protocol + '://' + req.get('host');//api_server + ':' + utils.getPortForProtocol(req.protocol);
     }
+    var filename = req.file.filename;
+    var assetName = req.file.originalname;
     var input = {
-        'external-url': download_host + '/composer/upload/' + req.query['package_id'] + '/' + req.file.filename,
+        'external-url': download_host + '/composer/' + constants.BASE_PACKAGE_UPLOAD_DESTINATION + '/' + filename,
         'package-type': package_type,
         'package-id': package_id,
-        'package-path': package_path ? package_path + '/' + req.file.filename : req.file.filename
-    }
+        'package-path': package_path ? package_path + '/' + assetName : assetName
+    };
+
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/package-file-add');
+
+    input = utils.addProjectContextToRPCPayload(req, uri, input);
+
     var assetType = req.query['asset_type'].toUpperCase();
     input[makeAssetTypeParamName(package_type)] = assetType;
     return new Promise(function(resolve, reject) {
         Promise.all([
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/package-file-add',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 forever: constants.FOREVER_ON,
                 rejectUnauthorized: false,
@@ -563,6 +608,8 @@ FileManager.addFile = function(req) {
         ]).then(function(result) {
             var data = {};
             data['transaction_id'] = result[0].body['output']['task-id'];
+            // Add a status checker on the transaction and then to delete the file later
+            PackageFileHandler.checkCreatePackageStatusAndHandleFile(req, data['transaction_id'], 'download');
             resolve({
                 statusCode: constants.HTTP_RESPONSE_CODES.SUCCESS.OK,
                 data: data
@@ -582,13 +629,13 @@ FileManager.addFile = function(req) {
 FileManager.get = function(req) {
     var api_server = req.query['api_server'];
     var type = req.query['package_type'] && req.query['package_type'].toUpperCase();
-    var id = req.query['package_id'];
+    var packageId = req.query['package_id'];
     var downloadUrl = req.query['url'];
     var path = req.query['package_path'];
     var assetType = req.query['asset_type'];
     var input = {
         "package-type": type,
-        "package-id": id
+        "package-id": packageId
     }
     var payload = {input: input};
     if(req.method == 'GET') {
@@ -608,12 +655,14 @@ FileManager.get = function(req) {
     }
 
     function deleteFile(payload) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete');
+        payload.input = utils.addProjectContextToRPCPayload(req, uri, payload.input);
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-delete',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 json: payload,
                 forever: constants.FOREVER_ON,
@@ -630,12 +679,14 @@ FileManager.get = function(req) {
         })
     }
     function download(payload) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add');
+        payload.input = utils.addProjectContextToRPCPayload(req, uri, payload.input);
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/rw-pkg-mgmt:package-file-add',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 json: payload,
                 forever: constants.FOREVER_ON,
@@ -652,12 +703,14 @@ FileManager.get = function(req) {
         })
     }
     function list(payload) {
+        var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/get-package-endpoint');
+        payload.input = utils.addProjectContextToRPCPayload(req, uri, payload.input);
         return new Promise(function(resolve, reject) {
             rp({
-                uri: utils.confdPort(api_server) + '/api/operations/get-package-endpoint',
+                uri: uri,
                 method: 'POST',
                 headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                    'Authorization': req.get('Authorization')
+                    'Authorization': req.session && req.session.authorization
                 }),
                 json: payload,
                 forever: constants.FOREVER_ON,
@@ -675,10 +728,10 @@ FileManager.get = function(req) {
                     }
                     parsedEndpoint = URL.parse(endpoint);
                     rp({
-                        uri: api_server + ':' + parsedEndpoint.port + parsedEndpoint.path,
+                        uri: utils.projectContextUrl(req, api_server + ':' + parsedEndpoint.port + parsedEndpoint.path),
                         method: 'GET',
                         headers: _.extend({}, constants.HTTP_HEADERS.accept.collection, {
-                            'Authorization': req.get('Authorization')
+                            'Authorization': req.session && req.session.authorization
                         }),
                         forever: constants.FOREVER_ON,
                         rejectUnauthorized: false,
@@ -692,7 +745,12 @@ FileManager.get = function(req) {
                         }
                     }).catch(function(err) {
                         console.log('Failed to retrieve FileManager.list')
-                        resolve(err);
+                        reject({
+                                statusCode: constants.HTTP_RESPONSE_CODES.ERROR.INTERNAL_SERVER_ERROR,
+                                error: {
+                                    errorMessage: JSON.stringify(err)
+                                }
+                        });
                     })
                 }
             })
@@ -706,15 +764,15 @@ FileManager.job = function(req) {
     var id = req.params['id'];
     return new Promise(function(resolve, reject) {
         request({
-            url: uri + url + '?deep',
+            url: utils.projectContextUrl(req, uri + url + '?deep'),
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,
         }, function(error, response, body) {
-            if (utils.validateResponse('restconfAPI.streams', error, response, body, resolve, reject)) {
+            if (utils.validateResponse('FileManager.job', error, response, body, resolve, reject)) {
                 var data = JSON.parse(response.body)['rw-pkg-mgmt:download-jobs'];
                 var returnData = [];
                 data && data.job.map(function(d) {

@@ -7,15 +7,18 @@ html, body {
 
 .crouton {
     span {
-        white-space: pre;
+        /* white-space: pre;*/
     }
 }
 
 .skyquakeApp {
     display: -ms-flexbox;
+    display: -webkit-box;
     display: flex;
     -ms-flex-direction: column;
-        flex-direction: column;
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+            flex-direction: column;
     height: 100%;
     background: $gray-lightest;
     h1 {
@@ -28,6 +31,7 @@ html, body {
     }
     .skyquakeNav {
         display: -ms-flexbox;
+        display: -webkit-box;
         display: flex;
         color:white;
         background:black;
@@ -36,11 +40,14 @@ html, body {
         font-size:0.75rem;
         .secondaryNav {
             -ms-flex: 1 1 auto;
-                flex: 1 1 auto;
+                -webkit-box-flex: 1;
+                    flex: 1 1 auto;
             display: -ms-flexbox;
+            display: -webkit-box;
             display: flex;
             -ms-flex-pack: end;
-                justify-content: flex-end;
+                -webkit-box-pack: end;
+                    justify-content: flex-end;
         }
         .app {
             position:relative;
@@ -48,9 +55,11 @@ html, body {
                 font-size:0.75rem;
                 border-right: 1px solid black;
                 display: -ms-flexbox;
+                display: -webkit-box;
                 display: flex;
                 -ms-flex-align: center;
-                    align-items: center;
+                    -webkit-box-align: center;
+                        align-items: center;
                 .oi {
                     padding-right: 0.5rem;
                 }
@@ -60,6 +69,11 @@ html, body {
                 display:none;
                 z-index:2;
                 width: 100%;
+                &.project {
+                    a {
+                        text-transform:none;
+                    }
+                }
             }
             &:first-child{
                 h2 {
@@ -102,12 +116,13 @@ html, body {
         &:before {
             content: '';
             height:1.85rem;
-            width:5.5rem;
-            /*margin:0 1rem;*/
-            /*padding:0 0.125rem;*/
+            width:2.5rem;
+            margin:auto 1rem;
+            padding:0 0.125rem;
+            /* background: url('../../style/img/header-logo.png') no-repeat center center white;*/
             /*background: url('../../style/img/svg/riftio_logo_white.svg') no-repeat center center;*/
             background: url('../../style/img/svg/osm-logo_color_rgb_white_text.svg') no-repeat center center;
-            background-size: contain;
+            background-size:contain;
         }
     }
     .skyquakeContainerWrapper {
@@ -127,7 +142,8 @@ html, body {
         text-align:left;
         position:relative;
         -ms-flex: 1 0 auto;
-            flex: 1 0 auto;
+            -webkit-box-flex: 1;
+                flex: 1 0 auto;
         }
     }
     .corner-accent {

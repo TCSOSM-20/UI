@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,7 @@ var url = require('url');
 var sockjs = require('sockjs');
 var websocket_multiplex = require('websocket-multiplex');
 var utils = require('./utils.js');
+var configurationAPI = require('../modules/api/configuration.js');
 
 
 var Subscriptions = function() {
@@ -182,7 +183,7 @@ Subscriptions.prototype.socketInstance = function(url, req, wss, Type, channelId
       if (Type == PollingSocket) {
         Socket = new Type(url, req, 1000, req.body);
       } else {
-        Socket = new Type(url);
+        Socket = new Type(url, ['Bearer', req.session.passport.user.user['access_token']]);
       }
       console.log('Socket assigned for url', url);
     }
@@ -278,12 +279,12 @@ function PollingSocket(url, req, interval, config) {
   self.isClosed = false;
   var requestHeaders = {};
   _.extend(requestHeaders, {
-    'Authorization': req.get('Authorization')
+    Cookie: req.get('Cookie')
   });
 
   var pollServer = function() {
     Request({
-      url: url,
+      url: utils.projectContextUrl(req, url),
       method: config.method || 'GET',
       headers: requestHeaders,
       json: config.payload,
@@ -294,7 +295,11 @@ function PollingSocket(url, req, interval, config) {
         console.log('Error polling: ' + url);
       } else {
         if (!self.isClosed) {
-          self.poll = setTimeout(pollServer, 1000 || interval);
+          if(process.env.DISABLE_POLLING != "TRUE") {
+            self.poll = setTimeout(pollServer, 1000 || interval);
+          } else {
+            console.log('Polling is disabled. Finishing request.')
+          }
           var data = response.body;
           if (self.onmessage) {
             self.onmessage(data);

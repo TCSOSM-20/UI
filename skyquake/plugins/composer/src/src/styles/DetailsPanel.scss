@@ -1,4 +1,3 @@
-
 /*
  * 
  *   Copyright 2016 RIFT.IO Inc
@@ -16,11 +15,12 @@
  *   limitations under the License.
  *
  */
+
 @import 'main';
 @import 'variables';
 .DetailsPanel {
 	@extend .panel;
-	border-top: 1px solid mix($panel-border-color, white, 80%);
+	//border-top: 1px solid mix($panel-border-color, white, 80%);
 	//border-left: 1px solid $panel-border-color;
 	background-color: ($panel-bg-color-contrast);
 	position: absolute;
@@ -30,18 +30,15 @@
 	width: 300px;
 	min-width: 6px;
 	z-index: 2;
-	.DetailsPanelBody {
-		@extend .panel-body;
-		position: absolute;
-		overflow: hidden;
-		&:hover {
-			overflow: auto;
-		}
-		-ms-overflow-style: -ms-autohiding-scrollbar;
-		bottom: 0;
-		top: 0;
-		left: 0;
-		right: 0;
-		min-width: 200px;
+	overflow: visible
+}
+
+.DetailsPanelBody {
+	overflow: hidden;
+	>div {
+		position: relative;
+		height: 100%;
+		width: 100%;
 	}
+	min-width: 200px;
 }

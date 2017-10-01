@@ -42,11 +42,11 @@ export default {
             return resolve(false);
           }
            $.ajax({
-            url: '/socket-polling?api_server=' + API_SERVER,
+            url: '/socket-polling',
             type: 'POST',
             beforeSend: Utils.addAuthorizationStub,
             data: {
-              url: '/launchpad/api/nsr/' + id + '/compute-topology?api_server=' + API_SERVER
+              url: '/launchpad/api/nsr/' + encodeURIComponent(id) + '/compute-topology?api_server=' + API_SERVER
             },
             success: function(data, textStatus, jqXHR) {
               Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -68,7 +68,7 @@ export default {
         id = 0;
         return new Promise(function (resolve, reject) {
           $.ajax({
-            url: '/launchpad/api/nsr/' + id + '/compute-topology?api_server=' + API_SERVER,
+            url: '/launchpad/api/nsr/' + encodeURIComponent(id) + '/compute-topology?api_server=' + API_SERVER,
             type: 'GET',
             beforeSend: Utils.addAuthorizationStub,
             contentType: "application/json",
@@ -95,7 +95,7 @@ export default {
       remote: function(state, vnfrID) {
         return new Promise(function(resolve, reject) {
           $.ajax({
-            url: 'passthrough/data/api/operational/vnfr-catalog/vnfr/' + vnfrID + '?api_server=' + API_SERVER,
+            url: 'passthrough/data/api/operational/vnfr-catalog/vnfr/' + encodeURIComponent(vnfrID) + '?api_server=' + API_SERVER,
             type: 'GET',
             beforeSend: Utils.addAuthorizationStub,
             success: function(data) {
@@ -114,7 +114,7 @@ export default {
       remote: function(state, nsrID) {
         return new Promise(function(resolve, reject) {
           $.ajax({
-            url: 'passthrough/data/api/operational/ns-instance-opdata/nsr/' + nsrID + '?api_server=' + API_SERVER,
+            url: 'passthrough/data/api/operational/ns-instance-opdata/nsr/' + encodeURIComponent(nsrID) + '?api_server=' + API_SERVER,
             type: 'GET',
             beforeSend: Utils.addAuthorizationStub,
             success: function(data) {
@@ -133,7 +133,7 @@ export default {
       remote: function(state, vdurID, vnfrID) {
         return new Promise(function(resolve, reject) {
           $.ajax({
-            url: 'passthrough/data/api/operational/vnfr-catalog/vnfr/' + vnfrID + '/vdur/' + vdurID + '?api_server=' + API_SERVER,
+            url: 'passthrough/data/api/operational/vnfr-catalog/vnfr/' + encodeURIComponent(vnfrID) + '/vdur/' + encodeURIComponent(vdurID) + '?api_server=' + API_SERVER,
             type: 'GET',
             beforeSend: Utils.addAuthorizationStub,
             success: function(data) {

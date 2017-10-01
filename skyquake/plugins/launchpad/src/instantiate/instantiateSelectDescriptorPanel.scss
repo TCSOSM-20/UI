@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,8 @@
  *   limitations under the License.
  *
  */
+@import "style/_colors.scss";
+
 .InstantiateSelectDescriptorPanel {
     display: -ms-flexbox;
     display: flex;
@@ -33,5 +35,20 @@
             height: 100%;
             box-sizing: border-box;
             overflow:auto;
+    }
+    &-message {
+        display:-ms-flexbox;
+        display:flex;
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-align: center;
+            align-items: center;
+        -ms-flex: 1;
+            flex: 1;
+
+        h2 {
+            text-transform: uppercase;
+            color: $neutral-dark-2;
+        }
     }
 }

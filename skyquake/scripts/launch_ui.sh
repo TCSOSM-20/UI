@@ -17,7 +17,7 @@
 #
 
 usage() {
-	echo "usage: launch_ui.sh [--enable-https --keyfile-path=<keyfile_path> --certfile-path=<certfile-path>]"
+	echo "usage: launch_ui.sh --launchpad-address=<ip_or_fqdn> --idp-port-number=<port_number> [--enable-https --keyfile-path=<keyfile_path> --certfile-path=<certfile-path>]"
 }
 
 function handle_received_signal() {
@@ -26,52 +26,33 @@ function handle_received_signal() {
     exit
 }
 
+# Gets the current hosts ip/fqdn. If the host is resolvable through dns, it
+# returns the fqdn else returns the ip address.
+get_host_address() {
+  if [[ -z $(hostname -d) ]]; then
+    # not resolvable via dns, use resolvable ip address
+    echo $(hostname --ip-address)
+  else
+    # use the fqdn
+    echo $(hostname --fqdn)
+  fi
+}
 
 start_servers() {
 	cd $THIS_DIR
 	echo "Stopping any previous instances of Skyquake and API servers started with forever"
 	forever stopall
 
+  local launchpad_address=$(get_host_address)
 
-	echo "Running Node.js Skyquake server. HTTPS Enabled: ${ENABLE_HTTPS}"
+	echo "Running Node.js Skyquake server. HTTPS Enabled: ${ENABLE_HTTPS}, Launchpad Address: ${launchpad_address}"
 	cd ..
 	if [ ! -z "${ENABLE_HTTPS}" ]; then
-		forever start -a -l forever.log -o out.log -e err.log skyquake.js	--enable-https --keyfile-path="${KEYFILE_PATH}" --certfile-path="${CERTFILE_PATH}"
+		forever start -a -l forever.log -o out.log -e err.log skyquake.js --enable-https --keyfile-path="${KEYFILE_PATH}" --certfile-path="${CERTFILE_PATH}" --launchpad-address="${LAUNCHPAD_ADDRESS}" --idp-port-number="${IDP_PORT_NUMBER}" --callback-address="${CALLBACK_ADDRESS}"
 	else
-		forever start -a -l forever.log -o out.log -e err.log skyquake.js
+		forever start -a -l forever.log -o out.log -e err.log skyquake.js --launchpad-address="${LAUNCHPAD_ADDRESS}"  --idp-port-number="${IDP_PORT_NUMBER}" --callback-address="${CALLBACK_ADDRESS}"
 	fi
 }
-
-function extract_node_modules() {
-    tar xf node_modules.tar
-    touch timestamp.txt
-}
-
-function handle_plugin_node_modules() {
-    cd $THIS_DIR
-    echo "Handling plugin node modules"
-
-    cd ../plugins
-    for dir in */; do
-        echo "Checking plugin "${dir}" for newer node_modules"
-        cd ${dir}
-        if [ ! -f timestamp.txt ]; then
-            echo "timestamp file not found ... node_modules need to be expanded and timestamp needs to be touched"
-            extract_node_modules
-        else
-            echo "Checking if node_modules.tar has a newer timestamp than timestamp.txt"
-            if [[ node_modules.tar -nt timestamp.txt ]]; then
-                echo "node_modules.tar is newer than timestamp ... node modules need to be expanded and timestamp needs to be touched"
-                extract_node_modules
-            else
-                echo "node_modules.tar is older than timestamp ... nothing needs to be done"
-            fi
-        fi
-        cd ..
-        echo "Checking plugin "${dir}" for newer node_modules ...done"
-    done
-}
-
 
 # Begin work
 for i in "$@"
@@ -83,6 +64,18 @@ case $i in
     ;;
     -c=*|--certfile-path=*)
     CERTFILE_PATH="${i#*=}"
+    shift # past argument=value
+    ;;
+    -l=*|--launchpad-address=*)
+    LAUNCHPAD_ADDRESS="${i#*=}"
+    shift # past argument=value
+    ;;
+    -p=*|--idp-port-number=*)
+    IDP_PORT_NUMBER="${i#*=}"
+    shift # past argument=value
+    ;;
+    -r=*|--callback-address=*)
+    CALLBACK_ADDRESS="${i#*=}"
     shift # past argument=value
     ;;
     -h|--help)
@@ -110,8 +103,10 @@ fi
 # change to the directory of this script
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-# Call function to handle tarred node_modules as cpack+RPM cannot handle a lot of files
-handle_plugin_node_modules
+cd $THIS_DIR
+
+# Call script to handle tarred node_modules as cpack+RPM cannot handle a lot of files
+$THIS_DIR/handle_plugin_node_modules
 
 # Call function to start web and API servers
 start_servers

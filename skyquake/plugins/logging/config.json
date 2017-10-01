@@ -2,8 +2,14 @@
     "root": "public",
     "name": "Logging",
     "dashboard": "./loggingGeneral.jsx",
-    "order": 101,
+    "order": 3,
     "priority":2,
+    "admin_link": true,
+    "allow": [
+        "rw-rbac-platform:super-admin",
+        "rw-rbac-platform:platform-admin",
+        "rw-rbac-platform:platform-oper"
+    ],
     "routes": [
         {
             "label": "Logging",

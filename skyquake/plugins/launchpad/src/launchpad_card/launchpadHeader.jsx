@@ -151,8 +151,14 @@ class LaunchpadHeader extends React.Component {
             <h3 style={{display: isLoading ? 'none' : 'inherit'}}>
                 <UpTime initialTime={nsrCreateTime} run={true} />
             </h3>
-            <h3 className="launchpadCard_header-link" style={{display: this.props.nsr['cloud-account'] ? 'inherit' : 'none'}}>
-              <a onClick={this.openCloudAccountPanel} title="VIM Account" className={self.state.displayCloudAccount ? 'activeIcon' : 'inActiveIcon'}>
+            <h3 style={{display: isLoading ? this.props.nsr["operational-status"] == 'vl-init-phase' ? 'inherit' : 'none' : 'none'}}>
+                {this.props.nsr["rw-nsr:orchestration-progress"]["networks"]["active"]} / {this.props.nsr["rw-nsr:orchestration-progress"]["networks"]["total"]}
+            </h3>
+            <h3 style={{display: isLoading ? this.props.nsr["operational-status"] == 'vnf-init-phase' ? 'inherit' : 'none' : 'none'}}>
+                {this.props.nsr["rw-nsr:orchestration-progress"]["vms"]["active"]} / {this.props.nsr["rw-nsr:orchestration-progress"]["vms"]["total"]}
+            </h3>
+            <h3 className="launchpadCard_header-link" style={{display: this.props.nsr['datacenter'] ? 'inherit' : 'none'}}>
+              <a onClick={this.openCloudAccountPanel} title="Datacenters" className={self.state.displayCloudAccount ? 'activeIcon' : 'inActiveIcon'}>
                 <span className="oi" data-glyph="cloud" aria-hidden="true"></span>
               </a>
             </h3>
@@ -163,11 +169,15 @@ class LaunchpadHeader extends React.Component {
                 </a>
             </h3>
             {toggleStatus}
-            <h3 className="launchpadCard_header-link" style={{display: 'inherit'}}>
-              <a onClick={this.deleteLaunchpad} title="Delete">
-                <span className="oi" data-glyph="trash" aria-hidden="true"></span>
-              </a>
-            </h3>
+            {this.props.hasAccess ?
+                (
+                  <h3 className="launchpadCard_header-link" style={{display: 'inherit'}}>
+                    <a onClick={this.deleteLaunchpad} title="Delete">
+                      <span className="oi" data-glyph="trash" aria-hidden="true"></span>
+                    </a>
+                  </h3>
+                )
+              : null}
           </div>
         </div>
         <div className="launchpadCard_header-status">

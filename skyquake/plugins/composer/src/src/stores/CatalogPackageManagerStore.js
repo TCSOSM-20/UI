@@ -68,9 +68,12 @@ const defaults = {
 const exception = function ignoreException() {};
 
 const packagePropertyNames = Object.keys(defaults.downloadPackage);
+const API_SERVER = utils.getSearchParams(window.location).api_server;
+const FILE_SERVER = window.location.hostname === 'localhost' 
+	? API_SERVER : window.location.protocol + '//' + window.location.hostname;
 
 function getCatalogPackageManagerServerOrigin() {
-	return utils.getSearchParams(window.location).upload_server + ':4567';
+	return FILE_SERVER + ':8008';
 }
 
 function delayStatusCheck(statusCheckFunction, operation) {
@@ -244,7 +247,7 @@ function updateStatusInfo(response) {
 			break;
 		case 'upload-success':
 			statusInfo.pending = true;
-			statusInfo.progress = 100;
+			statusInfo.progress = 50;
 			statusInfo.message = 'Upload completed.';
 			statusInfo.transactionId = responseData['transaction_id'] || responseData['transaction-id'] || operation.transactionId;
 			break;
@@ -260,7 +263,7 @@ function updateStatusInfo(response) {
 		case 'pending':
 			statusInfo.pending = true;
 			statusInfo.progress = 50;
-			statusInfo.message = responseData.events[responseData.events.length - 1].text;
+			statusInfo.message = responseData.events && responseData.events.length && responseData.events[responseData.events.length - 1].text;
 			break;
 		case 'success':
 			statusInfo.success = true;
@@ -269,9 +272,9 @@ function updateStatusInfo(response) {
 			if (operation.type === 'download') {
 				statusInfo.urlValidUntil = moment().add(defaults.downloadUrlTimeToLiveInMinutes, 'minutes').toISOString();
 				if (responseData.filename) {
-					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + responseData.filename;
+					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/mano/export/' + responseData.filename;
 				} else {
-					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/api/export/' + operation.transactionId + '.tar.gz';
+					statusInfo.url = getCatalogPackageManagerServerOrigin() + '/mano/export/' + operation.transactionId + '.tar.gz';
 				}
 			}
 			break;
@@ -279,8 +282,23 @@ function updateStatusInfo(response) {
 			statusInfo.error = true;
 			statusInfo.message = responseData.errors[0].value;
 			break;
+		case 'COMPLETED':
+			statusInfo.success = true;
+			statusInfo.progress = 100;
+			statusInfo.message = "Onboarding completed";
+			break;
+		case 'IN_PROGRESS':
+			statusInfo.pending = true;
+			statusInfo.progress = (operation.progress || 25) + ((100 - operation.progress) / 2);
+			statusInfo.message = "Onboarding in progress";
+			break;
+		case 'FAILED':
+			statusInfo.error = true;
+			statusInfo.message = "Operation failed";
+			break;
 		default:
-			throw new ReferenceError('a status of "request", "success", "failure", "pending", "upload-completed", "upload-error", "download-requested", "upload-progress", "upload-action" is required');
+			statusInfo.error = true;
+			statusInfo.message = responseData.message || "Operation failed";
 		}
 	} else {
 		// typically get here due to unexpected development errors (backend exceptions, down/up load server access issues)

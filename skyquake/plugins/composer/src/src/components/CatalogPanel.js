@@ -39,6 +39,8 @@ import ComposerAppStore from '../stores/ComposerAppStore'
 import CatalogPanelStore from '../stores/CatalogPanelStore'
 import LoadingIndicator from './LoadingIndicator'
 import SelectionManager from '../libraries/SelectionManager'
+import { isRBACValid } from 'widgets/skyquake_rbac/skyquakeRBAC';
+import ROLES from 'utils/roleConstants.js';
 
 import '../styles/CatalogPanel.scss'
 
@@ -80,7 +82,12 @@ const CatalogPanel = React.createClass({
 		document.body.removeEventListener('dragend', this.onDragEnd);
 		window.removeEventListener('dragend', this.onDragEnd);
 	},
+	contextTypes: {
+		userProfile: React.PropTypes.object
+	},
 	render() {
+		const User = this.context.userProfile || {};
+		const isModifiableByUser = isRBACValid(User, [ROLES.PROJECT.PROJECT_ADMIN, ROLES.PROJECT.CATALOG_ADMIN]);
 
 		const onDropCatalogItem = e => {
 			e.preventDefault();
@@ -112,12 +119,30 @@ const CatalogPanel = React.createClass({
 		const isDraggingFiles = uiTransientState.isDragging && uiTransientState.isDraggingFiles;
 		const updateDropZone = createDropZone.bind(this, UploadDropZone.ACTIONS.update, '.action-update-catalog-package');
 		const onboardDropZone = createDropZone.bind(this, UploadDropZone.ACTIONS.onboard, '.action-onboard-catalog-package');
-		const className = ClassNames('CatalogPanel', {'-is-tray-open': this.state.isTrayOpen});
+		const className = ClassNames('CatalogPanel', { '-is-tray-open': this.state.isTrayOpen });
 		const hasNoCatalogs = this.props.hasNoCatalogs;
 		const isLoading = this.props.isLoading;
+		const packageManagerPanel = (
+			<CatalogPanelTray show={this.state.isTrayOpen}>
+				<DropZonePanel show={isDraggingItem} title="Drop catalog item to export.">
+					<DropTarget className="action-export-catalog-items" onDrop={onDropCatalogItem}>
+						<span>Export catalog item.</span>
+					</DropTarget>
+				</DropZonePanel>
+				<DropZonePanel show={isDraggingFiles}>
+					<DropTarget className="action-onboard-catalog-package" dropZone={onboardDropZone} onDrop={onDropOnboardPackage}>
+						<span>On-board new catalog package.</span>
+					</DropTarget>
+					<DropTarget className="action-update-catalog-package" dropZone={updateDropZone} onDrop={onDropUpdatePackage}>
+						<span>Update existing catalog package.</span>
+					</DropTarget>
+				</DropZonePanel>
+				<CatalogPackageManager />
+			</CatalogPanelTray>
+		);
 		return (
-			<div className={className} data-resizable="right" data-resizable-handle-offset="0 6" style={{width: this.props.layout.left}}>
-				<CatalogPanelToolbar />
+			<div className={className} data-resizable="right" data-resizable-handle-offset="0 6" style={{ width: this.props.layout.left }}>
+				<CatalogPanelToolbar rbacDisabled={this.props.rbacDisabled} />
 				<div className="CatalogPanelBody">
 					{(() => {
 						if (isLoading) {
@@ -128,7 +153,7 @@ const CatalogPanel = React.createClass({
 							)
 						}
 						if (hasNoCatalogs) {
-							return messages.catalogWelcome;
+							return messages.catalogWelcome(isModifiableByUser);
 						}
 						return (
 							<div>
@@ -138,22 +163,7 @@ const CatalogPanel = React.createClass({
 						);
 					})()}
 				</div>
-				<CatalogPanelTray show={this.state.isTrayOpen}>
-					<DropZonePanel show={isDraggingItem} title="Drop catalog item to export.">
-						<DropTarget className="action-export-catalog-items" onDrop={onDropCatalogItem}>
-							<span>Export catalog item.</span>
-						</DropTarget>
-					</DropZonePanel>
-					<DropZonePanel show={isDraggingFiles}>
-						<DropTarget className="action-onboard-catalog-package" dropZone={onboardDropZone} onDrop={onDropOnboardPackage}>
-							<span>On-board new catalog package.</span>
-						</DropTarget>
-						<DropTarget className="action-update-catalog-package" dropZone={updateDropZone} onDrop={onDropUpdatePackage}>
-							<span>Update existing catalog package.</span>
-						</DropTarget>
-					</DropZonePanel>
-					<CatalogPackageManager />
-				</CatalogPanelTray>
+				{isModifiableByUser ? packageManagerPanel : null}
 			</div>
 		);
 

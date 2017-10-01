@@ -15,9 +15,6 @@
  *   limitations under the License.
  *
  */
-/**
- * Created by onvelocity on 10/20/15.
- */
 
 import DescriptorModelMetaFactory from './DescriptorModelMetaFactory'
 

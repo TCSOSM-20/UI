@@ -25,8 +25,8 @@ import ConnectionPoint from './ConnectionPoint'
 
 export default class ConstituentVnfdConnectionPoint extends ConnectionPoint {
 
-	constructor(model, parent) {
-		super(model, parent);
+	constructor(model, parent, readonly) {
+		super(model, parent, readonly);
 		this.uid = parent.uid + this.key;
 	}
 

@@ -25,8 +25,6 @@ export default Alt.generateActions(
                                    'getCatalogError',
                                    'getVDUSuccess',
                                    'getVDUError',
-                                   'getLaunchCloudAccountSuccess',
-                                   'getLaunchCloudAccountError',
                                    'getDataCentersSuccess',
                                    'getDataCentersError',
                                    'launchNSRLoading',
@@ -37,6 +35,6 @@ export default Alt.generateActions(
                                    'getInstantiateSshKeyError',
                                    'getConfigAgentSuccess',
                                    'getConfigAgentError',
-                                   'getResourceOrchestratorSuccess',
+                                   'getResourceOrchestratorAccountsSuccess',
                                    'getResourceOrchestratorAgentError'
                                    )

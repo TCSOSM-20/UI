@@ -65,7 +65,7 @@ const CatalogDataSource = {
 			remote: function(state, catalogType, itemId) {
 				return new Promise(function(resolve, reject) {
 					$.ajax({
-						url: 'api/catalog/' + catalogType + '/' + itemId + '?api_server=' + utils.getSearchParams(window.location).api_server,
+						url: 'api/catalog/' + catalogType + '/' + encodeURIComponent(itemId) + '?api_server=' + utils.getSearchParams(window.location).api_server,
 						type: 'DELETE',
 						beforeSend: utils.addAuthorizationStub,
 						success: function(data) {
@@ -127,7 +127,7 @@ const CatalogDataSource = {
 						});
 					} else {
 						$.ajax({
-							url: 'api/catalog/' + item.uiState.type + '/' + payload.id + '?api_server=' + utils.getSearchParams(window.location).api_server,
+							url: 'api/catalog/' + item.uiState.type + '/' + encodeURIComponent(payload.id) + '?api_server=' + utils.getSearchParams(window.location).api_server,
 							type: method,
 							beforeSend: utils.addAuthorizationStub,
 							data: payload,

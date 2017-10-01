@@ -34,12 +34,8 @@ for f in *; do
     if [[ -d $f ]]; then
         echo 'Building plugin '$f
         cd $f
-        echo 'Fetching third-party node_modules for '$f
-        npm install
-        echo 'Fetching third-party node_modules for '$f'...done'
-        echo 'Packaging '$f' using webpack'
-        ./node_modules/.bin/webpack --optimize-minimize --progress --config webpack.production.config.js
-        echo 'Packaging '$f' using webpack... done'
+        echo 'Run build script for '$f
+        ./scripts/build.sh
         cd ..
         echo 'Building plugin '$f'... done'
     fi

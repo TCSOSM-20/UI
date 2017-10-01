@@ -46,10 +46,10 @@ class PanelResizeAction {
 
 		if (e.detail && e.detail.side) {
 			// a ResizeManager event
-			this.dispatch(PanelResizeAction.buildResizeManagerInfo(e))
+			return PanelResizeAction.buildResizeManagerInfo(e);
 		} else {
 			// a window event
-			this.dispatch(PanelResizeAction.buildWindowResizeInfo(e));
+			return PanelResizeAction.buildWindowResizeInfo(e);
 		}
 
 	}

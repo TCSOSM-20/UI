@@ -4,6 +4,12 @@
     "dashboard": "./launchpad.jsx",
     "order": 1,
     "priority":1,
+    "allow": [
+        "rw-rbac-platform:super-admin",
+        "rw-project:project-admin",
+        "rw-project:project-oper",
+        "rw-project-mano:lcm-oper",
+        "rw-project-mano:lcm-admin"],
     "routes": [
     {
         "label": "Dashboard",
@@ -18,13 +24,23 @@
         "component": "./instantiate/instantiateDashboard.jsx",
         "path": "",
         "type": "external",
+        "allow": [
+            "rw-rbac-platform:super-admin",
+            "rw-project:project-admin",
+            "rw-project-mano:lcm-admin"
+        ],
         "routes": [
             {
                 "label": "Instantiate",
                 "route": ":nsd",
                 "component": "./instantiate/instantiateParameters.jsx",
                 "path": ":nsd",
-                "type": "internal"
+                "type": "internal",
+                "allow": [
+                    "rw-rbac-platform:super-admin",
+                    "rw-project:project-admin",
+                    "rw-project-mano:lcm-admin"
+                ]
             }
         ]
     },{

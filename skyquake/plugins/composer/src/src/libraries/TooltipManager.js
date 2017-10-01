@@ -12,10 +12,18 @@ import '../styles/TooltipManager.scss'
 class TooltipManager {
 
 	static addEventListeners(element = document.body) {
-		TooltipManager.element = element;
+		if (element === TooltipManager.element) {
+			return;
+		}
+		// remove listeners for current element
 		TooltipManager.removeEventListeners();
-		TooltipManager.element.addEventListener('mousedown', TooltipManager.onScrollRemoveTooltip, true);
-		TooltipManager.element.addEventListener('scroll', TooltipManager.onScrollRemoveTooltip, true);
+		TooltipManager.element = element;
+		if (element) { 
+			// make sure new element is clean
+			TooltipManager.removeEventListeners();
+			TooltipManager.element.addEventListener('mousedown', TooltipManager.onScrollRemoveTooltip, true);
+			TooltipManager.element.addEventListener('scroll', TooltipManager.onScrollRemoveTooltip, true);
+		}
 	}
 
 	static removeEventListeners() {

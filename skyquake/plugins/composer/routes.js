@@ -33,27 +33,18 @@ var storage = multer.diskStorage({
     // destination: 'upload/packages/',
     destination: function(req, file, cb) {
         var dir = constants.BASE_PACKAGE_UPLOAD_DESTINATION;
-        if (req.query['package_id']) {
-            dir += req.query['package_id'] + '/';
-        }
         if (!fs.existsSync(dir)){
-            mkdirp(dir, function(err) {
+            mkdirp(dir, function(err) { 
                 if (err) {
                     console.log('Error creating folder for uploads. All systems FAIL!');
                     throw err;
                 }
-                cb(null, dir);
             });
-        } else {
-            cb(null, dir);
         }
+        cb(null, dir);
     },
     filename: function (req, file, cb) {
-        if (req.query['package_id']) {
-            cb(null, file.originalname);
-        } else  {
-            cb(null, Date.now() + '_' + file.fieldname + '_' + file.originalname);
-        }
+        cb(null, Date.now() + '_' + file.fieldname + '_' + file.originalname);
     },
     // limits: {
     //     fieldNameSize: 100,
@@ -105,7 +96,7 @@ router.put('/api/catalog/:catalogType/:id', cors(), function(req, res) {
     });
 });
 
-router.post('/api/file-manager', cors(), upload.single('package'), function (req, res, next) {
+router.post('/api/file-manager', cors(), upload.single('file'), function (req, res, next) {
     FileManager.addFile(req).then(function(data) {
         utils.sendSuccessResponse(data, res);
     }, function(error) {
@@ -144,7 +135,10 @@ router.post('/upload', cors(), upload.single('package'), function (req, res, nex
         utils.sendErrorResponse(error, res);
     });
 });
-router.use('/upload', cors(), express.static('upload/packages'));
+router.use('/upload', cors(), function(req, res, next) {
+    console.log('Received request for ', req.originalUrl, ' from ', req.ip);
+    next();
+}, express.static(constants.BASE_PACKAGE_UPLOAD_DESTINATION));
 
 router.post('/update', cors(), upload.single('package'), function (req, res, next) {
     PackageManager.update(req).then(function(data) {
@@ -169,8 +163,22 @@ router.post('/api/package-copy', cors(), function (req, res, next) {
         utils.sendErrorResponse(error, res);
     });
 });
-router.get('/api/package-manager/jobs/:id', cors(), function (req, res, next) {
-    PackageManager.getJobStatus(req).then(function(data) {
+router.get('/api/package-copy/jobs/:id', cors(), function (req, res, next) {
+    PackageManager.getCopyJobStatus(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.get('/api/package-import/jobs/:id', cors(), function (req, res, next) {
+    PackageManager.getImportJobStatus(req).then(function(data) {
+        utils.sendSuccessResponse(data, res);
+    }, function(error) {
+        utils.sendErrorResponse(error, res);
+    });
+});
+router.get('/api/package-update/jobs/:id', cors(), function (req, res, next) {
+    PackageManager.getUpdateJobStatus(req).then(function(data) {
         utils.sendSuccessResponse(data, res);
     }, function(error) {
         utils.sendErrorResponse(error, res);

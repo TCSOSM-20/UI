@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +25,13 @@ export default Alt.generateActions(
 	'getEventStreamsSuccess',
 	'getEventStreamsError',
     //Notifications
+    'handleServerReportedError',
     'showNotification',
     'hideNotification',
     //Screen Loader
     'showScreenLoader',
-    'hideScreenLoader'
+    'hideScreenLoader',
+    'openProjectSocketSuccess',
+    'getUserProfileSuccess',
+    'selectActiveProjectSuccess'
 );

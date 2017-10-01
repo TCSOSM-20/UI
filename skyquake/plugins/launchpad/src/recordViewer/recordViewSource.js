@@ -33,7 +33,7 @@ export default {
             remote: function(state, recordID) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + recordID + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(recordID) + '?api_server=' + API_SERVER,
                         type: 'GET',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -55,7 +55,7 @@ export default {
             remote: function(state, vnfrID) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'passthrough/data/api/operational/vnfr-catalog/vnfr/' + vnfrID + '?api_server=' + API_SERVER,
+                        url: 'passthrough/data/api/operational/vnfr-catalog/vnfr/' + encodeURIComponent(vnfrID) + '?api_server=' + API_SERVER,
                         type: 'GET',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -74,7 +74,7 @@ export default {
             remote: function(state, nsrID) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'passthrough/data/api/operational/ns-instance-opdata/nsr/' + nsrID + '?api_server=' + API_SERVER,
+                        url: 'passthrough/data/api/operational/ns-instance-opdata/nsr/' + encodeURIComponent(nsrID) + '?api_server=' + API_SERVER,
                         type: 'GET',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -94,11 +94,11 @@ export default {
                 return new Promise(function(resolve, reject) {
                     console.log('Getting NSR Socket');
                     $.ajax({
-                        url: '/socket-polling?api_server=' + API_SERVER,
+                        url: '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
-                            url: '/launchpad/api/nsr/' + recordID + '?api_server=' + API_SERVER,
+                            url: '/launchpad/api/nsr/' + encodeURIComponent(recordID) + '?api_server=' + API_SERVER,
                         },
                         success: function(data) {
                             Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -117,11 +117,11 @@ export default {
                 return new Promise(function(resolve, reject) {
                     console.log('Getting Job Socket');
                     $.ajax({
-                        url: '/socket-polling?api_server=' + API_SERVER,
+                        url: '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
-                            url: '/launchpad/api/nsr/' + recordID + '?api_server=' + API_SERVER,
+                            url: '/launchpad/api/nsr/' + encodeURIComponent(recordID) + '?api_server=' + API_SERVER,
                         },
                         success: function(data) {
                             Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -139,11 +139,11 @@ export default {
                 return new Promise(function(resolve, reject) {
                     console.log('Getting VNFR Socket for: ' + state.recordID);
                     $.ajax({
-                        url: '/socket-polling?api_server=' + API_SERVER,
+                        url: '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
-                            url: '/launchpad/api/vnfr/' + state.recordID + '?api_server=' + API_SERVER,
+                            url: '/launchpad/api/vnfr/' + encodeURIComponent(state.recordID) + '?api_server=' + API_SERVER,
                         },
                         success: function(data) {
                             Utils.checkAndResolveSocketRequest(data, resolve, reject);
@@ -182,7 +182,7 @@ export default {
             remote(state, params) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + params.nsr_id + '/' + params.scaling_group_id + '/instance' + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(params.nsr_id) + '/' + encodeURIComponent(params.scaling_group_id) + '/instance' + '?api_server=' + API_SERVER,
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -201,7 +201,7 @@ export default {
             remote(state, params) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + params.nsr_id + '/' + params.scaling_group_id + '/instance/' + params.scaling_instance_index + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(params.nsr_id) + '/' + encodeURIComponent(params.scaling_group_id) + '/instance/' + params.scaling_instance_index + '?api_server=' + API_SERVER,
                         type: 'DELETE',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -220,7 +220,7 @@ export default {
             remote(state, params) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + params.nsr_id + '/vld' + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(params.nsr_id) + '/vld' + '?api_server=' + API_SERVER,
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -239,7 +239,7 @@ export default {
             remote(state, params) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + params.nsr_id + '/vld/' + params.vldId + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(params.nsr_id) + '/vld/' + encodeURIComponent(params.vldId) + '?api_server=' + API_SERVER,
                         type: 'DELETE',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -258,7 +258,7 @@ export default {
             remote(state, params) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + params.nsr_id + '/vld/' + params.vldId + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(params.nsr_id) + '/vld/' + encodeURIComponent(params.vldId) + '?api_server=' + API_SERVER,
                         type: 'PUT',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {

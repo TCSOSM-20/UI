@@ -136,11 +136,8 @@ const ComposerAppToolbar = React.createClass({
 		const style = {left: this.props.layout.left};
 		const saveClasses = ClassNames('ComposerAppSave', {'primary-action': this.props.isModified || this.props.isNew});
 		const cancelClasses = ClassNames('ComposerAppCancel', {'secondary-action': this.props.isModified});
-		if (this.props.disabled) {
-			return (
-				<div className="ComposerAppToolbar" style={style}></div>
-			);
-		}
+		let isDisabled = this.props.disabled;
+		// console.log('rbacDisabled', isDisabled )
 		const hasSelection = SelectionManager.getSelections().length > 0;
 		if(this.props.panelTabShown != 'descriptor') {
 			style.pointerEvents = 'none';
@@ -156,35 +153,38 @@ const ComposerAppToolbar = React.createClass({
 					if (this.props.isEditingNSD || this.props.isEditingVNFD) {
 						return (
 							<div className="FileActions">
-								<Button className={saveClasses} onClick={this.onClickSave} label={messages.getSaveActionLabel(this.props.isNew)} src={imgSave} />
-								<Button className={cancelClasses} onClick={this.onClickCancel} label="Cancel" src={imgCancel} />
-								<Button className="ComposerAppToggleJSONViewerAction" onClick={this.toggleJSONViewer} label="YAML Viewer" src={imgJSONViewer} />
+								<Button className={saveClasses} onClick={this.onClickSave} label={messages.getSaveActionLabel(this.props.isNew)} src={imgSave} disabled={isDisabled} />
+								<Button className={cancelClasses} onClick={this.onClickCancel} label="Cancel" src={imgCancel} disabled={isDisabled} />
+								<Button className="ComposerAppToggleJSONViewerAction" onClick={this.toggleJSONViewer} label="YAML Viewer" src={imgJSONViewer} disabled={isDisabled} />
 							</div>
 						);
 					}
 				})()}
 				<div className="LayoutActions">
-					<Button className="action-auto-layout" onClick={this.onClickAutoLayout} label="Auto Layout" src={imgLayout} />
+					<Button className="action-auto-layout" onClick={this.onClickAutoLayout} label="Auto Layout" src={imgLayout} disabled={isDisabled} />
 					{this.props.isEditingNSD ||
 						this.props.isEditingVNFD ? <Button className="action-add-vld"
+														   disabled={isDisabled}
 														   draggable="true"
 														   label={this.props.isEditingNSD ? 'Add VLD' : 'Add IVLD'}
 														   src={imgVLD}
 														   onDragStart={this.onDragStartAddVld}
 														   onClick={this.onClickAddVld} /> : null}
 					{this.props.isEditingNSD ? <Button className="action-add-vnffg"
+													   disabled={isDisabled}
 													   draggable="true"
 													   label="Add VNFFG"
 													   src={imgFG}
 													   onDragStart={this.onDragStartAddVnffg}
 													   onClick={this.onClickAddVnffg} /> : null}
 					{this.props.isEditingVNFD ? <Button className="action-add-vdu"
+														disabled={isDisabled}
 														draggable="true"
 														label="Add VDU"
 														src={imgVDU}
 														onDragStart={this.onDragStartAddVdu}
 														onClick={this.onClickAddVdu} /> : null}
-					<Button type="image" title="Delete selected items" className="action-delete-selected-items" disabled={!hasSelection} onClick = {this.onClickDeleteSelected} src={imgDelete} label="Delete" />
+					<Button type="image" title="Delete selected items" className="action-delete-selected-items" disabled={!hasSelection || isDisabled} onClick = {this.onClickDeleteSelected} src={imgDelete} label="Delete" />
 				</div>
 			</div>
 		);

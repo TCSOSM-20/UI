@@ -29,8 +29,10 @@ var Accounts = {};
 var nameSpace = {
     cloud: 'cloud',
     sdn: 'sdn',
-    'config-agent': 'config-agent'
+    'config-agent': 'config-agent',
+    'resource-orchestrator': 'ro-account'
 };
+var APIVersion = '/v2'
 Accounts.get = function(req) {
     return new Promise(function(resolve, reject) {
         if (req.params.type || req.params.name) {
@@ -43,8 +45,8 @@ Accounts.get = function(req) {
                         })
                     });
                 }, function(reason) {
-            reject(reason);
-        })
+                    reject(reason);
+                })
         } else {
             getAll(req, resolve, reject);
         }
@@ -54,12 +56,14 @@ Accounts.get = function(req) {
         Promise.all([
             Cloud.get(req),
             Sdn.get(req),
-            ConfigAgent.get(req)
+            ConfigAgent.get(req),
+            getResourceOrchestrator(req)
         ]).then(function(result) {
             var ReturnData = {
                 cloud: result[0],
                 sdn: result[1],
-                'config-agent': result[2]
+                'config-agent': result[2],
+                'resource-orchestrator': result[3]
             };
             ReturnData.cloud.type = 'cloud';
             ReturnData.sdn.type = 'sdn';
@@ -78,6 +82,7 @@ Accounts.update = updateAccount;
 Accounts.create = updateAccount;
 Accounts.delete = deleteAccount;
 Accounts.refreshAccountConnectionStatus = refreshAccountConnectionStatus
+
 function getAccount(req) {
     return new Promise(function(resolve, reject) {
         var self = this;
@@ -87,18 +92,18 @@ function getAccount(req) {
         var type = nameSpace[req.params.type];
         var url = utils.confdPort(api_server) + '/api/operational/' + type + '/account';
         if (id) {
-            url += '/' + id;
+            url += '/' + encodeURIComponent(id);
         }
 
         _.extend(
             requestHeaders,
             id ? constants.HTTP_HEADERS.accept.data : constants.HTTP_HEADERS.accept.collection, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }
         );
 
         request({
-                url: url + '?deep',
+                url: utils.projectContextUrl(req, url + '?deep'),
                 type: 'GET',
                 headers: requestHeaders,
                 forever: constants.FOREVER_ON,
@@ -141,16 +146,19 @@ function updateAccount(req) {
     var data = req.body;
     var requestHeaders = {};
     var createData = {};
-    var url = utils.confdPort(api_server) + '/api/config/' + type;
+    var url = utils.confdPort(api_server) + '/api/config/' + type //+ '/account';
     var method = 'POST'
     if (!id) {
-        createData = {
-            'account': Array.isArray(data) ? data : [data]
+        createData = {}
+        if (type == 'ro-account') {
+            createData['rw-ro-account:account'] = Array.isArray(data) ? data : [data]
+        } else {
+            createData['account'] = Array.isArray(data) ? data : [data]
         }
         console.log('Creating ' + type + ' account: ', createData);
     } else {
         method = 'PUT';
-        url += '/account/' + id;
+        url += '/account/' + encodeURIComponent(id);
         createData['rw-' + type + ':account'] = Array.isArray(data) ? data : [data];
     }
 
@@ -160,10 +168,10 @@ function updateAccount(req) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
-            url: url,
+            url: utils.projectContextUrl(req, url),
             method: method,
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -189,15 +197,15 @@ function deleteAccount(req) {
     var requestHeaders = {};
     var createData = {};
     var url = utils.confdPort(api_server) + '/api/config/' + type;
-    url += '/account/' + id;
+    url += '/account/' + encodeURIComponent(id);
     return new Promise(function(resolve, reject) {
         _.extend(requestHeaders,
             constants.HTTP_HEADERS.accept.data,
             constants.HTTP_HEADERS.content_type.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             });
         request({
-            url: url,
+            url: utils.projectContextUrl(req, url),
             method: 'DELETE',
             headers: requestHeaders,
             forever: constants.FOREVER_ON,
@@ -213,7 +221,7 @@ function deleteAccount(req) {
     })
 }
 
-function refreshAccountConnectionStatus (req) {
+function refreshAccountConnectionStatus(req) {
     var api_server = req.query['api_server'];
     var Name = req.params.name;
     var Type = req.params.type;
@@ -232,19 +240,27 @@ function refreshAccountConnectionStatus (req) {
         cloud: {
             label: 'cloud-account',
             rpc: 'update-cloud-status'
+        },
+        'resource-orchestrator': {
+            label: 'ro-account',
+            rpc: 'update-ro-account-status'
         }
     }
     jsonData.input[rpcInfo[Type].label] = Name;
     var headers = _.extend({},
         constants.HTTP_HEADERS.accept.data,
         constants.HTTP_HEADERS.content_type.data, {
-            'Authorization': req.get('Authorization')
+            'Authorization': req.session && req.session.authorization
         }
     );
+    var uri = utils.projectContextUrl(req, utils.confdPort(api_server) + '/api/operations/' + rpcInfo[Type].rpc);
+
+    jsonData['input'] = utils.addProjectContextToRPCPayload(req, uri, jsonData['input']);
+
     return new Promise(function(resolve, reject) {
 
         request({
-            uri: utils.confdPort(api_server) + '/api/operations/' + rpcInfo[Type].rpc,
+            uri: uri,
             method: 'POST',
             headers: headers,
             forever: constants.FOREVER_ON,
@@ -263,5 +279,118 @@ function refreshAccountConnectionStatus (req) {
         console.log('Error refreshing account info');
     });
 };
+
+function getResourceOrchestrator(req, id) {
+    var self = this;
+    var api_server = req.query["api_server"];
+    var accountID = req.params.id || req.params.name;
+
+    return new Promise(function(resolve, reject) {
+        var requestHeaders = {};
+        _.extend(requestHeaders,
+            constants.HTTP_HEADERS.accept.collection, {
+                'Authorization': req.session && req.session.authorization
+            }
+        );
+        var urlOp =  utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ro-account/account');
+        var urlConfig =  utils.projectContextUrl(req, utils.confdPort(api_server) + APIVersion + '/api/operational/ro-account-state/account');
+        if(accountID) {
+            urlOp = url + '/' + encodeURIComponent(accountID);
+            urlConfig = url + '/' + encodeURIComponent(accountID);
+        }
+        var allRequests = [];
+        var roOpData = new Promise(function(resolve, reject) {
+            request({
+                url: urlOp,
+                type: 'GET',
+                headers: requestHeaders,
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false
+                },
+                function(error, response, body) {
+                    var data;
+                    if (utils.validateResponse('RoAccount.get', error, response, body, resolve, reject)) {
+                        try {
+                            data = JSON.parse(response.body).collection['rw-ro-account:account']
+                        } catch (e) {
+                            console.log('Problem with "RoAccount.get"', e);
+                            var err = {};
+                            err.statusCode = 500;
+                            err.errorMessage = {
+                                error: 'Problem with "RoAccount.get": ' + e // + e.toString()
+                            }
+                            return reject(err);
+                        }
+                        return resolve({
+                            statusCode: response.statusCode,
+                            data: data
+                        });
+                    };
+                }
+            );
+        });
+        var roConfigData = new Promise(function(resolve, reject){
+            request({
+                url: urlConfig,
+                type: 'GET',
+                headers: requestHeaders,
+                forever: constants.FOREVER_ON,
+                rejectUnauthorized: false
+                },
+                function(error, response, body) {
+                    var data;
+                    if (utils.validateResponse('RoAccount.get', error, response, body, resolve, reject)) {
+                        try {
+                            data = JSON.parse(response.body).collection['rw-ro-account:account']
+                        } catch (e) {
+                            console.log('Problem with "RoAccount.get"', e);
+                            var err = {};
+                            err.statusCode = 500;
+                            err.errorMessage = {
+                                error: 'Problem with "RoAccount.get": ' + e // + e.toString()
+                            }
+                            return reject(err);
+                        }
+                        return resolve({
+                            statusCode: response.statusCode,
+                            data: data
+                        });
+                    };
+                }
+            );
+        });
+
+        allRequests.push(roOpData);
+        allRequests.push(roConfigData);
+        Promise.all(allRequests).then(function(data) {
+            var state = data[1].data;
+            var op = data[0].data;
+            var result = [];
+            var dict = {};
+            if (!accountID) {
+                state.map && state.map(function(s){
+                    if(s.name != "rift") {
+                        dict[s.name] = s;
+                    }
+                });
+                op.map && op.map(function(o) {
+                    if(o.name != "rift") {
+                        dict[o.name] = _.extend(dict[o.name], o);
+                    }
+                });
+                Object.keys(dict).map(function(d) {
+                    result.push(dict[d]);
+                })
+            } else {
+                result = _.extend(op, state);
+            }
+            resolve({
+                statusCode: 200,
+                data: result
+            })
+        })
+
+    })
+}
 
 module.exports = Accounts;

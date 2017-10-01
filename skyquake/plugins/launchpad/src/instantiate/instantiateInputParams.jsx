@@ -31,22 +31,22 @@ export default class InstantiateInputParams extends Component {
   nsConfigHTML = (props) => {
     return (
       <div className="configure-nsd_section">
+        <div className="noticeSubText noticeSubText_right">
+            * required
+        </div>
         <div className="inputControls">
-            <TextInput label="Instance Name" type="text" pattern="^[a-zA-Z0-9_]*$" style={{textAlign:'left'}} onChange={props.updateName} value={props.name}/>
+            <TextInput label="Instance Name" required={true} type="text" pattern="^[a-zA-Z0-9_]*$" style={{textAlign:'left'}} onChange={props.updateName} value={props.name}/>
+            <label>Resource Orchestrator
+              <SelectOption options={constructROOptions(props.resourceOrchestrators)} onChange={props.nsFn.updateSelectedRoAccount} />
+            </label>
           {
-            !isOpenMano(props.ro) ?
-              (
-                <label>Select VIM Account
-                  <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} onChange={props.nsFn.updateSelectedCloudAccount} />
-                </label>
-              )
-            : null
-          }
-          {
-            isOpenMano(props.ro) ?
-              dataCentersHTML(props.dataCenters[props.ro.name],
-                              props.nsFn.updateSelectedDataCenter)
-              : null
+            (props.selectedResourceOrchestrator.datacenters && props.selectedResourceOrchestrator.datacenters.datacenters) ?
+                        (
+                          <label>Datacenter
+                            <SelectOption options={constructDataCenterOptions(props.selectedResourceOrchestrator.datacenters.datacenters)} onChange={props.nsFn.updateSelectedDataCenter} />
+                          </label>
+                        )
+                      : <span>No datacenters configured</span>
           }
         </div>
       </div>
@@ -68,26 +68,19 @@ export default class InstantiateInputParams extends Component {
                 }
                 return (
                     <div className="inputControls" key={i}>
-                    <h4 className="inputControls-title">VNFD: {v.name}</h4>
+                    <h4 className="inputControls-title">VNFD: {v['vnf-name']}</h4>
                   {
-                    !isOpenMano(props.ro) ?
-                      (
-                        <label>Select VIM Account
-                          <SelectOption options={constructCloudAccountOptions(props.cloudAccounts)} initial={true} onChange={props.vnfFn.updateSelectedCloudAccount.bind(null, v['member-vnf-index'])} defaultValue={defaultValue} />
-                        </label>
-                      )
-                    : null
+                   (props.selectedResourceOrchestrator.datacenters && props.selectedResourceOrchestrator.datacenters.datacenters) ?
+                        (
+                          <label>Datacenter
+                            <SelectOption options={constructDataCenterOptions(props.selectedResourceOrchestrator.datacenters.datacenters)} onChange={props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index'])}  initial={true} />
+                          </label>
+                        )
+                      : <span>No datacenters configured</span>
                   }
                       {
-                        isOpenMano(props.ro) ?
-                          dataCentersHTML(
-                                          props.dataCenters[props.ro.name],
-                                          props.vnfFn.updateSelectedDataCenter.bind(null, v['member-vnf-index']), true)
-                          : null
-                      }
-                      {
                         (props.configAgentAccounts && props.configAgentAccounts.length > 0) ?
-                        <label>Select Config Agent Account
+                        <label>Config Agent Account
                           <SelectOption options={props.configAgentAccounts && props.configAgentAccounts.map(function(c) {
                             return {
                               label: c.name,
@@ -103,6 +96,8 @@ export default class InstantiateInputParams extends Component {
       </div>
     )
   }
+  //"vnfd-catalog/vnfd[id=../../../constituent-vnfd[0]/vnfd-id-ref]/version";
+
   inputParametersHTML = (props) => {
     let inputParameters = props.inputParameters;
     const handleChange = (i, event) => props.updateInputParam(i, event.target.value);
@@ -123,6 +118,43 @@ export default class InstantiateInputParams extends Component {
      </div>
     );
     return nsinput;
+  }
+  //"vnfd-catalog/vnfd[id=../../../constituent-vnfd[0]/vnfd-id-ref]/version";
+
+  vnfInputParametersHTML = (props) => {
+    let vnfInputParams = props.vnfInputParams;
+    const handleChange = (vnfIndex, parameterIndex, event) => props.updateVnfInputParam(vnfIndex, parameterIndex, event.target.value);
+    let vnfInputParamsHTML = [];
+    vnfInputParams && vnfInputParams.map(function(input, i) {
+        vnfInputParamsHTML.push(
+          <div className="configure-nsd_section" key={i}>
+            <h3 className="launchpadCard_title">{`VNF Input Parameters: ${input['name']}:${input['member-vnf-index-ref']}`}</h3>
+            {
+              input['input-parameter'].filter(function(p){
+                let regex = /vnfd\[(?:vnfd:)?id\s*=\s*'?"?(\S+?)'?"?\s*\]/
+                // if has id, then it belongs in a vnfd section
+                if (p.xpath.match(regex)) {
+                  // look for matching vnfd
+                  if ((p.xpath.match(regex)[1] == input['vnfd-id-ref'])) {
+                    return true
+                  } else {
+                    return false;
+                  }
+                } else {
+                  return true;
+                }
+              }).map(function(p, j){
+                let param = vnfInputParams[i]['input-parameter'][j];
+                return (<div className="inputControls" key={j}>
+                        <TextInput label={(p.label || p.xpath)} value={param.value || param['default-value']} type="text" onChange={handleChange.bind(this, i, j)} />
+                    </div>)
+              })
+            }
+         </div>
+        );
+    })
+
+    return <div>{vnfInputParamsHTML}</div>;
   }
   nsPlacementGroupsHTML = (props) => {
     let nsPlacementGroups = props.nsPlacementGroups;
@@ -175,8 +207,8 @@ export default class InstantiateInputParams extends Component {
                             return (
 
                                   <div className="input_group" key={j}>
-                                    <TextInput type="text" onChange={props.nsFn.placementGroupUpdate.bind(self, i, j, 'key')} placeholder="KEY" value={key} />
-                                    <TextInput type="text" onChange={props.nsFn.placementGroupUpdate.bind(self, i, j, 'value')} placeholder="VALUE"  value={value} />
+                                    <TextInput type="text" onChange={props.nsFn.hostAggregateUpdate.bind(self, i, j, 'key')} placeholder="KEY" value={key} />
+                                    <TextInput type="text" onChange={props.nsFn.hostAggregateUpdate.bind(self, i, j, 'value')} placeholder="VALUE"  value={value} />
                                     <span onClick={props.nsFn.removeHostAggregate.bind(self, i, j)} className="removeInput"><img src={imgRemove} />Remove</span>
                                   </div>
                             )
@@ -288,8 +320,15 @@ export default class InstantiateInputParams extends Component {
                         </div>
                           {
                             isUnknown ? null : isVIM ?
-                            <TextInput label="Network Name" onChange={self.props.vldFn.updateValue(i, currentType)} value={v[currentType]} /> :
-                            <div>
+                              <div>
+                                <TextInput label="Network Name" onChange={self.props.vldFn.updateValue(i, currentType)} value={v[currentType]} />
+                                {
+                                  v['mgmt-network'].toUpperCase() == "TRUE" ?
+                                    <TextInput label="IPV4 NAT POOL NAME" placeholder={self.props.dataCenterID} onChange={self.props.vldFn.updateValue(i, 'ipv4-nat-pool-name')} value={v['ipv4-nat-pool-name']} />
+                                    : null
+                                }
+                              </div>
+                            : <div>
                               <SelectOption
                               label="IP PROFILE NAME"
                                 options={ipProfileList && ipProfileList.map(function(ip) {
@@ -492,6 +531,7 @@ export default class InstantiateInputParams extends Component {
         <div className="input_group input_group-users" key={i}>
           <div className="inputControls">
           <div style={{fontWeight: 'bold', display: 'flex'}}>USER <span onClick={usersFn.remove(i)} className="removeInput"><img src={imgRemove} />Remove</span></div>
+
             <TextInput onChange={usersFn.update(i, 'name')} label="USERNAME" value={i.name} />
             <TextInput onChange={usersFn.update(i, 'user-info')} label="REAL NAME" value={i.gecos} />
             {
@@ -578,12 +618,20 @@ export default class InstantiateInputParams extends Component {
             this.inputParametersHTML(props)
           }
           {
-            //NS PLACEMENTGROUPS
-            this.nsPlacementGroupsHTML(props)
+            //VNF INPUT PARAMETERS
+            this.vnfInputParametersHTML(props)
           }
           {
+            true ?
+            // self.props.selectedResourceOrchestrator['ro-account-type'] == 'rift-ro' ?
+            //NS PLACEMENTGROUPS
+            this.nsPlacementGroupsHTML(props) : null
+          }
+          {
+            true ?
+            // self.props.selectedResourceOrchestrator['ro-account-type'] == 'rift-ro' ?
             //VNF PLACEMENTGROUPS
-            this.vnfPlacementGroupsHTML(props)
+            this.vnfPlacementGroupsHTML(props) : null
           }
           {
             //VLD CONFIGURATION
@@ -626,6 +674,15 @@ function hideInput(e){
 }
 function addDNS(){}
 function removeDNS(){}
+function constructROOptions(resourceOrchestrators){
+  let ROOptions = resourceOrchestrators && resourceOrchestrators.map(function(ro, index) {
+    return {
+      label: ro.name,
+      value: ro
+    }
+  });
+  return ROOptions;
+}
 function constructCloudAccountOptions(cloudAccounts){
   let CloudAccountOptions = cloudAccounts && cloudAccounts.map(function(ca, index) {
     return {
@@ -634,6 +691,15 @@ function constructCloudAccountOptions(cloudAccounts){
     }
   });
   return CloudAccountOptions;
+}
+function constructDataCenterOptions(dataCenters){
+  let DataCenterOptions = dataCenters && dataCenters.map(function(dc, index) {
+    return {
+      label: dc.name,
+      value: dc.name
+    }
+  });
+  return DataCenterOptions;
 }
 function dataCentersHTML(dataCenters, onChange, initial) {
   //Build DataCenter options
@@ -647,21 +713,10 @@ function dataCentersHTML(dataCenters, onChange, initial) {
   });
   if (dataCenters && dataCenters.length > 0) {
     return (
-      <label>Select Data Center
+      <label>Data Center
         <SelectOption initial={!!initial} options={DataCenterOptions} onChange={onChange} />
       </label>
     )
-  }
-}
-function isOpenMano(account) {
-  if (account) {
-    let a = account;
-    if (a.constructor.name == 'String') {
-      a = JSON.parse(a);
-    }
-    return a['account-type'] == 'openmano';
-  } else {
-    return false;
   }
 }
 function updateNewSshKeyRefSelection(e) {

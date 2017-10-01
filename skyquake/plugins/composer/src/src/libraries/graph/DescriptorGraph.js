@@ -147,10 +147,11 @@ export default class DescriptorGraph {
 		selection.addContainers(containers);
 		selection.render();
 
-		const edgeBuilder = new DescriptorGraphEdgeBuilder(graph);
-		edgeBuilder.addContainers(containers);
-		edgeBuilder.render();
-
+		if (!this.props.readOnly) {
+			const edgeBuilder = new DescriptorGraphEdgeBuilder(graph);
+			edgeBuilder.addContainers(containers);
+			edgeBuilder.render();
+		}
 		const grid = new DescriptorGraphGrid(graph, {size: defaults.snapTo, padding: defaults.padding});
 		grid.render();
 

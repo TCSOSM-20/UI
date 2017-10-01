@@ -7,7 +7,7 @@ export default function(Component) {
         this.actions = context.flux.actions.global;
     }
     render(props) {
-        return <Component {...this.props} router={this.router} actions={this.actions} flux={this.context.flux} />
+        return <Component {...this.props} router={this.router} actions={this.actions} flux={this.context.flux}/>
     }
   }
   SkyquakeComponent.contextTypes = {

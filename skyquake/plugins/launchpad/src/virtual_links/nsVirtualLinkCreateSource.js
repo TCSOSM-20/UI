@@ -34,7 +34,7 @@ export default {
             remote(state, nsrId, payload) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + nsrId + '/vld' + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(nsrId) + '/vld' + '?api_server=' + API_SERVER,
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         dataType:'json',
@@ -59,7 +59,7 @@ export default {
             remote(state, nsrId, vldId) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + nsrId + '/vld/' + vldId + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(nsrId) + '/vld/' + encodeURIComponent(vldId) + '?api_server=' + API_SERVER,
                         type: 'DELETE',
                         beforeSend: Utils.addAuthorizationStub,
                         success: function(data) {
@@ -82,7 +82,7 @@ export default {
             remote(state, nsrId, vldId, vld) {
                 return new Promise(function(resolve, reject) {
                     $.ajax({
-                        url: 'api/nsr/' + nsrId + '/vld/' + vldId + '?api_server=' + API_SERVER,
+                        url: 'api/nsr/' + encodeURIComponent(nsrId) + '/vld/' + encodeURIComponent(vldId) + '?api_server=' + API_SERVER,
                         type: 'PUT',
                         beforeSend: Utils.addAuthorizationStub,
                         dataType:'json',

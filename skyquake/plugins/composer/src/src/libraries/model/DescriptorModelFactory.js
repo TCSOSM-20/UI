@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ import VirtualNetworkFunctionReadOnlyWrapper from './descriptors/VirtualNetworkF
 import InternalConnectionPointRef from './descriptors/InternalConnectionPointRef'
 import VirtualNetworkFunctionConnectionPoint from './descriptors/VirtualNetworkFunctionConnectionPoint'
 import VirtualDeploymentUnitInternalConnectionPoint from './descriptors/VirtualDeploymentUnitInternalConnectionPoint'
-
+import VirtualNetworkFunctionAccessPointMap from './descriptors/VirtualNetworkFunctionAccessPointMap'
 function findChildDescriptorModelAndUpdateModel(model, parent) {
 	if (parent instanceof DescriptorModel) {
 		const child = parent.findChildByUid(model);
@@ -121,6 +121,9 @@ class DescriptorModelFactory {
 			fg.rsp.forEach(rsp => mapRSP(rsp, containerList));
 			fg.classifier.forEach(classifier => mapClassifier(classifier, containerList));
 		}
+        function mapConfigParameterMap(ap, containerList) {
+            containerList.push(ap);
+        }
 
 		function mapVDU(vdu, containerList) {
 			containerList.push(vdu);
@@ -144,6 +147,7 @@ class DescriptorModelFactory {
 			nsd.constituentVnfd.forEach(cvnfd => mapCVNFD(cvnfd, containerList));
 			nsd.vld.forEach(vld => mapVLD(vld, containerList));
 			nsd.vnffgd.forEach(fg => mapFG(fg, containerList));
+            nsd.configParameterMap.forEach(ap => mapConfigParameterMap(ap, containerList));
 		}
 
 		function mapVNFD(vnfd, containerList) {
@@ -211,22 +215,25 @@ class DescriptorModelFactory {
 		return findChildDescriptorModelAndUpdateModel(model, parent) || new VirtualLink(model, parent);
 	}
 
-	static newInternalVirtualLink(model, parent) {
-		return findChildDescriptorModelAndUpdateModel(model, parent) || new InternalVirtualLink(model, parent);
+	static newInternalVirtualLink(model, parent, readonly) {
+		return findChildDescriptorModelAndUpdateModel(model, parent) || new InternalVirtualLink(model, parent, readonly);
 	}
 
 	static newPhysicalNetworkFunction(model, parent) {
 		return findChildDescriptorModelAndUpdateModel(model, parent) || new PhysicalNetworkFunction(model, parent);
 	}
 
-	static newConstituentVnfdConnectionPoint(model, parent) {
-		return findChildDescriptorModelAndUpdateModel(model, parent) || new ConstituentVnfdConnectionPoint(model, parent);
+	static newConstituentVnfdConnectionPoint(model, parent, readonly) {
+		return findChildDescriptorModelAndUpdateModel(model, parent) || new ConstituentVnfdConnectionPoint(model, parent, readonly);
 	}
 
 	static newVnfdConnectionPointRef(model, parent) {
 		return findChildDescriptorModelAndUpdateModel(model, parent) || new VnfdConnectionPointRef(model, parent);
 	}
 
+    static newVirtualNetworkFunctionAccessPointMap(model, parent) {
+        return findChildDescriptorModelAndUpdateModel(model, parent) || new VirtualNetworkFunctionAccessPointMap(model, parent);
+    }
 	static newForwardingGraph(model, parent) {
 		return findChildDescriptorModelAndUpdateModel(model, parent) || new ForwardingGraph(model, parent);
 	}
@@ -323,6 +330,9 @@ class DescriptorModelFactory {
 		return obj instanceof VirtualNetworkFunction;
 	}
 
+    static isVirtualNetworkFunctionAccessPointMap(obj) {
+        return obj instanceof VirtualNetworkFunctionAccessPointMap;
+    }
 	static isForwardingGraph(obj) {
 		return obj instanceof ForwardingGraph;
 	}
@@ -343,6 +353,9 @@ class DescriptorModelFactory {
 		return NetworkService;
 	}
 
+    static get VirtualNetworkFunctionAccessPointMap () {
+        return VirtualNetworkFunctionAccessPointMap;
+    }
 	static get ForwardingGraph () {
 		return ForwardingGraph;
 	}

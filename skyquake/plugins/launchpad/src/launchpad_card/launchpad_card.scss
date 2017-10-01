@@ -18,8 +18,10 @@
  */
 @import 'style/_colors.scss';
 @import '../../node_modules/open-iconic/font/css/open-iconic.css';
+$LaunchpadCardWidth: 693px;
 .launchpadCard {
   display:-ms-flexbox;
+  display:-webkit-box;
   display:flex;
   margin-top: 0.75rem;
   &-body{
@@ -27,25 +29,35 @@
   }
   .deletingIndicator {
     display: -ms-flexbox;
+    display: -webkit-box;
     display: flex;
     -ms-flex:1;
-        flex:1;
+        -webkit-box-flex:1;
+            flex:1;
     -ms-flex-align: center;
-        align-items: center;
+        -webkit-box-align: center;
+            align-items: center;
     -ms-flex-pack: center;
-        justify-content: center;
+        -webkit-box-pack: center;
+            justify-content: center;
   }
   &_launch {
     display:-ms-flexbox;
+    display:-webkit-box;
     display:flex;
     -ms-flex-direction:column;
-        flex-direction:column;
+        -webkit-box-orient:vertical;
+        -webkit-box-direction:normal;
+            flex-direction:column;
     -ms-flex: 1;
-        flex: 1;
+        -webkit-box-flex: 1;
+            flex: 1;
     -ms-flex-pack: center;
-        justify-content: center;
+        -webkit-box-pack: center;
+            justify-content: center;
     -ms-flex-align: center;
-        align-items: center;
+        -webkit-box-align: center;
+            align-items: center;
     img {
       width: 88px;
       padding:1rem;
@@ -54,13 +66,14 @@
   &_header {
     color:white;
     padding-right: 1rem;
-    min-width: 693px;
-    max-width: 693px;
+    width: $LaunchpadCardWidth;
     &-link, a {
       display:-ms-flexbox;
+      display:-webkit-box;
       display:flex;
       -ms-flex-align:center;
-          align-items:center;
+          -webkit-box-align:center;
+              align-items:center;
       text-decoration: none;
       color: inherit;
     }
@@ -79,17 +92,22 @@
     }
     &-title {
       display: -ms-flexbox;
+      display: -webkit-box;
       display: flex;
       line-height: 3rem;
       background-color: $brand-green-light;
       /*background-color: $primary-header;*/
       position: relative;
       -ms-flex-direction: row;
-          flex-direction: row;
+          -webkit-box-orient: horizontal;
+          -webkit-box-direction: normal;
+              flex-direction: row;
       -ms-flex-align: center;
-          align-items: center;
+          -webkit-box-align: center;
+              align-items: center;
       -ms-flex-pack: start;
-          justify-content: flex-start;
+          -webkit-box-pack: start;
+              justify-content: flex-start;
       padding-right:1rem;
       &-off {
         background-color:white;
@@ -115,11 +133,14 @@
       }
     &-actions {
       -ms-flex: 1;
-          flex: 1;
+          -webkit-box-flex: 1;
+              flex: 1;
       display: -ms-flexbox;
+      display: -webkit-box;
       display: flex;
       -ms-flex-pack: end;
-          justify-content: flex-end;
+          -webkit-box-pack: end;
+              justify-content: flex-end;
       padding-right: 1rem;
       h3{
         padding-right:0.25rem;
@@ -129,12 +150,16 @@
     }
     &-status {
       background-color: $brand-green;
+      width:$LaunchpadCardWidth;
       &-current {
         display:-ms-flexbox;
+        display:-webkit-box;
         display:flex;
         -ms-flex-pack:justify;
-            justify-content:space-between;
+            -webkit-box-pack:justify;
+                justify-content:space-between;
         padding: 0.5rem 0;
+        width: $LaunchpadCardWidth;
         span,a {
           padding: 0 0.25rem;
         }
@@ -149,15 +174,21 @@
     &-operational-status {
       &_loading {
         display:-ms-flexbox;
+        display:-webkit-box;
         display:flex;
         -ms-flex-direction:column;
-            flex-direction:column;
+            -webkit-box-orient:vertical;
+            -webkit-box-direction:normal;
+                flex-direction:column;
         -ms-flex-pack: center;
-            justify-content: center;
+            -webkit-box-pack: center;
+                justify-content: center;
         justify-content: center;
         -ms-flex-align: center;
-            align-items: center;
+            -webkit-box-align: center;
+                align-items: center;
         color:$gray-darkest;
+        width: $LaunchpadCardWidth;
      }
      &_open {
         overflow: hidden;
@@ -169,15 +200,21 @@
         width: 100%;
         z-index: 99;
         display: -ms-flexbox;
+        display: -webkit-box;
         display: flex;
         -ms-flex-direction: column;
-            flex-direction: column;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                flex-direction: column;
         -ms-flex-align: center;
-            align-items: center;
+            -webkit-box-align: center;
+                align-items: center;
         -ms-flex-pack: center;
-            justify-content: center;
+            -webkit-box-pack: center;
+                justify-content: center;
         -ms-flex-line-pack: center;
             align-content: center;
+        width: $LaunchpadCardWidth;
         color: black;
         h2{
               padding: 2rem;
@@ -211,14 +248,21 @@
 
       &_loading {
         display:-ms-flexbox;
+        display:-webkit-box;
         display:flex;
         -ms-flex-direction:column;
-            flex-direction:column;
+            -webkit-box-orient:vertical;
+            -webkit-box-direction:normal;
+                flex-direction:column;
         -ms-flex-pack: center;
-            justify-content: center;
+            -webkit-box-pack: center;
+                justify-content: center;
         -ms-flex-align: center;
-            align-items: center;
+            -webkit-box-align: center;
+                align-items: center;
         color:$gray-darkest;
+
+
      }
       &_open {
         overflow:hidden;
@@ -230,13 +274,16 @@
         width:100%;
         z-index: 99;
         display: -ms-flexbox;
+        display: -webkit-box;
         display: flex;
         -ms-flex-direction: column;
-            flex-direction: column;
+            -webkit-box-orient: vertical;
+            -webkit-box-direction: normal;
+                flex-direction: column;
         -ms-flex-align: center;
-            align-items: center;
-        -ms-flex-pack: center;
-            justify-content: center;
+            -webkit-box-align: center;
+                align-items: center;
+        justify-content: flex-start;
         -ms-flex-line-pack: center;
             align-content: center;
         color:black;
@@ -260,6 +307,7 @@
         }
         h2 {
           padding:2rem;
+          padding-left: 0;
         }
         ul,li {
           margin:0.25rem 1rem 0 0.825rem;
@@ -275,8 +323,10 @@
         }
         li {
           -ms-flex-pack: justify;
-              justify-content: space-between;
+              -webkit-box-pack: justify;
+                  justify-content: space-between;
           display: -ms-flexbox;
+          display: -webkit-box;
           display: flex;
         }
       }
@@ -304,11 +354,14 @@
       min-height:50px;
       max-width: 100%;
       display:-ms-flexbox;
+      display:-webkit-box;
       display:flex;
       -ms-flex-pack: center;
-          justify-content: center;
+          -webkit-box-pack: center;
+              justify-content: center;
       -ms-flex-align: center;
-          align-items: center;
+          -webkit-box-align: center;
+              align-items: center;
     }
   }
   &_title {
@@ -325,17 +378,22 @@
   &_data-list {
     ul, dl{
       display:-ms-flexbox;
+      display:-webkit-box;
       display:flex;
       -ms-flex-direction:row;
-          flex-direction:row;
+          -webkit-box-orient:horizontal;
+          -webkit-box-direction:normal;
+              flex-direction:row;
       -ms-flex-wrap:wrap;
           flex-wrap:wrap;
       -ms-flex-align:start;
-          align-items:flex-start;
+          -webkit-box-align:start;
+              align-items:flex-start;
        font-size: 0.825rem;
       li{
         -ms-flex:1 1 30%;
-            flex:1 1 30%;
+            -webkit-box-flex:1;
+                flex:1 1 30%;
       }
     }
     dl {
@@ -372,12 +430,16 @@
   }
   &_controls{
     display:-ms-flexbox;
+    display:-webkit-box;
     display:flex;
     -ms-flex-direction:row;
-        flex-direction:row;
+        -webkit-box-orient:horizontal;
+        -webkit-box-direction:normal;
+            flex-direction:row;
     .react-tabs {
       -ms-flex: auto;
-          flex: auto;
+          -webkit-box-flex: 1;
+              flex: auto;
     [role=tab][aria-selected=true] {
       background:none;
       border:none;
@@ -388,7 +450,8 @@
       border:none;
       &:focus{
         outline:none;
-        box-shadow:none;
+        -webkit-box-shadow:none;
+                box-shadow:none;
         border:none;
         &:after {
            background:none;
@@ -402,13 +465,16 @@
       margin: 0 0 10px;
       padding: 0;
       display: -ms-flexbox;
+      display: -webkit-box;
       display: flex;
       -ms-flex-pack: end;
-          justify-content: flex-end;
+          -webkit-box-pack: end;
+              justify-content: flex-end;
 
          [role=tab]:first-child {
             -ms-flex: 1;
-                flex: 1;
+                -webkit-box-flex: 1;
+                    flex: 1;
          }
     }
 
@@ -431,5 +497,25 @@
       background-color: white;
       border-radius: 15px;
     }
+  }
+  .dataCenterTable {
+    display: flex;
+    flex-direction: column;
+    width: 88%;
+    &-header {
+      align-items: flex-end;
+      font-weight:bold;
+    }
+      > div {
+        display: flex;
+
+        &:not(:first-child) {
+          margin-top:1rem;
+          align-items: flex-start;
+        }
+        > div {
+          flex: 1 0 25%;
+        }
+      }
   }
 }

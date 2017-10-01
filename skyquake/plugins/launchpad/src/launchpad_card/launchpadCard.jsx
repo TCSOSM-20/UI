@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,13 +69,13 @@ class LaunchpadCard extends React.Component {
     if(true) {
       // metricsAndParameters.push(<LaunchpadControls controlSets={this.props.nsr.nsControls} />)
       if (this.props.nsr) {
-        if (this.props.nsr["nfvi-metrics"]) {
-          metricsAndParameters.push((
-                                     <div className="nfvi-metrics" key="nfviMetrics">
-                                      <LpCardNfviMetrics key="nfvi-metrics" name="NFVI METRICS" id={this.props.id} data={this.props.nsr["nfvi-metrics"]} />
-                                     </div>
-                                     ))
-        }
+        // if (this.props.nsr["nfvi-metrics"]) {
+        //   metricsAndParameters.push((
+        //                              <div className="nfvi-metrics" key="nfviMetrics">
+        //                               <LpCardNfviMetrics key="nfvi-metrics" name="NFVI METRICS" id={this.props.id} data={this.props.nsr["nfvi-metrics"]} />
+        //                              </div>
+        //                              ))
+        // }
         if (this.props.nsr["epa-params"]) {
           metricsAndParameters.push(<EpaParams key="epa-params" data={this.props.nsr["epa-params"]} />);
         }
@@ -101,7 +101,7 @@ class LaunchpadCard extends React.Component {
 
       html = (
         <DashboardCard className={'launchpadCard'} closeCard={closeButton}>
-          <LaunchpadHeader nsr={this.props.nsr} name={this.props.name} isActive={this.props.isActive} id={this.props.id}/>
+          <LaunchpadHeader hasAccess={this.props.hasAccess} nsr={this.props.nsr} name={this.props.name} isActive={this.props.isActive} id={this.props.id}/>
           {
           deleting ?
           <div className={'deletingIndicator'}>

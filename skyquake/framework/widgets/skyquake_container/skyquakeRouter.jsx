@@ -22,10 +22,24 @@ import {
 from 'react-router';
 import SkyquakeContainer from 'widgets/skyquake_container/skyquakeContainer.jsx';
 
+/**
+ * This is the Skyquake App wrapper that all plugins use to be a Skyquake plugin. This 
+ * is not a react component although it does return a react component that will be the
+ * app.
+ * This function will also set the title into the <head>
+ * 
+ * @export
+ * @param {any} config 
+ * @param {any} context 
+ * @returns a react component to be rendered manually.
+ */
 export default function(config, context) {
     let routes = [];
     let index = null;
     let components = null;
+    
+    document.title = config.name || "OpenMANO";
+
     if (config && config.routes) {
         routes =  buildRoutes(config.routes)
         function buildRoutes(routes) {
@@ -83,7 +97,6 @@ export default function(config, context) {
             },
             childRoutes: routes
         }
-
         return((
             <Router history={hashHistory} routes={rootRoute}>
             </Router>

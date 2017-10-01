@@ -69,7 +69,7 @@ export default {
 		// last item in path used to assign value on the resolved object
 		const name = path.pop();
 		const resolvedObj = path.reduce((r, p, i) => {
-			if (typeof(r[p]) !== 'object') {
+			if (typeof (r[p]) !== 'object') {
 				// look-ahead to see if next path item is a number
 				const isArray = !isNaN(parseInt(pathCopy[i + 1], 10));
 				r[p] = isArray ? [] : {}
@@ -77,6 +77,25 @@ export default {
 			return r[p];
 		}, obj);
 		resolvedObj[name] = value;
+	},
+	mergePathData(obj, path, data) {
+		path = path.split(/[\.\[\]]/).filter(d => d);
+		// enable look-ahead to determine if type is array or object
+		const pathCopy = path.slice();
+		let resolvedObj = obj;
+		if (path.length) {
+			// last item in path used to assign value on the resolved object
+			const name = path.pop();
+			resolvedObj = path.reduce((r, p, i) => {
+				if (typeof (r[p]) !== 'object') {
+					// look-ahead to see if next path item is a number
+					const isArray = !isNaN(parseInt(pathCopy[i + 1], 10));
+					r[p] = isArray ? [] : {}
+				}
+				return r[p];
+			}, obj)[name];
+		}
+		Object.assign(resolvedObj, data);
 	},
 	updatePathValue(obj, path, value, isCase) {
 		// todo: replace implementation of assignPathValue with this impl and
@@ -92,21 +111,21 @@ export default {
 			// look-ahead to see if next path item is a number
 			const index = parseInt(pathCopy[i + 1], 10);
 			const isArray = !isNaN(index);
-			if (typeof(r[p]) !== 'object') {
+			if (typeof (r[p]) !== 'object') {
 				r[p] = isArray ? [] : {}
 			}
 			if (isRemove && ((i + 1) === path.length)) {
 				if (isArray) {
 					r[p] = r[p].filter((d, i) => i !== index);
 				} else {
-					if(isCase) {
+					if (isCase) {
 						delete r[name];
 					} else {
 						delete r[p][name];
 					}
 				}
 			}
-			if(isCase) {
+			if (isCase) {
 				return r;
 			} else {
 				return r[p];
@@ -123,7 +142,7 @@ export default {
 	},
 
 	suffixAsInteger: (field) => {
-		return (obj) =>{
+		return (obj) => {
 			const str = String(obj[field]);
 			const value = str.replace(str.replace(/[\d]+$/, ''), '');
 			return 1 + parseInt(value, 10) || 0;
@@ -132,19 +151,19 @@ export default {
 
 	toBiggestValue: (maxIndex, curIndex) => Math.max(maxIndex, curIndex),
 
-	isRelativePath (path) {
+	isRelativePath(path) {
 		if (path.split('/')[0] == '..') {
 			return true;
 		}
 		return false;
 	},
 
-	getResults (topLevelObject, pathArray) {
+	getResults(topLevelObject, pathArray) {
 		let objectCopy = _cloneDeep(topLevelObject);
 		let i = pathArray.length;
 		let results = [];
 
-		while(pathArray[pathArray.length - i]) {
+		while (pathArray[pathArray.length - i]) {
 			if (_isArray(objectCopy[pathArray[pathArray.length - i]])) {
 				if (i == 2) {
 					results = _map(objectCopy[pathArray[pathArray.length - i]], pathArray[pathArray.length - 1]);
@@ -166,7 +185,7 @@ export default {
 		return results;
 	},
 
-	getAbsoluteResults (topLevelObject, pathArray) {
+	getAbsoluteResults(topLevelObject, pathArray) {
 		let i = pathArray.length;
 		let objectCopy = _cloneDeep(topLevelObject);
 		let results = [];
@@ -187,6 +206,9 @@ export default {
 						console.log('Something went wrong while resolving a leafref. Reached a leaf with predicate.');
 					} else {
 						// contains no predicate
+						if (!objectCopy) {
+							break;
+						}
 						results.push(objectCopy[fragment]);
 					}
 				}
@@ -243,6 +265,9 @@ export default {
 						}
 					} else {
 						// contains no predicate
+						if (!objectCopy) {
+							break;
+						}
 						objectCopy = objectCopy[fragment];
 						if (!objectCopy) {
 							// contains no value
@@ -258,7 +283,7 @@ export default {
 		return results;
 	},
 
-	resolveCurrentPredicate (leafRefPath, container, pathCopy) {
+	resolveCurrentPredicate(leafRefPath, container, pathCopy) {
 		if (leafRefPath.indexOf('current()') != -1) {
 			// contains current
 
@@ -290,10 +315,10 @@ export default {
 		return fieldKeyArray;
 	},
 
-	resolveLeafRefPath (catalogs, leafRefPath, fieldKey, path, container) {
+	resolveLeafRefPath(catalogs, leafRefPath, fieldKey, path, container) {
 		let pathCopy = _clone(path);
 		// Strip any prefixes
-		let leafRefPathCopy = leafRefPath.replace(/[\w\d]*:/g, '');
+		let leafRefPathCopy = leafRefPath.replace(/[-\w]*:/g, '');
 		// Strip any spaces
 		leafRefPathCopy = leafRefPathCopy.replace(/\s/g, '');
 
@@ -311,11 +336,11 @@ export default {
 
 		// Check if relative path or not
 		// TODO: Below works but
-		// better to convert the pathCopy to absolute/rooted path
+		// better to convert the pathCopy to absolute/rooted path 
 		// and use the absolute module instead
 		if (this.isRelativePath(leafRefPathCopy)) {
 			let i = pathArray.length;
-			while ((pathArray[pathArray.length - i] == '..') && fieldKeyArray.length > 1) {
+			while (pathArray[pathArray.length - i] == '..') {
 				fieldKeyArray.splice(-1, 1);
 				if (!isNaN(Number(fieldKeyArray[fieldKeyArray.length - 1]))) {
 					// found a number, so an index. strip it
@@ -328,7 +353,9 @@ export default {
 			if (fieldKeyArray.length == 1) {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
-						let found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						let found = _find(catalogs[key][subKey], {
+							id: fieldKeyArray[0]
+						});
 						if (found) {
 							results = this.getAbsoluteResults(found, pathArray.splice(-i, i));
 							return results;
@@ -339,11 +366,15 @@ export default {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
 						console.log(key, subKey);
-						var found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						var found = _find(catalogs[key][subKey], {
+							id: fieldKeyArray[0]
+						});
 						if (found) {
 							for (let foundKey in found) {
 								if (_isArray(found[foundKey])) {
-									let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
+									let topLevel = _find(found[foundKey], {
+										id: fieldKeyArray[1]
+									});
 									if (topLevel) {
 										results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
 										return results;
@@ -361,11 +392,15 @@ export default {
 			} else if (fieldKeyArray.length == 3) {
 				for (let key in catalogs) {
 					for (let subKey in catalogs[key]) {
-						let found = _find(catalogs[key][subKey], {id: fieldKeyArray[0]});
+						let found = _find(catalogs[key][subKey], {
+							id: fieldKeyArray[0]
+						});
 						if (found) {
 							for (let foundKey in found) {
 								if (_isArray(found[foundKey])) {
-									let topLevel = _find(found[foundKey], {id: fieldKeyArray[1]});
+									let topLevel = _find(found[foundKey], {
+										id: fieldKeyArray[1]
+									});
 									if (topLevel) {
 										results = this.getAbsoluteResults(topLevel, pathArray.splice(-i, i));
 										return results;
@@ -401,4 +436,3 @@ export default {
 		}
 	}
 }
-

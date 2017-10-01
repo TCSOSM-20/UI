@@ -78,8 +78,8 @@ export default {
 		return /string|int/.test(property['data-type']) || Property.isEnumeration(property) || Property.isGuid(property);
 	},
 	defaultValue(property = {}) {
-		if (property.defaultValue) {
-			return property.defaultValue;
+		if (property['default-value']) {
+			return property['default-value'];
 		}
 		if (this.isObject(property)) {
 			return {};
@@ -199,6 +199,9 @@ export default {
 			}
 			if (property.type === 'leaf') {
 				return defaultValue(property);
+			}
+			if (property.type === 'leaf_list' ) {
+				return "";
 			}
 			if (/list/.test(property.type)) {
 				property.type = 'container';

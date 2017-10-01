@@ -48,12 +48,7 @@ const RiftHeader = React.createClass({
 	},
 	componentDidMount() {
 		RiftHeaderStore.listen(this.onChange);
-		const loadCatalogs = function () {
-			RiftHeaderStore.loadCatalogs();
-			uiTransientState.timeoutId = setTimeout(loadCatalogs, 2000);
-		};
 		RiftHeaderStore.requestLaunchpadConfig();
-		loadCatalogs();
 	},
 	componentDidUpdate() {
 	},
@@ -68,9 +63,6 @@ const RiftHeader = React.createClass({
 		this.setState(state);
 	},
 	onClickOpenDashboard() {
-		if (uiTransientState.timeoutId) {
-			clearTimeout(uiTransientState.timeoutId);
-		}
 		RiftHeaderStore.unlisten(this.onChange);
 		window.location.href = '//' + window.location.hostname + ':8000/index.html?api_server=' + utils.getSearchParams(window.location).api_server + '#/launchpad/' + utils.getSearchParams(window.location).mgmt_domain_name;
 	},

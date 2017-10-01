@@ -73,11 +73,21 @@ constants.SOCKET_BASE_PORT = 3500;
 constants.SOCKET_POOL_LENGTH = 20;
 constants.SERVER_PORT = process.env.SERVER_PORT || 8000;
 constants.SECURE_SERVER_PORT = process.env.SECURE_SERVER_PORT || 8443;
+constants.REJECT_UNAUTHORIZED = false;
 
-constants.BASE_PACKAGE_UPLOAD_DESTINATION = 'upload/packages/';
+constants.BASE_PACKAGE_UPLOAD_DESTINATION = 'upload';
 constants.PACKAGE_MANAGER_SERVER_PORT = 4567;
 constants.PACKAGE_FILE_DELETE_DELAY_MILLISECONDS = 3 * 1000 * 60; //5 minutes
 constants.PACKAGE_FILE_ONBOARD_TRANSACTION_STATUS_CHECK_DELAY_MILLISECONDS = 2 * 1000; //2 seconds
 
+constants.REFRESH_WINDOW = 10; //Time in seconds to perform a token refresh before it expires
+constants.LAUNCHPAD_ADDRESS = 'localhost';
+constants.LAUNCHPAD_PORT = 8008;
+constants.IDP_SERVER_PROTOCOL = 'https';
+constants.IDP_PORT_NUMBER = 8009;
+constants.CALLBACK_SERVER_PROTOCOL = 'https';
+constants.CALLBACK_PORT_NUMBER = 8443;
+constants.CALLBACK_ADDRESS = 'localhost';
+constants.END_SESSION_PATH = 'end_session';
 
 module.exports = constants;

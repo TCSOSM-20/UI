@@ -32,6 +32,7 @@ module.exports = function(Alt) {
                                        'deleteAccountLoading',
                                        'deleteAccountFail',
                                        'viewAccount',
-                                       'getResourceOrchestratorSuccess'
+                                       'getResourceOrchestratorSuccess',
+                                       'handleCancelAccount'
                                        );
 }

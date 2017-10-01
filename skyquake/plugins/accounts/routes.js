@@ -18,8 +18,8 @@
 
 var app = require('express').Router();
 var cors = require('cors');
-var utils = require('../../framework/core/api_utils/utils.js')
-var accountsAPI = require('./api/accounts.js')
+var utils = require('../../framework/core/api_utils/utils.js');
+var accountsAPI = require('./api/accounts.js');
  // Begin Accounts API
     app.get('/all', cors(), function(req, res) {
         accountsAPI.get(req).then(function(data) {
@@ -70,6 +70,8 @@ var accountsAPI = require('./api/accounts.js')
             utils.sendErrorResponse(error, res);
         });
     })
+    //RO config routes
+
     utils.passThroughConstructor(app);
 
 module.exports = app;

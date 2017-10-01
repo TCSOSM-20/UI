@@ -63,6 +63,7 @@ class LoggingStore {
     console.log("LoggingStore.putLoggingConfigSuccess called. data=", data);
     const initialLoggingConfig = _cloneDeep(this.loggingConfig);
     this.setState({
+      nulledCategories: [],
       isLoading: false,
       initialLoggingConfig: initialLoggingConfig
     });

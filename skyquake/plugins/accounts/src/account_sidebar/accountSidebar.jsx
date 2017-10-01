@@ -42,6 +42,7 @@ class AccountSidebar extends React.Component{
     }
     render() {
         let html;
+        let self = this;
         let {store, ...props} = this.props;
         //[this.props.cloud,this.props.sdn,this.props['config-agent']]
         let AccountData = [
@@ -56,9 +57,36 @@ class AccountSidebar extends React.Component{
             {
                 type: 'config',
                 data: this.props['config-agent']
+            },
+            {
+                type: 'resource-orchestrator',
+                data: this.props['resource-orchestrator']
             }
         ];
         let refreshStatus = (<div>Check All Connectivity Status</div>)
+        let resourceOrchestrators = (this.props['resource-orchestrator'].length > 0) ? this.props['resource-orchestrator'].map(function(orchestrator, index) {
+            let status = null;
+            if (orchestrator) {
+                if (orchestrator['connection-status']) {
+                    status = orchestrator['connection-status'].status;
+                }
+                return (
+                    <DashboardCard  key={index} className='pool-card accountSidebarCard'>
+                    <header>
+                    <Link to={'accounts/resource-orchestrator/' + encodeURIComponent(orchestrator.name)}>
+                            <div className="accountSidebarCard--content">
+                                <img className="accountSidebarCard--logo" src={store.getImage(orchestrator['ro-account-type'])} />
+                                <h3 title="Edit Resource Orchestrator(RO) Account">
+                                    <span className="accountSidebarCard--name" title={orchestrator.name}>{orchestrator.name}</span>
+                                    <AccountConnectivityStatus status={status}/>
+                                </h3>
+                            </div>
+                    </Link>
+                    </header>
+                    </DashboardCard>
+                );
+            }
+        }) : null;
         let cloudAccounts = (this.props.cloud.length > 0) ? this.props.cloud.map(function(account, index) {
             let status = null;
             if (account) {
@@ -68,11 +96,11 @@ class AccountSidebar extends React.Component{
                 return (
                     <DashboardCard  key={index} className='pool-card accountSidebarCard'>
                     <header>
-                    <Link to={'accounts/cloud/' + account.name}>
+                    <Link to={'accounts/cloud/' + encodeURIComponent(account.name)} onClick={self.props.actions.handleCancelAccount}>
                             <div className="accountSidebarCard--content">
                                 <img className="accountSidebarCard--logo" src={store.getImage(account['account-type'])} />
                                 <h3 title="Edit Account">
-                                    {account.name}
+                                    <span className="accountSidebarCard--name" title={account.name}>{account.name}</span>
                                     <AccountConnectivityStatus status={status}/>
                                 </h3>
                             </div>
@@ -90,10 +118,10 @@ class AccountSidebar extends React.Component{
             return (
                 <DashboardCard key={index} className='pool-card accountSidebarCard'>
                      <header>
-                        <Link to={'accounts/sdn/' + account.name} title="Edit Account">
+                        <Link to={'accounts/sdn/' + encodeURIComponent(account.name)} title="Edit Account">
                          <div className="accountSidebarCard--content">
                             <img className="accountSidebarCard--logo" src={store.getImage(account['account-type'])} />
-                            <h3>{account.name}<AccountConnectivityStatus status={status}/></h3>
+                            <h3><span className="accountSidebarCard--name" title={account.name}>{account.name}</span><AccountConnectivityStatus status={status}/></h3>
                         </div>
                 </Link>
                     </header>
@@ -108,11 +136,11 @@ class AccountSidebar extends React.Component{
             return (
                 <DashboardCard key={index} className='pool-card accountSidebarCard'>
                 <header>
-                    <Link to={'accounts/config-agent/' + account.name} title="Edit Account">
+                    <Link to={'accounts/config-agent/' + encodeURIComponent(account.name)} title="Edit Account">
                         <div className="accountSidebarCard--content">
                             <img className="accountSidebarCard--logo" src={store.getImage(account['account-type'])} />
                             <h3 title="Edit Account">
-                                {account.name}
+                                <span className="accountSidebarCard--name" title={account.name}>{account.name}</span>
                                 <AccountConnectivityStatus status={status}/>
                             </h3>
                         </div>
@@ -123,47 +151,82 @@ class AccountSidebar extends React.Component{
         }) : null;
         html = (
             <div className='accountSidebar'>
-                 <Button className="refreshList light" onClick={this.props.store.refreshAll.bind(this, AccountData)} label={this.props.refreshingAll ? 'Checking Connectivity Status...' : refreshStatus}></Button>
+                {
+                    self.props.readonly ? null :
+                        <Button className="refreshList light" onClick={this.props.store.refreshAll.bind(this, AccountData)} label={this.props.refreshingAll ? 'Checking Connectivity Status...' : refreshStatus}/>
+                }
+                 <div>
+                        <h1>RO Accounts</h1>
+                        {resourceOrchestrators}
+                        {
+                            !self.props.readonly ?
+                                <DashboardCard className="accountSidebarCard">
+                                    <Link
+                                        to={{pathname: '/accounts/resource-orchestrator/create'}}
+                                        title="Create Resource Orchestrator(RO) Account"
+                                        className={'accountSidebarCard_create'}
+                                        onClick={self.props.actions.handleCancelAccount} >
+                                            Add RO Account
+                                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                                    </Link>
+                                </DashboardCard>
+                            :  <div style={{margin:'1rem'}}></div>
+                        }
+                    </div>
                 {props.showVIM ? (
                     <div>
                         <h1>VIM Accounts</h1>
                         {cloudAccounts}
-                        <DashboardCard className="accountSidebarCard">
-                                <Link
-                                to={{pathname: '/accounts/cloud/create'}}
-                                title="Create Cloud Account"
-                                className={'accountSidebarCard_create'}
-                            >
-                                    Add VIM Account
-                                    <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                                </Link>
-                        </DashboardCard>
+                        {
+                            !self.props.readonly ?
+                                <DashboardCard className="accountSidebarCard">
+                                    <Link
+                                        to={{pathname: '/accounts/cloud/create'}}
+                                        title="Create Cloud Account"
+                                        className={'accountSidebarCard_create'}
+                                        onClick={self.props.actions.handleCancelAccount} >
+                                            Add VIM Account
+                                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                                    </Link>
+                                </DashboardCard>
+                            :  <div style={{margin:'1rem'}}></div>
+                        }
                     </div>)
                 : null}
                 <h1>SDN Accounts</h1>
                 {sdnAccounts}
-                <DashboardCard className="accountSidebarCard">
-                        <Link
-                        to={{pathname: '/accounts/sdn/create'}}
-                        title="Create Sdn Account"
-                        className={'accountSidebarCard_create'}
-                    >
-                            Add SDN Account
-                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                        </Link>
-                </DashboardCard>
+                {
+                    !self.props.readonly ?
+                        <DashboardCard className="accountSidebarCard">
+                            <Link
+                            to={{pathname: '/accounts/sdn/create'}}
+                            title="Create Sdn Account"
+                            className={'accountSidebarCard_create'}
+                            onClick={self.props.actions.handleCancelAccount}>
+                                Add SDN Account
+                                <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                            </Link>
+
+                        </DashboardCard>
+                    : <div style={{margin:'1rem'}}></div>
+                }
                 <h1>Config Agent Accounts</h1>
                 {configAgentAccounts}
-                <DashboardCard className="accountSidebarCard">
-                    <Link
-                        to={{pathname: '/accounts/config-agent/create'}}
-                        title="Create Config Agent Account"
-                        className={'accountSidebarCard_create'}
-                    >
-                            Add Config Agent Account
-                            <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
-                        </Link>
-                </DashboardCard>
+                {
+                    !self.props.readonly ?
+                        <DashboardCard className="accountSidebarCard">
+                            <Link
+                                to={{pathname: '/accounts/config-agent/create'}}
+                                title="Create Config Agent Account"
+                                className={'accountSidebarCard_create'}
+                                onClick={self.props.actions.handleCancelAccount}
+                            >
+                                Add Config Agent Account
+                                <img src={require("style/img/launchpad-add-fleet-icon.png")}/>
+                            </Link>
+                        </DashboardCard>
+                    :  <div style={{margin:'1rem'}}></div>
+                }
             </div>
                 );
         return html;
@@ -173,7 +236,8 @@ class AccountSidebar extends React.Component{
 AccountSidebar.defaultProps = {
     cloud: [],
     sdn: [],
-    'config-agent': []
+    'config-agent': [],
+    ro: []
 }
 
 

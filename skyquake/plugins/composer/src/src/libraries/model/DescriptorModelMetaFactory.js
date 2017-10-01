@@ -15,6 +15,7 @@ const assign = Object.assign;
 
 const exportInnerTypesMap = {
 	'constituent-vnfd': 'nsd.constituent-vnfd',
+    'config-parameter-map': 'nsd.config-parameter-map',
 	'vdu': 'vnfd.vdu'
 };
 
@@ -121,7 +122,7 @@ function serialize_choice(data) {
 	let keys = Object.keys(data);
 	if (keys) {
 		const chosen = this.properties.find(
-			c => c.type === 'case' && c.properties && c.properties.some(p => keys.indexOf(p.name) > -1));
+			c => c.type === 'case' && c.properties && c.properties.some(p => keys.indexOf(p.name) > -1 && data[p.name]));
 		return chosen && serializeAll(chosen.properties, data);
 	}
 	return null;
@@ -188,6 +189,10 @@ export default {
 							parentMap[':meta'] = parentObj;
 							const properties = parentObj && parentObj.properties ? parentObj.properties : [];
 							properties.forEach(p => {
+								const colonIndex = p.name.indexOf(':');
+								if (colonIndex > 0) {
+										p.name = p.name.slice(colonIndex+1);
+								}
 								parentMap[p.name] = mapProperties({}, assign(p, {
 									':qualified-type': parentObj[':qualified-type'] + '.' + p.name
 								}));

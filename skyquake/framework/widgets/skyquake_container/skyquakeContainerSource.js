@@ -79,7 +79,7 @@ export default {
             remote: function(state, location, streamSource) {
                 return new Promise((resolve, reject) => {
                     $.ajax({
-                        url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling?api_server=' + API_SERVER,
+                        url: '//' + window.location.hostname + ':' + window.location.port + '/socket-polling',
                         type: 'POST',
                         beforeSend: Utils.addAuthorizationStub,
                         data: {
@@ -113,6 +113,79 @@ export default {
             loading: SkyquakeContainerActions.openNotificationsSocketLoading,
             success: SkyquakeContainerActions.openNotificationsSocketSuccess,
             error: SkyquakeContainerActions.openNotificationsSocketError
+        }
+    },
+    openProjectSocket() {
+            return {
+                remote: function(state) {
+                    return new Promise(function(resolve, reject) {
+                        //If socket connection already exists, eat the request.
+                        if(state.socket) {
+                            return resolve(false);
+                        }
+                        $.ajax({
+                            url: '/socket-polling',
+                            type: 'POST',
+                            beforeSend: Utils.addAuthorizationStub,
+                            data: {
+                                url: '/project?api_server=' + API_SERVER
+                            },
+                            success: function(data, textStatus, jqXHR) {
+                                Utils.checkAndResolveSocketRequest(data, resolve, reject);
+                            }
+                            })
+                        .fail(function(xhr){
+                            //Authentication and the handling of fail states should be wrapped up into a connection class.
+                            Utils.checkAuthentication(xhr.status);
+                        });;
+                    });
+                },
+            success: SkyquakeContainerActions.openProjectSocketSuccess
+        }
+    },
+
+    getUserProfile() {
+        return {
+            remote: function(state, recordID) {
+                return new Promise(function(resolve, reject) {
+                    $.ajax({
+                        url: '/user-profile?api_server=' + API_SERVER,
+                        type: 'GET',
+                        beforeSend: Utils.addAuthorizationStub,
+                        success: function(data) {
+                            resolve(data);
+                        }
+                    }).fail(function(xhr) {
+                        //Authentication and the handling of fail states should be wrapped up into a connection class.
+                        Utils.checkAuthentication(xhr.status);
+                    });;
+                });
+            },
+            loading: Alt.actions.global.showScreenLoader,
+            success: SkyquakeContainerActions.getUserProfileSuccess
+        }
+    },
+
+    selectActiveProject() {
+        return {
+            remote: function(state, projectId) {
+                const {currentPlugin} = state;
+                const encodedProjectId = encodeURIComponent(projectId);
+                return new Promise(function(resolve, reject) {
+                    $.ajax({
+                        url: `/session/${encodedProjectId}?api_server=${API_SERVER}&app=${currentPlugin}`,
+                        type: 'PUT',
+                        beforeSend: Utils.addAuthorizationStub,
+                        success: function(data) {
+                            resolve(projectId);
+                        }
+                    }).fail(function(xhr) {
+                        //Authentication and the handling of fail states should be wrapped up into a connection class.
+                        Utils.checkAuthentication(xhr.status);
+                    });;
+                });
+            },
+            success: SkyquakeContainerActions.selectActiveProjectSuccess
         }
     }
 }

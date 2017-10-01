@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,58 +18,12 @@
 import './formControls.scss';
 
 import React, {Component} from 'react';
-
-export default class TextInput extends Component {
-    render() {
-        let {label, onChange, value, defaultValue, ...props} = this.props;
-        let inputProperties = {
-            value: value,
-            onChange: onChange
-        }
-        let isRequired;
-        let inputType;
-        if(this.props.required) {
-           isRequired = <span className="required">*</span>
-        }
-        if (defaultValue) {
-            inputProperties.defaultValue = defaultValue;
-        }
-        if (props.pattern) {
-            inputProperties.pattern = props.pattern;
-        }
-        if (value == undefined) {
-            value = defaultValue;
-        }
-        switch(props.type) {
-            case 'textarea':
-                inputType = <textarea {...inputProperties} value={value}/>
-
-                break;
-            default:
-                inputType = <input type={props.type} {...inputProperties} placeholder={props.placeholder}/>;
-        }
-        let html = (
-            <label className={"sqTextInput " + props.className} style={props.style}>
-              <span> { label } {isRequired}</span>
-              {
-                !props.readonly ? inputType : <div className="readonly">{value}</div>
-              }
-
-            </label>
-        );
-        return html;
+import Input from './input.jsx';
+class TextInput extends Input {
+    constructor(props) {
+        super(props);
+        console.warn('TextInput is deprecated. Use Input component instead')
     }
 }
-
-TextInput.defaultProps = {
-    onChange: function(e) {
-        console.log(e.target.value);
-    },
-    label: '',
-    defaultValue: undefined,
-    type: 'text',
-    readonly: false,
-    style:{}
-
-}
+export default TextInput;
 

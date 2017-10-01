@@ -49,6 +49,41 @@ var confdPort = function(api_server) {
 	return api_server + ':' + CONFD_PORT;
 };
 
+var projectContextUrl = function(req, url) {
+	//NOTE: We need to go into the sessionStore because express-session
+	// does not reliably update the session.
+	// See https://github.com/expressjs/session/issues/450
+	var projectId = (req.session &&
+					 req.sessionStore &&
+					 req.sessionStore.sessions &&
+					 req.sessionStore.sessions[req.session.id] &&
+					 JSON.parse(req.sessionStore.sessions[req.session.id])['projectId']) ||
+					 (null);
+	if (projectId) {
+		projectId = encodeURIComponent(projectId);
+		return url.replace(/(\/api\/operational\/|\/api\/config\/)(.*)/, '$1project/' + projectId + '/$2');
+	}
+	return url;
+}
+
+var addProjectContextToRPCPayload = function(req, url, inputPayload) {
+	//NOTE: We need to go into the sessionStore because express-session
+	// does not reliably update the session.
+	// See https://github.com/expressjs/session/issues/450
+	var projectId = (req.session &&
+					 req.sessionStore &&
+					 req.sessionStore.sessions &&
+					 req.sessionStore.sessions[req.session.id] &&
+					 JSON.parse(req.sessionStore.sessions[req.session.id])['projectId']) ||
+					 (null);
+	if (projectId) {
+		if (url.indexOf('/api/operations/')) {
+			inputPayload['project-name'] = projectId;
+		}
+	}
+	return inputPayload;
+}
+
 
 var validateResponse = function(callerName, error, response, body, resolve, reject) {
 	var res = {};
@@ -61,12 +96,12 @@ var validateResponse = function(callerName, error, response, body, resolve, reje
 		};
 		reject(res);
 		return false;
-	} else if (response.statusCode >= 400) {
+	} else if (response.statusCode >= CONSTANTS.HTTP_RESPONSE_CODES.ERROR.BAD_REQUEST) {
 		console.log('Problem with "', callerName, '": ', response.statusCode, ':', body);
 		res.statusCode = response.statusCode;
 
 		// auth specific
-		if (response.statusCode == 401) {
+		if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.ERROR.UNAUTHORIZED) {
 			res.errorMessage = {
 				error: 'Authentication needed' + body
 			};
@@ -81,7 +116,7 @@ var validateResponse = function(callerName, error, response, body, resolve, reje
 
 		reject(res);
 		return false;
-	} else if (response.statusCode == 204) {
+	} else if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.SUCCESS.NO_CONTENT) {
 		resolve({
 			statusCode: response.statusCode,
 			data: {}
@@ -95,7 +130,7 @@ var validateResponse = function(callerName, error, response, body, resolve, reje
 
 var checkAuthorizationHeader = function(req) {
 	return new Promise(function(resolve, reject) {
-		if (req.get('Authorization') == null) {
+		if (req.session && req.session.authorization == null) {
 			reject();
 		} else {
 			resolve();
@@ -119,12 +154,12 @@ if (process.env.LOG_REQUESTS) {
 				reject(res);
 				fs.appendFileSync(logFile, 'Request API: ' + response.request.uri.href + ' ; ' + 'Error: ' + error);
 				return false;
-			} else if (response.statusCode >= 400) {
+			} else if (response.statusCode >= CONSTANTS.HTTP_RESPONSE_CODES.ERROR.BAD_REQUEST) {
 				console.log('Problem with "', callerName, '": ', response.statusCode, ':', body);
 				res.statusCode = response.statusCode;
 
 				// auth specific
-				if (response.statusCode == 401) {
+				if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.ERROR.UNAUTHORIZED) {
 					res.errorMessage = {
 						error: 'Authentication needed' + body
 					};
@@ -140,7 +175,7 @@ if (process.env.LOG_REQUESTS) {
 				reject(res);
 				fs.appendFileSync(logFile, 'Request API: ' + response.request.uri.href + ' ; ' + 'Error Body: ' + body);
 				return false;
-			} else if (response.statusCode == 204) {
+			} else if (response.statusCode == CONSTANTS.HTTP_RESPONSE_CODES.SUCCESS.NO_CONTENT) {
 				resolve();
 				fs.appendFileSync(logFile, 'Request API: ' + response.request.uri.href + ' ; ' + 'Response Body: ' + body);
 				return false;
@@ -162,6 +197,9 @@ if (process.env.LOG_REQUESTS) {
  * @param {Function} res - a handle to the express response function
  */
 var sendErrorResponse = function(error, res) {
+	if (!error.statusCode) {
+		console.error('Status Code has not been set in error object: ', error);
+	}
 	res.status(error.statusCode);
 	res.send(error);
 }
@@ -197,10 +235,10 @@ var passThroughConstructor = function(app) {
 		}
 		new Promise(function(resolve, reject) {
 			request({
-				uri: uri,
+				uri: projectContextUrl(req, uri),
 				method: 'GET',
 				headers: _.extend({}, CONSTANTS.HTTP_HEADERS.accept[type], {
-					'Authorization': req.get('Authorization'),
+					'Authorization': req.session && req.session.authorization,
 					forever: CONSTANTS.FOREVER_ON,
 					rejectUnauthorized: false,
 				})
@@ -226,6 +264,31 @@ var getPortForProtocol = function(protocol) {
   }
 }
 
+var buildRedirectURL = function(req, globalConfiguration, plugin, extra) {
+    var api_server = req.query['api_server'] || (req.protocol + '://' + globalConfiguration.get().api_server);
+    var download_server = req.query['dev_download_server'] || globalConfiguration.get().dev_download_server;
+	var url = '/';
+	url += plugin;
+	url += '/?api_server=' + api_server;
+	url += download_server ? '&dev_download_server=' + download_server : '';
+	url += extra || '';
+	return url;
+}
+
+var getHostNameFromURL = function(url) {
+    var match = url.match(/^(https?\:)\/\/(([^:\/?#]*)(?:\:([0-9]+))?)([^?#]*)(\?[^#]*|)(#.*|)$/);
+    return match && match[3];
+}
+
+var dataToJsonSansPropNameNamespace = function(s) {
+	var a = JSON.parse(s);
+	var b = JSON.stringify(a);
+	var c = b.replace(/{"[-\w]+:/g, '{"');
+	var d = c.replace(/,"[-\w]+:/g, ',"');
+	var j = JSON.parse(d);
+	return j;
+}
+
 module.exports = {
 	/**
 	 * Ensure confd port is on api_server variable.
@@ -244,5 +307,15 @@ module.exports = {
 
     passThroughConstructor: passThroughConstructor,
 
-    getPortForProtocol: getPortForProtocol
+    getPortForProtocol: getPortForProtocol,
+
+    projectContextUrl: projectContextUrl,
+
+	addProjectContextToRPCPayload: addProjectContextToRPCPayload,
+
+	buildRedirectURL: buildRedirectURL,
+
+	getHostNameFromURL: getHostNameFromURL,
+
+	dataToJsonSansPropNameNamespace: dataToJsonSansPropNameNamespace
 };

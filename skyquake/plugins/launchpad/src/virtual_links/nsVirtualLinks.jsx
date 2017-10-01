@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,11 +25,16 @@ import UpTime from 'widgets/uptime/uptime.jsx';
 import NSVirtualLinkDetails from './nsVirtualLinkDetails.jsx';
 import NSVirtualLinkCreate from './nsVirtualLinkCreate.jsx';
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
+import ROLES from 'utils/roleConstants.js';
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 
 class NsVirtualLinks extends React.Component {
 	constructor(props) {
 		super(props);
-	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ? 
+	    this.Store = this.props.flux.stores.hasOwnProperty('NSVirtualLinkCreateStore') ?
 				this.props.flux.stores.NSVirtualLinkCreateStore : this.props.flux.createStore(NSVirtualLinkCreateStore, 'NSVirtualLinkCreateStore');
 		this.state = {};
 		this.state.mode = 'viewing';	// Can be 'viewing'/'creating'/'editing'/'deleting'. Default is 'viewing'
@@ -59,7 +64,7 @@ class NsVirtualLinks extends React.Component {
 		if (!this.state.nsd) {
 			this.setState({
 				nsd: this.props.data.nsd
-			});	
+			});
 		}
 
 		if (!this.state.nsrId) {
@@ -78,7 +83,7 @@ class NsVirtualLinks extends React.Component {
 		if (!this.state.nsd) {
 			this.setState({
 				nsd: nextProps.data.nsd
-			});	
+			});
 		}
 
 		if (!this.state.nsrId) {
@@ -149,14 +154,18 @@ class NsVirtualLinks extends React.Component {
 				<tr key={vlrIndex} className={selectedClassName} onClick={this.handleSelectVirtualLinkClick.bind(this, vlrId)}>
 					<td>{name}</td>
 					<td>{operationalStatus}</td>
-					<td>
-						<a onClick={this.handleEditVirtualLinkClick.bind(this, this.props.data.id, vlrId, vldId)}>
-							<span className="oi" data-glyph="pencil" aria-hidden="true"></span>
-						</a>
-						<a onClick={this.handleDeleteVirtualLinkClick.bind(this, this.props.data.id, vldId)}>
-							<span className="oi" data-glyph="trash" aria-hidden="true"></span>
-						</a>
-					</td>
+					{
+						isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]) ?
+						<td>
+							<a onClick={this.handleEditVirtualLinkClick.bind(this, this.props.data.id, vlrId, vldId)}>
+								<span className="oi" data-glyph="pencil" aria-hidden="true"></span>
+							</a>
+							<a onClick={this.handleDeleteVirtualLinkClick.bind(this, this.props.data.id, vldId)}>
+								<span className="oi" data-glyph="trash" aria-hidden="true"></span>
+							</a>
+						</td>
+						: null
+					}
 				</tr>
 			);
 		});
@@ -173,7 +182,10 @@ class NsVirtualLinks extends React.Component {
 			        <tr>
 			        	<th style={{width: '50%'}}>Name</th>
 			            <th style={{width: '35%'}}>Status</th>
-			            <th style={{width: '15%'}}> </th>
+			            {
+						isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]) ?
+			            <th style={{width: '15%'}}> </th> : null
+			        }
 			        </tr>
 			    </thead>
 			    {tbody}
@@ -224,7 +236,7 @@ class NsVirtualLinks extends React.Component {
                 		{nsVirtualLinksTable}
                 	</div>
                 	<div className='nsVirtualLinksCreateButtonWrapper'>
-                		{nsVirtualLinkCreateButton}
+                		{ isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]) ? nsVirtualLinkCreateButton : null}
                 	</div>
                 </div>
                 {nsVirtualLinkDetails}

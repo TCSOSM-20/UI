@@ -27,21 +27,21 @@ import DescriptorModelFactory from '../DescriptorModelFactory'
 export default class VirtualNetworkFunctionReadOnlyWrapper extends DescriptorModel {
 
 	constructor(model, parent) {
-		super(model, parent);
+		super(model, parent, true);
 	}
 
 	get vld() {
 		if (!this.model['internal−vld']) {
 			this.model['internal−vld'] = [];
 		}
-		return this.model['internal−vld'].map(d => DescriptorModelFactory.newInternalVirtualLink(d, this.parent));
+		return this.model['internal−vld'].map(d => DescriptorModelFactory.newInternalVirtualLink(d, this.parent, true));
 	}
 
 	get connectionPoint() {
 		if (!this.model['connection-point']) {
 			this.model['connection-point'] = [];
 		}
-		return this.model['connection-point'].map(d => DescriptorModelFactory.newConstituentVnfdConnectionPoint(d, this.parent));
+		return this.model['connection-point'].map(d => DescriptorModelFactory.newConstituentVnfdConnectionPoint(d, this.parent, true));
 	}
 
 	get connectors() {

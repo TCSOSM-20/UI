@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,7 +89,7 @@ export default class RecordView extends React.Component {
 
     let nav = <AppHeader nav={navItems} />
     if (this.state.showRecordDetails) {
-      recordDetails = <RecordDetails isLoading={this.state.detailLoading} data={this.state.rawData} />
+    recordDetails = <RecordDetails isLoading={this.state.detailLoading} data={this.state.rawData} />
     }
     html = (
       <div className="app-body recordView">

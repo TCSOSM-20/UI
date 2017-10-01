@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,6 +44,11 @@ import mapClassifier from './mapClassifier'
 import mapRecordServicePath from './mapRecordServicePath'
 import onCutDelegateToRemove from './onCutDelegateToRemove'
 import onClickSelectAndShowInDetailsPanel from './onClickSelectAndShowInDetailsPanel'
+
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 
 import '../../styles/EditForwardingGraphPaths.scss'
 
@@ -119,7 +124,11 @@ function mapFG(fg, i) {
 		<div key={i} className={fg.className} data-uid={fg.uid} data-offset-width="true" onClick={onClickSelectAndShowInDetailsPanel.bind(null, fg)} onCut={onCutDelegateToRemove.bind(null, fg)}>
 			<div key="outline-indicator" data-outline-indicator="true"></div>
 			<div className="header-actions">
-				<Button className="remove-forwarding-graph" title="Remove" onClick={onClickRemoveForwardingGraph.bind(null, fg)} src={imgRemove}/>
+				{
+					this.isRBACValid ?
+						<Button className="remove-forwarding-graph" title="Remove" onClick={onClickRemoveForwardingGraph.bind(null, fg)} src={imgRemove}/>
+						: null
+				}
 			</div>
 			<LayoutRow primaryActionColumn={toggleSelectAllPaths} secondaryActionColumn={<img className="fg-icon" src={imgFG} width="20px" />}>
 				<small>{fg.title}</small>
@@ -133,7 +142,11 @@ function mapFG(fg, i) {
 				{fg.classifier.map(mapClassifier.bind(null, context))}
 				<div className="footer-actions">
 					<div className="row-action-column">
-						<Button className="create-new-classifier" src={imgAdd} width="20px" onClick={onClickAddClassifier.bind(null, context, fg)} label="Add Classifier" />
+					{
+						this.isRBACValid ?
+							<Button className="create-new-classifier" src={imgAdd} width="20px" onClick={onClickAddClassifier.bind(null, context, fg)} label="Add Classifier" />
+							: null
+					}
 					</div>
 				</div>
 			</div>
@@ -167,7 +180,11 @@ function mapNSD(nsd, i) {
 			{forwardingGraphs}
 			<div className="footer-actions">
 				<div className="row-action-column">
-					<Button className="create-new-forwarding-graph" src={imgAdd} width="20px" onClick={onClickAddForwardingGraph.bind(null, nsd)} label="Add new Forwarding Graph" />
+				{
+					this.isRBACValid ?
+						<Button className="create-new-forwarding-graph" src={imgAdd} width="20px" onClick={onClickAddForwardingGraph.bind(null, nsd)} label="Add new Forwarding Graph" />
+						: null
+				}
 				</div>
 			</div>
 		</div>
@@ -193,14 +210,16 @@ const EditForwardingGraphPaths = React.createClass({
 	},
 	componentWillUnmount: function () {
 	},
+	contextTypes: {
+	    userProfile: React.PropTypes.object
+	},
 	render() {
-
 		const containers = this.props.containers;
 		const context = {
 			component: this,
-			containers: containers
+			containers: containers,
+			isRBACValid: isRBACValid(this.context.userProfile, [PROJECT_ROLES.PROJECT_ADMIN, PROJECT_ROLES.CATALOG_ADMIN])
 		};
-
 		const networkService = containers.filter(d => d.type === 'nsd');
 		if (networkService.length === 0) {
 			return <p className="welcome-message">No <img src={imgNSD} width="20px" /> NSD open in the canvas. Try opening an NSD.</p>;

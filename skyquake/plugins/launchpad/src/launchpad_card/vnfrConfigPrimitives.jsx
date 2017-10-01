@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,7 +46,7 @@
 
     handleParamChange = (paramIndex, configPrimitiveIndex, vnfrIndex, e) => {
         let vnfrs = this.state.vnfrs;
-        vnfrs[vnfrIndex]["vnf-configuration"]["service-primitive"][configPrimitiveIndex]["parameter"][paramIndex].value = e.target.value
+        vnfrs[vnfrIndex]["vnf-configuration"]["config-primitive"][configPrimitiveIndex]["parameter"][paramIndex].value = e.target.value
         this.setState({
             vnfrs: vnfrs
         })
@@ -61,10 +61,11 @@
     }
 
     constructConfigPrimitiveTabs = (tabList, tabPanels) => {
+        const hasAccess = this.props.hasAccess;
         let mandatoryFieldValue = 'true';
         this.state.vnfrs && this.state.vnfrs.map((vnfr, vnfrIndex) => {
-            if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['service-primitive'] && vnfr['vnf-configuration']['service-primitive'].length > 0) {
-                vnfr['vnf-configuration']['service-primitive'].map((configPrimitive, configPrimitiveIndex) => {
+            if (vnfr['vnf-configuration'] && vnfr['vnf-configuration']['config-primitive'] && vnfr['vnf-configuration']['config-primitive'].length > 0) {
+                vnfr['vnf-configuration']['config-primitive'].map((configPrimitive, configPrimitiveIndex) => {
                     let params = [];
                     if (configPrimitive['parameter'] && configPrimitive['parameter'].length > 0) {
                         configPrimitive['parameter'].map((param, paramIndex) => {
@@ -103,7 +104,7 @@
                                     {params}
                                 </ul>
                             </div>
-                            <button className="dark" role="button" onClick={this.handleExecuteClick.bind(this, configPrimitiveIndex, vnfrIndex)}>{configPrimitive.name}</button>
+                            {hasAccess ? <button className="dark" role="button" onClick={this.handleExecuteClick.bind(this, configPrimitiveIndex, vnfrIndex)}>{configPrimitive.name}</button> : null}
                         </TabPanel>
                     )
                 });
@@ -112,7 +113,6 @@
     }
 
     render() {
-
         let tabList = [];
         let tabPanels = [];
         let isConfiguring = (this.props.data['config-status'] && this.props.data['config-status'] != 'configured') || false;
@@ -123,7 +123,7 @@
         return (
             <div className="nsConfigPrimitives vnfrConfigPrimitives">
                 <div className="launchpadCard_title">
-                  SERVICE-PRIMITIVES {displayConfigStatus}
+                  CONFIG-PRIMITIVES {displayConfigStatus}
                 </div>
                 <div className={isConfiguring ? 'configuring': 'nsConfigPrimitiveTabs'}>
                     <Tabs onSelect={this.handleSelect}>

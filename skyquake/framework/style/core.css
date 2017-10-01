@@ -16,8 +16,6 @@
  *
  */
 /*@import "./vendor/css-reset-2.0/css-reset.css";*/
-@import "../../node_modules/reset-css/reset.css";
-
 .has-drop-shadow {
     box-shadow: 2px 2px rgba(0, 0, 0, .15)
 }
@@ -2023,7 +2021,7 @@ a[role=button] {
     margin-top: 150px;
     margin-bottom: 20px;
     background-size: 154px 102px;
-    /*background-image: url(./img/header-logo.png)*/
+	/*background-image: url(./img/header-logo.png)*/
     background-image: url(./img/svg/osm-logo_color_rgb.svg);
 }
 .login-cntnr .riftio {

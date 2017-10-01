@@ -22,7 +22,7 @@ import AppHeaderActions from 'widgets/header/headerActions.js';
 import Alt from '../alt';
 import _cloneDeep from 'lodash/cloneDeep';
 import _find from 'lodash/find';
-
+import _merge from 'lodash/merge';
 
 class LaunchNetworkServiceStore {
     constructor() {
@@ -39,29 +39,34 @@ class LaunchNetworkServiceStore {
         this.sla_parameters = [];
         this.selectedNSDid;
         this.selectedNSD = {};
-        this.selectedCloudAccount = {};
         this.dataCenters = [];
-        this.cloudAccounts = [];
         this.isLoading = false;
         this.hasConfigureNSD = false;
+        this.hasConfigureVNFD = false;
         this['input-parameters'] = [];
-        this.displayPlacementGroups = false;
-        this.ro = {};
+        this.displayPlacementGroups = true;
         this.bindActions(NetworkServiceActions);
         this.nsdConfiguration = {
             name:'',
-            selectedCloudAccount: {},
             dataCenterID: null
         };
         /*Collection of vnf state containting cloud account and datacenter info.
         keyed off vnfd-id-ref
         */
-        this.vnfdCloudAccounts = {};
         this.usersList = [];
         this.configAgentAccounts = [];
 
         this.isPreviewing = false;
         this.isOpenMano = false;
+
+        this.displayVIMAccounts = false;
+        this.resourceOrchestrators = [{
+            name: 'rift',
+            'ro-account-type': 'rift-ro'
+        }];
+        this.selectedResourceOrchestrator = this.resourceOrchestrators[0];
+        this.dataCenterID = null;
+        this.vnfDataCenters = {};
         this.registerAsync(NetworkServiceSource);
         this.exportPublicMethods({
             getMockData: getMockData.bind(this),
@@ -91,8 +96,7 @@ class LaunchNetworkServiceStore {
             name: '',
             'input-parameter-xpath': null,
             'ns-placement-groups': null,
-            'vnf-placement-groups':null,
-            vnfdCloudAccounts: {}
+            'vnf-placement-groups':null
         })
     }
 
@@ -130,28 +134,6 @@ class LaunchNetworkServiceStore {
 
         });
     }
-    getLaunchCloudAccountSuccess(cloudAccounts) {
-        let newState = {};
-        newState.cloudAccounts = cloudAccounts.filter(function(v) {
-            console.log(v)
-                return v['connection-status'].status == 'success';
-            }) || [];
-        if(cloudAccounts.length != newState.cloudAccounts.length) {
-            Alt.actions.global.showNotification.defer({type: 'warning', msg: 'One or more VIM accounts have failed to connect'});
-        }
-        if(cloudAccounts && cloudAccounts.length > 0) {
-            newState.selectedCloudAccount = newState.cloudAccounts[0];
-            if (cloudAccounts[0]['account-type'] == 'openstack') {
-                newState.displayPlacementGroups = true;
-            } else {
-             newState.displayPlacementGroups = false;
-            }
-        } else {
-            newState.selectedCloudAccount = {};
-        }
-
-        this.setState(newState);
-    }
     getConfigAgentSuccess(configAgentAccounts) {
         this.setState({
             configAgentAccounts: configAgentAccounts
@@ -163,7 +145,7 @@ class LaunchNetworkServiceStore {
         let newState = {
             dataCenters: dataCenters || []
         };
-	if (this.ro && this.ro['account-type'] == 'openmano') {
+    if (this.ro && this.ro['account-type'] == 'openmano') {
             newState.dataCenterID = dataCenters[this.ro.name][0].uuid
         }
         this.setState(newState)
@@ -190,14 +172,7 @@ class LaunchNetworkServiceStore {
         return window.location.hash = 'launchpad/' + tokenizedHash[2];
     }
     launchNSRError(data) {
-        var msg = 'Something went wrong while trying to instantiate. Check the error logs for more information';
-        if(data) {
-            msg = data;
-        }
-        if (data.error) {
-            msg = data.error;
-        }
-        Alt.actions.global.showNotification.defer(msg);
+        Alt.actions.global.showNotification.defer(data);
         Alt.actions.global.hideScreenLoader.defer();
         this.setState({
             isLoading: false
@@ -209,10 +184,16 @@ class LaunchNetworkServiceStore {
             sshKeysRef: []
         })
     }
-    getResourceOrchestratorSuccess = (data) => {
+    getResourceOrchestratorAccountsSuccess = (data) => {
+        let self = this;
         Alt.actions.global.hideScreenLoader.defer();
+        let ROAccounts = [];
         this.setState({
-            ro: data
+            resourceOrchestrators: ROAccounts.concat(data),
+            selectedResourceOrchestrator: data[0],
+            dataCenterID: data && data[0] && data[0].datacenters && data[0].datacenters.datacenters && data[0].datacenters.datacenters[0] && data[0].datacenters.datacenters[0].name,
+            dataCenterType:  data && data[0] && data[0].datacenters && data[0].datacenters.datacenters && data[0].datacenters.datacenters[0] && data[0].datacenters.datacenters[0]['datacenter-type'],
+            displayVIMAccounts: false
         })
     }
     getResourceOrchestratorError = (data) => {
@@ -256,15 +237,30 @@ class LaunchNetworkServiceStore {
         };
         newState.selectedNSD = data;
         newState['input-parameters'] = [];
+        newState['vnf-input-parameter'] = [];
         if (NSD['input-parameter-xpath']) {
+            let vnfParameters = [];
             newState.hasConfigureNSD = true;
             NSD['input-parameter-xpath'].map(function(p) {
-                newState.hasConfigureNSD = true;
-                newState['input-parameters'].push(_cloneDeep(p));
+                if (isVNFDInputParameter(p)) {
+                    newState.hasConfigureVNFD = true;
+                    vnfParameters.push(p);
+                } else {
+                    newState.hasConfigureNSD = true;
+                    newState['input-parameters'].push(p);
+                }
+            })
+            newState['vnf-input-parameter'] = NSD['constituent-vnfd'].map(function(vnf) {
+                return {
+                    'name': vnf['vnf-name'],
+                    'member-vnf-index-ref': vnf['member-vnf-index'],
+                    'vnfd-id-ref': vnf['vnfd-id-ref'],
+                    'input-parameter':_cloneDeep(vnfParameters)
+                }
             })
         } else {
             newState.hasConfigureNSD = false;
-            newState['input-parameters'] = null;
+            newState['input-parameter'] = null;
         }
         if(NSD['ns-placement-groups'] && NSD['ns-placement-groups'].length > 0 ) {
             newState['ns-placement-groups'] = NSD['ns-placement-groups'];
@@ -272,11 +268,15 @@ class LaunchNetworkServiceStore {
         if(NSD['vnf-placement-groups'] && NSD['vnf-placement-groups'].length > 0 ) {
             newState['vnf-placement-groups'] = NSD['vnf-placement-groups'];
         }
-        NSD["constituent-vnfd"].map((v) => {
+        NSD["constituent-vnfd"] && NSD["constituent-vnfd"].map((v) => {
             VNFIDs.push(v["vnfd-id-ref"]);
         })
         this.getInstance().getVDU(VNFIDs);
         this.setState(newState);
+
+        function isVNFDInputParameter(p){
+            return p.xpath.match('vnfd-catalog');
+        }
     }
     previewDescriptor = (data) => {
         let self = this;
@@ -294,34 +294,50 @@ class LaunchNetworkServiceStore {
             'input-parameters': ip
         });
     }
+    updateVnfInputParam = (i, j, value) => {
+        let ip = this['vnf-input-parameter'];
+        ip[i]['input-parameter'][j].value = value;
+        this.setState({
+            'vnf-input-parameter': ip
+        });
+    }
     nsFn = () => {
         let self = this;
         return {
-            updateSelectedCloudAccount: (cloudAccount) => {
+            updateSelectedRoAccount: (resourceOrchestrator) => {
                 let nsd = self.nsd[0];
                 var newState = {
-                    selectedCloudAccount: JSON.parse(cloudAccount.target.value)
+                    selectedResourceOrchestrator: JSON.parse(JSON.parse(resourceOrchestrator.target.value))
                 };
-                if (cloudAccount['account-type'] == 'openstack') {
-                    newState.displayPlacementGroups = true;
+                // if no datacenters and ro is not rift-ro
+                if (!(newState.selectedResourceOrchestrator.datacenters && newState.selectedResourceOrchestrator.datacenters.datacenters) ) {
+                    Alt.actions.global.showNotification.defer("No data centers configured in resource orchestrator");
                 } else {
-                     newState.displayPlacementGroups = false;
+                    newState.dataCenterID = newState.selectedResourceOrchestrator.datacenters.datacenters[0].name;
+                    newState.dataCenterType = newState.selectedResourceOrchestrator.datacenters.datacenters[0]['datacenter-type'];
+                    newState.displayPlacementGroups = newState.selectedResourceOrchestrator.name == "rift" ? true : false;
                 }
                 self.setState(newState);
             },
             updateSelectedDataCenter: (dataCenter) => {
+                let dataCenterID = JSON.parse(JSON.parse(dataCenter.target.value));
+                let dataCenterType = _find(self.selectedResourceOrchestrator.datacenters.datacenters, {name: dataCenterID})
+
                 self.setState({
-                    dataCenterID: JSON.parse(dataCenter.target.value)
+                    dataCenterID,
+                    dataCenterType
                 });
             },
-            placementGroupUpdate: (i, k, value) => {
+            placementGroupUpdate: (i, k, event) => {
+                let value = event.target.value;
                 let pg = self['ns-placement-groups'];
                 pg[i][k] = value;
                 self.setState({
                     'ns-placement-groups': pg
                 })
             },
-            hostAggregateUpdate: (pgi, hai, k, value) => {
+            hostAggregateUpdate: (pgi, hai, k, event) => {
+                let value = event.target.value;
                 let pg = self['ns-placement-groups'];
                 let ha = pg[pgi]['host-aggregate'][hai];
                 ha[k] = value;
@@ -353,14 +369,16 @@ class LaunchNetworkServiceStore {
     vnfFn = () => {
         let self = this;
         return {
-            placementGroupUpdate: (i, k, value) => {
+            placementGroupUpdate: (i, k, event) => {
+                let value = event.target.value;
                 let pg = self['vnf-placement-groups'];
                 pg[i][k] = value;
                 self.setState({
                     'vnf-placement-groups': pg
                 })
             },
-            hostAggregateUpdate: (pgi, hai, k, value) => {
+            hostAggregateUpdate: (pgi, hai, k, event) => {
+                let value = event.target.value;
                 let pg = self['vnf-placement-groups'];
                 let ha = pg[pgi]['host-aggregate'][hai];
                 ha[k] = value;
@@ -384,64 +402,42 @@ class LaunchNetworkServiceStore {
                     'vnf-placement-groups': pg
                 })
             },
-            updateSelectedCloudAccount: (id, cloudAccount) => {
-                let vnfCA = self.vnfdCloudAccounts;
-                if(cloudAccount) {
-                    if(!vnfCA.hasOwnProperty(id)) {
-                        vnfCA[id] = {};
-                    }
-                    vnfCA[id].account = JSON.parse(cloudAccount.target.value);
-
-                    if (cloudAccount['account-type'] == 'openmano' && this.dataCenters && self.dataCenters[cloudAccount['name']]) {
-                        let datacenter = self.dataCenters[cloudAccount['name']][0];
-                        vnfCA[id].datacenter = datacenter.uuid;
-                    } else {
-                        if (vnfCA[id].datacenter) {
-                            delete vnfCA[id].datacenter;
-                        }
-                    }
-                } else {
-                    if(vnfCA.hasOwnProperty(id)) {
-                        if(vnfCA[id].hasOwnProperty('config-agent-account')) {
-                            delete vnfCA[id].account;
-                        } else {
-                            delete vnfCA[id];
-                        }
-                    }
-                }
-                self.setState({
-                    vnfdCloudAccounts: vnfCA
-                });
-            },
             updateSelectedConfigAgent:  (id) => {
                 return function(e) {
                     let configAgentRef = JSON.parse(e.target.value);
-                    let vnfCA = self.vnfdCloudAccounts;
+                    let vnfDC = self.vnfDataCenters;
                     if(configAgentRef) {
-                        if(!vnfCA.hasOwnProperty(id)) {
-                            vnfCA[id] = {};
+                        if (!vnfDC[id]) {
+                            vnfDC[id] = {};
                         }
-                        vnfCA[id]['config-agent-account'] = configAgentRef;
+                        vnfDC[id]['config-agent-account'] = configAgentRef;
                     } else {
-                        if(vnfCA[id].hasOwnProperty('account')) {
+                        if(vnfDC[id].hasOwnProperty('datacenter')) {
                             delete vnfCA[id]['config-agent-account'];
                         } else {
                             delete vnfCA[id];
                         }
                     }
                     self.setState({
-                        vnfdCloudAccounts: vnfCA
+                        vnfDataCenters: vnfDC
                     });
                 }
             },
             updateSelectedDataCenter: (id, dataCenter) => {
-                let vnfCA = self.vnfdCloudAccounts;
-                if (!vnfCA[id]) {
-                    vnfCA[id] = {};
+                let vnfDC = self.vnfDataCenters;
+                let dc = JSON.parse(JSON.parse(dataCenter.target.value));
+                if (!vnfDC[id]) {
+                    vnfDC[id] = {};
                 }
-                vnfCA[id].datacenter = JSON.parse(dataCenter.target.value);
+                vnfDC[id]['member-vnf-index-ref'];
+                if (dc) {
+                    vnfDC[id].datacenter = dc;
+                } else {
+                    delete vnfDC[id];
+                }
+
                 self.setState({
-                    vnfdCloudAccounts: vnfCA
+                    vnfDataCenters: vnfDC
                 });
             }
         }
@@ -462,12 +458,15 @@ class LaunchNetworkServiceStore {
                         let IPProfile = self.ipProfiles;
                         vld[i][type] = IPProfile[0] && IPProfile[0].name;
                         delete vld[i]['vim-network-name'];
+                        delete vld[i]['ipv4-nat-pool-name'];
                     } else {
                         delete vld[i]['dns-server'];
+                        vld[i]['ipv4-nat-pool-name'] = self.dataCenterID
                     }
                     if(type == 'none') {
                         delete vld[i]['ip-profile-ref'];
                         delete vld[i]['vim-network-name'];
+                        delete vld[i]['ipv4-nat-pool-name'];
                     }
                     self.setState({vld:vld});
                 }
@@ -668,6 +667,7 @@ class LaunchNetworkServiceStore {
         }
     }
     saveNetworkServiceRecord(name, launch) {
+        let self = this;
         //input-parameter: [{uuid: < some_unique_name>, xpath: <same as you got from nsd>, value: <user_entered_value>}]
         /*
         'input-parameter-xpath':[{
@@ -699,9 +699,9 @@ class LaunchNetworkServiceStore {
             nsdPayload.vld && nsdPayload.vld.map(function(v){
                 delete v['none'];
                 delete v.type;
-            })
+            });
+            nsdPayload['input-parameter-xpath'] && nsdPayload['input-parameter-xpath'].map((x) => delete x.value);
         }
-        let vnfdCloudAccounts = this.state.vnfdCloudAccounts;
         let payload = {
             id: guuid,
             "name": name,
@@ -711,15 +711,20 @@ class LaunchNetworkServiceStore {
             "nsd": nsdPayload
         }
 
-        if (this.state.ro && this.state.ro['account-type'] == 'openmano') {
-            payload['om-datacenter'] = this.state.dataCenterID;
-        } else {
-            if(!this.state.selectedCloudAccount) {
-                Alt.actions.global.showNotification.defer("No VIM Account Selected");
-                return;
-            }
-            payload["cloud-account"] = this.state.selectedCloudAccount.name;
+        if(!this.state.selectedResourceOrchestrator) {
+            Alt.actions.global.showNotification.defer("No Resource Orchestrator selected");
+            return;
         }
+        if (this.state.selectedResourceOrchestrator.name != "rift") {
+            payload["resource-orchestrator"] = this.state.selectedResourceOrchestrator.name;
+        }
+
+        if(!this.state.dataCenterID) {
+            Alt.actions.global.showNotification.defer("No Data Center selected");
+            return;
+        }
+        payload["datacenter"] = this.state.dataCenterID;
+
         //Clean Input Parameters
         if (this.state.hasConfigureNSD) {
             let ips = _cloneDeep(this.state['input-parameters']);
@@ -738,6 +743,38 @@ class LaunchNetworkServiceStore {
                 payload['input-parameter'] = ipsToSend;
             }
         }
+        //Clean VNF Input Parameters
+        if (this.state.hasConfigureVNFD) {
+            let vnf = _cloneDeep(this.state['vnf-input-parameter']);
+            vnf = vnf.filter(function(v){
+                delete v.name;
+                v['input-parameter'] = v['input-parameter'].filter(
+                    function(i) {
+                        if(i.value && i.value != "") {
+                            delete i.label;
+                            delete i['default-value'];
+                            return true;
+                        }
+                        return false;
+                });
+                if (v['input-parameter'].length) {
+                    return true;
+                }
+                    return false;
+            })
+            if (vnf.length > 0) {
+                payload['vnf-input-parameter'] = vnf;
+            }
+        }
+        let VnfDataCenters = this.state.vnfDataCenters;
+        if (Object.keys(VnfDataCenters).length) {
+            payload['vnf-datacenter-map'] = Object.keys(VnfDataCenters).map(function(k) {
+                return {
+                    'member-vnf-index-ref' : k,
+                    datacenter: VnfDataCenters[k].datacenter
+                }
+            })
+        }
         // These placement groups need to be refactored. Too much boilerplate.
         if (this.state.displayPlacementGroups) {
             nsPg = this.state['ns-placement-groups'];
@@ -746,7 +783,7 @@ class LaunchNetworkServiceStore {
                 payload['nsd-placement-group-maps'] = nsPg.map(function(n, i) {
                     if(n['availability-zone'] || n['server-group'] || (n['host-aggregate'].length > 0)) {
                         var obj = {
-                            'cloud-type': 'openstack'
+                            'cloud-type': self.state.dataCenterType
                         };
                         if(n['host-aggregate'].length > 0) {
                             obj['host-aggregate'] = n['host-aggregate'].map(function(h, j) {
@@ -774,10 +811,15 @@ class LaunchNetworkServiceStore {
                 });
             };
             if(vnfPg && (vnfPg.length > 0)) {
+                let vnfDataCenterDictionary = {};
+                payload['vnf-datacenter-map'] && payload['vnf-datacenter-map'].map(function(d) {
+                    vnfDataCenterDictionary[d['member-vnf-index-ref']] = d.datacenter
+                })
                 payload['vnfd-placement-group-maps'] = vnfPg.map(function(n, i) {
                     if(n['availability-zone'] || n['server-group'] || (n['host-aggregate'].length > 0)) {
+                        let DC = vnfDataCenterDictionary[n['member-vnf-index']];
                         var obj = {
-                            'cloud-type': 'openstack'
+                            'cloud-type': DC ? _find(self.state.selectedResourceOrchestrator.datacenters.datacenters, {name: DC})['datacenter-type'] : self.state.dataCenterType
                         };
                         if(n['host-aggregate'].length > 0) {
                             obj['host-aggregate'] = n['host-aggregate'].map(function(h, j) {
@@ -806,31 +848,14 @@ class LaunchNetworkServiceStore {
                 });
             }
         }
-        //Construct VNF cloud accounts
-        payload['vnf-cloud-account-map'] = [];
-        for(let k in vnfdCloudAccounts) {
-            let vnf = {};
-            vnf['member-vnf-index-ref'] = k;
-            if(vnfdCloudAccounts[k].hasOwnProperty('account') && (vnfdCloudAccounts[k]['account'] && vnfdCloudAccounts[k]['account'].name)) {
-                vnf['cloud-account'] = vnfdCloudAccounts[k].account.name;
-            }
-            if(vnfdCloudAccounts[k].hasOwnProperty('config-agent-account') && vnfdCloudAccounts[k]['config-agent-account']) {
-                vnf['config-agent-account'] = vnfdCloudAccounts[k]['config-agent-account'];
-            }
-            if(vnfdCloudAccounts[k].hasOwnProperty('datacenter')) {
-                vnf['om-datacenter'] = vnfdCloudAccounts[k].datacenter;
-            }
-            if(vnf['om-datacenter'] || vnf['cloud-account'] || vnf['config-agent-account']) {
-                payload['vnf-cloud-account-map'].push(vnf);
-            }
-        }
+
         //Add SSH-Keys
         payload['ssh-authorized-key'] = this.state.sshKeysRef.map(function(k) {
             return {'key-pair-ref': JSON.parse(k).name};
         });
         //Add Users
         payload['user'] = addKeyPairRefToUsers(this.state.usersList);
-        // console.log(payload)
+        console.log(payload)
         this.launchNSR({
             'nsr': [payload]
         });

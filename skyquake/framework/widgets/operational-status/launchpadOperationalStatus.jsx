@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,7 +101,7 @@ class ThrottledMessage extends React.Component {
   }
   render() {
     if(!this.props.hasFailed) {
-      return (<span className='throttledMessageText'>{this.state.displayMessage}</span>)
+      return (<span className='throttledMessageText' style={{margin:'1rem'}}>{this.state.displayMessage}</span>)
     } else {
       return (<span> </span>)
     }

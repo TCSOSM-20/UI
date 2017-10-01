@@ -75,6 +75,9 @@ export default {
                 allowDuplicateEvents: loggingConfig.allowDuplicateEvents
               },
               success: function(data) {
+                if (!loggingConfig.allowDuplicateEvents) {
+                  delete state.loggingConfig.allowDuplicateEvents
+                }
                 resolve(data);
               },
               error: function(error) {

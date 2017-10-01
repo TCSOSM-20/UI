@@ -6,7 +6,9 @@ import DashboardCard from 'widgets/dashboard_card/dashboard_card.jsx';
 import LaunchpadFleetActions from'../launchpadFleetActions';
 import LaunchpadFleetStore from '../launchpadFleetStore';
 import UpTime from 'widgets/uptime/uptime.jsx';
-
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
+const PROJECT_ROLES = ROLES.PROJECT;
 /*
  * TODO: Handle when page is loading. See recordView for ref
  */
@@ -367,7 +369,7 @@ export default class NsListPanel extends React.Component {
             return (
                 <DashboardCard className="nsListPanel" showHeader={true}
                     title={title}>
-                    {this.panelToolbar()}
+                    {isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]) ? this.panelToolbar() : null}
                     <a onClick={this.handleShowHideToggle(!isVisible)}
                         className={"nsListPanelToggle"}>
                         <span className="oi"
@@ -396,7 +398,8 @@ export default class NsListPanel extends React.Component {
     }
 }
 NsListPanel.contextTypes = {
-    router: React.PropTypes.object
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 };
 NsListPanel.defaultProps = {
     isVisible: true

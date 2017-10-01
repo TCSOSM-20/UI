@@ -45,7 +45,7 @@ restconfAPI['streams'].get = function(req) {
             url: uri + url + '?deep',
             method: 'GET',
             headers: _.extend({}, constants.HTTP_HEADERS.accept.data, {
-                'Authorization': req.get('Authorization')
+                'Authorization': req.session && req.session.authorization
             }),
             forever: constants.FOREVER_ON,
             rejectUnauthorized: false,

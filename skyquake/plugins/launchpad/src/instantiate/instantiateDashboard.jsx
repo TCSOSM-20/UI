@@ -24,9 +24,14 @@ import InstantiateSelectDescriptorPanel from './instantiateSelectDescriptorPanel
 import CatalogDescriptorRaw from './catalogDescriptorRaw.jsx'
 import SkyquakeComponent from 'widgets/skyquake_container/skyquakeComponent.jsx';
 import {Panel, PanelWrapper} from 'widgets/panel/panel';
-import Button from 'widgets/button/rw.button.js'
+import Button from 'widgets/button/rw.button.js';
+import {SkyquakeRBAC, isRBACValid} from 'widgets/skyquake_rbac/skyquakeRBAC.jsx';
+import ROLES from 'utils/roleConstants.js';
 import 'style/layout.scss';
 import './instantiateDashboard.scss';
+
+const PROJECT_ROLES = ROLES.PROJECT;
+const PLATFORM = ROLES.PLATFORM;
 
 class InstantiateDashboard extends React.Component {
     constructor(props) {
@@ -38,19 +43,15 @@ class InstantiateDashboard extends React.Component {
         let self = this;
         let asyncOperations = []
         asyncOperations.push(this.Store.getCatalog());
-        asyncOperations.push(this.Store.getCloudAccount(function() {
-          asyncOperations.push(self.Store.getDataCenters());
-          asyncOperations.push(self.Store.getResourceOrchestrator());
+        asyncOperations.push(this.Store.getResourceOrchestratorAccounts(function() {
           asyncOperations.push(self.Store.getSshKey());
           asyncOperations.push(self.Store.getConfigAgent());
-          asyncOperations.push(self.Store.getResourceOrchestrator());
         }));
         Promise.all(asyncOperations).then(function(resolve, reject) {
             if(self.props.params.nsd) {
                 self.Store.descriptorSelected(self.state.nsdDict[self.props.params.nsd]);
             }
         })
-
     }
     componentWillMount() {
         this.Store.listen(this.updateState);
@@ -107,6 +108,7 @@ class InstantiateDashboard extends React.Component {
         let html;
         let selectedNSDid = self.state.selectedNSDid;
         let isPreviewing = self.state.isPreviewing;
+        const hasAccess = isRBACValid(this.context.userProfile, [PROJECT_ROLES.LCM_ADMIN, PROJECT_ROLES.PROJECT_ADMIN]);
         let descriptorPreview = (
             <Panel title={(self.state.selectedNSD['short-name'] || self.state.selectedNSD.name ) + ' Descriptor Preview'} className="CatalogDescriptorPreview">
             <span className="oi CatalogDescriptorPreview-button" data-glyph={"circle-x"} onClick={self.Store.deselectDescriptor}></span>
@@ -136,10 +138,11 @@ class InstantiateDashboard extends React.Component {
 
                     <Button label="Cancel" onClick={this.handleCancel}/>
                     {this.isSelectPage() ?
-                        <Button label="Next" isLoading={this.state.isSaving} onClick={this.state.selectedNSD && self.openDescriptor} className="dark"  type="submit"/>
+                        <Button label="Next" isLoading={this.state.isSaving} onClick={this.state.selectedNSD && self.openDescriptor} className="dark" type="submit"/>
                         : <div>
                             <Button label="Back" onClick={this.handleBack}/>
-                            <Button label="Launch" isLoading={this.state.isSaving} onClick={self.handleSave.bind(self, true)} className="dark"  type="submit"/>
+                            { hasAccess ? <Button label="Launch" isLoading={this.state.isSaving} onClick={self.handleSave.bind(self, true)} className="dark"  type="submit"
+                            /> : null}
                         </div>
                     }
                 </div>
@@ -148,6 +151,7 @@ class InstantiateDashboard extends React.Component {
     }
 }
 InstantiateDashboard.contextTypes = {
-    router: React.PropTypes.object
+    router: React.PropTypes.object,
+    userProfile: React.PropTypes.object
 };
 export default SkyquakeComponent(InstantiateDashboard);

@@ -86,7 +86,7 @@ module.exports = function(Alt) {
         console.log(id)
         return new Promise(function(resolve, reject) {
           $.ajax({
-            url: 'api/nsr/' + id + '?api_server=' + API_SERVER,
+            url: 'api/nsr/' + encodeURIComponent(id) + '?api_server=' + API_SERVER,
             type: 'DELETE',
             beforeSend: Utils.addAuthorizationStub,
             success: function(data) {
@@ -106,7 +106,7 @@ module.exports = function(Alt) {
             return resolve(false);
           }
            $.ajax({
-            url: '/socket-polling?api_server=' + API_SERVER,
+            url: '/socket-polling',
             type: 'POST',
             beforeSend: Utils.addAuthorizationStub,
             data: {
@@ -129,7 +129,7 @@ module.exports = function(Alt) {
       remote: function(state, id, status) {
         return new Promise(function(resolve, reject) {
           $.ajax({
-            url: 'api/nsr/' + id + '/admin-status?api_server=' + API_SERVER ,
+            url: 'api/nsr/' + encodeURIComponent(id) + '/admin-status?api_server=' + API_SERVER ,
             type:'PUT',
             beforeSend: Utils.addAuthorizationStub,
             data: {

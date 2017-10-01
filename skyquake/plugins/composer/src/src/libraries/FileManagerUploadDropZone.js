@@ -45,7 +45,7 @@ function initializeDropZone(element = '#dropzone', button = false, action = ACTI
 	let dev_download_server = Utils.getSearchParams(window.location).dev_download_server;
 	DropZone.autoDiscover = false;
 	return new DropZone(element, {
-		paramName: 'package',
+		paramName: 'file',
 		url() {
 			let {packageType, packageId, assetGroup, path} = getUploadProps();
 			if (action === ACTIONS.update) {

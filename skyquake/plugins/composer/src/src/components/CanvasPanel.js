@@ -34,9 +34,11 @@ import CanvasPanelTray from './CanvasPanelTray'
 import EditForwardingGraphPaths from './EditorForwardingGraph/EditForwardingGraphPaths'
 import SelectionManager from '../libraries/SelectionManager'
 import DescriptorModelIconFactory from '../libraries/model/IconFactory'
-
 import FileManager from './filemanager/FileManager.jsx';
+import { isRBACValid } from 'widgets/skyquake_rbac/skyquakeRBAC';
+import ROLES from 'utils/roleConstants.js';
 
+import ConfigPrimitiveParameters from './ConfigPrimitiveParameters/ConfigPrimitiveParameters'
 import '../styles/CanvasPanel.scss'
 
 const CanvasPanel = React.createClass({
@@ -69,47 +71,62 @@ const CanvasPanel = React.createClass({
 			left: this.props.layout.left
 		};
 		var req = require.context("../", true, /^\.\/.*\.svg$/);
+		const User = this.props.User || {};
+		const isModifiableByUser = isRBACValid(User, [ROLES.PROJECT.PROJECT_ADMIN, ROLES.PROJECT.CATALOG_ADMIN]);
 		const hasItem = this.props.containers.length !== 0;
 		const isEditingNSD = DescriptorModelFactory.isNetworkService(this.props.containers[0]);
 		const isDescriptorView = (this.props.panelTabShown == 'descriptor');
 		const hasNoCatalogs = this.props.hasNoCatalogs;
-		const bodyComponent = hasItem ? <CatalogItemCanvasEditor zoom={this.props.zoom} isShowingMoreInfo={this.props.showMore} containers={this.props.containers}/> : messages.canvasWelcome();
+		const bodyComponent = hasItem ? (
+			<CatalogItemCanvasEditor
+				readOnly={!isModifiableByUser}
+				zoom={this.props.zoom}
+				isShowingMoreInfo={this.props.showMore}
+				containers={this.props.containers} />) : messages.canvasWelcome();
 		const viewFiles = this.props.panelTabShown == 'assets';
-		const viewButtonTabs =  !hasItem ? null : (
-	           <div className="CanvasPanelTabs">
-	               <div className="CatalogFilter">
-						<button className={isDescriptorView ? '-selected' : ''} onClick={ComposerAppActions.showDescriptor}>
-							Descriptor
+		const viewButtonTabs = !hasItem ? null : (
+			<div className="CanvasPanelTabs">
+				<div className="CatalogFilter">
+					<button className={isDescriptorView ? '-selected' : ''} onClick={ComposerAppActions.showDescriptor}>
+						Descriptor
 						</button>
-						{
-							this.props.files ?
-								<button className={!isDescriptorView ? '-selected' : ''}  onClick={ComposerAppActions.showAssets}>
-									Assets
+					{
+						this.props.files ?
+							<button className={!isDescriptorView ? '-selected' : ''} onClick={ComposerAppActions.showAssets}>
+								Assets
 								</button>
 							: null
-						}
-					</div>
+					}
 				</div>
-       		)
+			</div>
+		)
+		//CanvasPanelTray panel to display
+		let displayedPanel = null;
+		switch (this.props.displayedPanel) {
+			case 'forwarding': displayedPanel = (<EditForwardingGraphPaths containers={this.props.containers} />); break;
+			case 'parameter': displayedPanel = (<ConfigPrimitiveParameters containers={this.props.containers} />); break;
+			default: displayedPanel = (<div><p className="welcome-message">Please select a tab</p></div>); break;
+		}
 		return (
-			<div id="canvasPanelDiv" className="CanvasPanel" style={style} onDragOver={this.onDragOver} onDrop={this.onDrop}>
-				<div onDoubleClick={this.onDblClickOpenFullScreen}  className="CanvasPanelHeader panel-header" data-resizable="limit_bottom">
+			<div id="canvasPanelDiv" className="CanvasPanel" style={style} 
+				onDragOver={isModifiableByUser ? this.onDragOver : null} onDrop={isModifiableByUser ? this.onDrop : null}>
+				<div onDoubleClick={this.onDblClickOpenFullScreen} className="CanvasPanelHeader panel-header" data-resizable="limit_bottom">
 					<h1>
 						{hasItem ? <img src={req('./' + DescriptorModelIconFactory.getUrlForType(this.props.containers[0].type, 'black'))} width="20px" /> : null}
 						<span className="model-name">{this.props.title}</span>
 					</h1>
 				</div>
 				{viewButtonTabs}
-				<div className="CanvasPanelBody panel-body" style={{marginRight: this.props.layout.right, bottom: this.props.layout.bottom}} >
-					{hasNoCatalogs ? null : viewFiles ? <FileManager files={this.props.files} type={this.props.type} item={this.props.item} filesState={this.props.filesState} newPathName={this.props.newPathName} /> : bodyComponent}
+				<div className="CanvasPanelBody panel-body" style={{ marginRight: this.props.layout.right, bottom: this.props.layout.bottom }} >
+					{hasNoCatalogs ? null : viewFiles ? <FileManager files={this.props.files} type={this.props.type} item={this.props.item} filesState={this.props.filesState} newPathName={this.props.newPathName} User={User} /> : bodyComponent}
 				</div>
 				{
 					isDescriptorView ?
-						<CanvasZoom zoom={this.props.zoom} style={{bottom: this.props.layout.bottom + 20}}/>
+						<CanvasZoom zoom={this.props.zoom} style={{ bottom: this.props.layout.bottom + 20 }} />
 						: null
 				}
-				<CanvasPanelTray layout={this.props.layout} show={isEditingNSD && isDescriptorView}>
-					<EditForwardingGraphPaths containers={this.props.containers} />
+				<CanvasPanelTray layout={this.props.layout} displayedPanel={this.props.displayedPanel} show={isEditingNSD && isDescriptorView}>
+					{displayedPanel}
 				</CanvasPanelTray>
 			</div>
 		);
@@ -135,7 +152,7 @@ const CanvasPanel = React.createClass({
 	handleDropCanvasAction(event, data) {
 		const action = cc.camel('on-' + data.action);
 		if (typeof this[action] === 'function') {
-			if (this[action]({clientX: event.clientX, clientY: event.clientY})) {
+			if (this[action]({ clientX: event.clientX, clientY: event.clientY })) {
 				event.preventDefault();
 			}
 		} else {
@@ -152,14 +169,14 @@ const CanvasPanel = React.createClass({
 		} else if (DescriptorModelFactory.isNetworkService(currentItem)) {
 			// so add the item to the nsd and re-render the canvas
 			switch (data.item.uiState.type) {
-			case 'vnfd':
-				this.onAddVnfd(data.item, {clientX: event.clientX, clientY: event.clientY});
-				break;
-			case 'pnfd':
-				this.onAddPnfd(data.item, {clientX: event.clientX, clientY: event.clientY});
-				break;
-			default:
-				console.warn(`Unknown catalog-item type. Expect type "nsd", "vnfd" or "pnfd" but got ${data.item.uiState.type}.`);
+				case 'vnfd':
+					this.onAddVnfd(data.item, { clientX: event.clientX, clientY: event.clientY });
+					break;
+				case 'pnfd':
+					this.onAddPnfd(data.item, { clientX: event.clientX, clientY: event.clientY });
+					break;
+				default:
+					console.warn(`Unknown catalog-item type. Expect type "nsd", "vnfd" or "pnfd" but got ${data.item.uiState.type}.`);
 			}
 		} else {
 			// otherwise the default action is to open the item

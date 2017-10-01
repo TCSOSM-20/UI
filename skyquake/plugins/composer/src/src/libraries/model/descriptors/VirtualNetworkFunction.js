@@ -74,7 +74,7 @@ export default class VirtualNetworkFunction extends DescriptorModel {
 
 	createVld() {
 		const property = DescriptorModelMetaFactory.getModelMetaForType('vnfd.internal-vld');
-		const uniqueName = DescriptorModelMetaFactory.generateItemUniqueName(this['internal-vld'], property);
+		const uniqueName = DescriptorModelMetaFactory.generateItemUniqueName(this.vld, property);
 		const model = DescriptorModelMetaFactory.createModelInstanceForType('vnfd.internal-vld', uniqueName);
 		return this.vld = DescriptorModelFactory.newInternalVirtualLink(model, this);
 	}

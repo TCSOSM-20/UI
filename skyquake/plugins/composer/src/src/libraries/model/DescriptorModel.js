@@ -1,6 +1,6 @@
 
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +21,8 @@
  */
 
 import _isArray from 'lodash/isArray'
+import _set from 'lodash/set'
+import _get from 'lodash/get'
 import guid from '../guid'
 import Position from '../graph/Position'
 import IconFactory from './IconFactory'
@@ -34,7 +36,7 @@ import DescriptorModelMetaFactory from './DescriptorModelMetaFactory'
  */
 export default class DescriptorModel {
 
-	constructor(model = {uiState: {}}, parent = null) {
+	constructor(model = {uiState: {}}, parent = null, readonly = false) {
 		// when our instance has no more strong references
 		// then our properties will get garbage collected.
 		this._props_ = new WeakMap();
@@ -49,6 +51,7 @@ export default class DescriptorModel {
 		if (parent instanceof DescriptorModel) {
 			parent.addChild(this);
 		}
+		this.isReadOnly = readonly;
 	}
 
 	get fieldNames() {
@@ -307,6 +310,14 @@ export default class DescriptorModel {
 		const length = this[propertyName].length;
 		this[propertyName] = this[propertyName].filter(d => d.uid !== uid);
 		return length !== this[propertyName].length;
+	}
+
+	setUiState(setting, path, value){
+		_set(this.uiState, [setting].concat(path), value);
+	}
+
+	getUiState(setting, path, defaultValue){
+		return _get(this.uiState, [setting].concat(path), defaultValue);
 	}
 
 }

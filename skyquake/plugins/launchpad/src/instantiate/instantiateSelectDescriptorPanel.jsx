@@ -1,5 +1,5 @@
 /*
- * 
+ *
  *   Copyright 2016 RIFT.IO Inc
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,21 +29,23 @@ export default class InstantiateSelectDescriptorPanel extends Component {
         return (
             <Panel title="Select Descriptor"  className={"InstantiateSelectDescriptorPanel" + (isPreviewing ? " InstantiateSelectDescriptorPanel--previewmode" : '')}>
             {
-                catalog.descriptors && catalog.descriptors.map(function(descriptor, i) {
-                    let isSelected = (descriptor.id === selectedDescriptorID);
-                    return (
-                        <CatalogCard
-                            key={i}
-                            isActive={isPreviewing && isSelected}
-                            isSelected={isSelected}
-                            descriptor={descriptor}
-                            onClick={onSelectDescriptor.bind(null, descriptor)}
-                            onDoubleClick={openDescriptor.bind(null, descriptor)}
-                            onPreviewDescriptor={onPreviewDescriptor}
-                            onCloseCard={closeCard}
-                        />
-                    )
-                })
+                catalog.descriptors && (catalog.descriptors.length > 0) ?
+                    catalog.descriptors.map(function(descriptor, i) {
+                        let isSelected = (descriptor.id === selectedDescriptorID);
+                        return (
+                            <CatalogCard
+                                key={i}
+                                isActive={isPreviewing && isSelected}
+                                isSelected={isSelected}
+                                descriptor={descriptor}
+                                onClick={onSelectDescriptor.bind(null, descriptor)}
+                                onDoubleClick={openDescriptor.bind(null, descriptor)}
+                                onPreviewDescriptor={onPreviewDescriptor}
+                                onCloseCard={closeCard}
+                            />
+                        )
+                    })
+                    : <div className="InstantiateSelectDescriptorPanel-message"><h2>No Descriptors Onboarded</h2></div>
             }
             </Panel>
         )

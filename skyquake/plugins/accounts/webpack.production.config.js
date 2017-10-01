@@ -26,6 +26,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CompressionPlugin = require("compression-webpack-plugin");
 // Added to overcome node-sass bug https://github.com/iam4x/isomorphic-flux-boilerplate/issues/62
 process.env.UV_THREADPOOL_SIZE=64;
+var htmlFilename = (process.argv.indexOf('--production-debug') !== -1) ? 'debug.html' : 'index.html';
 var config = {
     devtool: 'source-map',
     entry: mainPath,
@@ -66,8 +67,8 @@ var config = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            filename: '../index.html', 
-            templateContent: '<div id="app"></div>'
+            filename: '../' + htmlFilename, 
+            template: frameworkPath + '/plugin-index.html'
         })
     ]
 };
