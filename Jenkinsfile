@@ -27,6 +27,6 @@ node('docker') {
                            params.GERRIT_BRANCH,
                            params.GERRIT_REFSPEC,
                            params.GERRIT_PATCHSET_REVISION,
-                           params.BUILD_SYSTEM,
+                           params.TEST_INSTALL,
                            params.ARTIFACTORY_SERVER)
 }
