@@ -47,6 +47,7 @@
     "request-promise": "^3.0.0",
     "require-json": "0.0.1",
     "require-reload": "^0.2.2",
+    "reset-css": "^2.2.1",
     "sockjs": "^0.3.17",
     "sockjs-client": "^1.1.1",
     "underscore": "^1.8.3",
