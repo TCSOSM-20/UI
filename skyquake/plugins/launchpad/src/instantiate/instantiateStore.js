@@ -61,8 +61,8 @@ class LaunchNetworkServiceStore {
 
         this.displayVIMAccounts = false;
         this.resourceOrchestrators = [{
-            name: 'rift',
-            'ro-account-type': 'rift-ro'
+            name: 'openmano',
+            'ro-account-type': 'openmano'
         }];
         this.selectedResourceOrchestrator = this.resourceOrchestrators[0];
         this.dataCenterID = null;
