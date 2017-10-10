@@ -55,7 +55,7 @@ class AccountSidebar extends React.Component{
                 data: this.props.sdn
             },
             {
-                type: 'config',
+                type: 'config-agent',
                 data: this.props['config-agent']
             },
             {

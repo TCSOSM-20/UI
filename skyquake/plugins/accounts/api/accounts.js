@@ -233,7 +233,7 @@ function refreshAccountConnectionStatus(req) {
             label: 'sdn-account',
             rpc: 'update-sdn-status'
         },
-        'config': {
+        'config-agent': {
             label: 'cfg-agent-account',
             rpc: 'update-cfg-agent-status'
         },
