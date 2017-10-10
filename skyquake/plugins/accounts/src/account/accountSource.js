@@ -175,7 +175,7 @@ module.exports = function(Alt) {
             var payloadKeys = Object.keys(payload[payload['account-type']]);
             var accountData = payload[payload['account-type']];
             payloadKeys.map(function(k) {
-              if (!accountData[k] || accountData[k].trim() == '') {
+              if (!accountData[k] || (accountData[k].trim && accountData[k].trim() == '')) {
                 delete payload[payload['account-type']][k];
               }
             });
