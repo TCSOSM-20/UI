@@ -189,7 +189,7 @@ class LaunchNetworkServiceStore {
         Alt.actions.global.hideScreenLoader.defer();
         let ROAccounts = [];
         this.setState({
-            resourceOrchestrators: ROAccounts.concat(data),
+            resourceOrchestrators: ROAccounts.concat(data).filter(function(r){ return r.name != "rift" }),
             selectedResourceOrchestrator: data[0],
             dataCenterID: data && data[0] && data[0].datacenters && data[0].datacenters.datacenters && data[0].datacenters.datacenters[0] && data[0].datacenters.datacenters[0].name,
             dataCenterType:  data && data[0] && data[0].datacenters && data[0].datacenters.datacenters && data[0].datacenters.datacenters[0] && data[0].datacenters.datacenters[0]['datacenter-type'],
