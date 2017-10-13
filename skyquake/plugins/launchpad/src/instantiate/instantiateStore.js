@@ -188,11 +188,12 @@ class LaunchNetworkServiceStore {
         let self = this;
         Alt.actions.global.hideScreenLoader.defer();
         let ROAccounts = [];
+        ROAccounts = ROAccounts.concat(data).filter(function(r){ return r.name != "rift" });
         this.setState({
-            resourceOrchestrators: ROAccounts.concat(data).filter(function(r){ return r.name != "rift" }),
-            selectedResourceOrchestrator: data[0],
-            dataCenterID: data && data[0] && data[0].datacenters && data[0].datacenters.datacenters && data[0].datacenters.datacenters[0] && data[0].datacenters.datacenters[0].name,
-            dataCenterType:  data && data[0] && data[0].datacenters && data[0].datacenters.datacenters && data[0].datacenters.datacenters[0] && data[0].datacenters.datacenters[0]['datacenter-type'],
+            resourceOrchestrators: ROAccounts,
+            selectedResourceOrchestrator: ROAccounts[0],
+            dataCenterID: ROAccounts[0] && ROAccounts[0].datacenters && ROAccounts[0].datacenters.datacenters && ROAccounts[0].datacenters.datacenters[0] && ROAccounts[0].datacenters.datacenters[0].name,
+            dataCenterType:  ROAccounts[0] && ROAccounts[0].datacenters && ROAccounts[0].datacenters.datacenters && ROAccounts[0].datacenters.datacenters[0] && ROAccounts[0].datacenters.datacenters[0]['datacenter-type'],
             displayVIMAccounts: false
         })
     }
