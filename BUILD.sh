@@ -106,10 +106,13 @@ else
 
     # Install environment to build module
     sudo -H /usr/rift/container_tools/mkcontainer --modes $MODULE-dev --repo ${PLATFORM_REPOSITORY} --rw-version ${PLATFORM_VERSION}
+    sudo -H apt install -y nodejs
+    sudo -H npm install -g forever 
 
     # Build  and install module
     make -j16 
     sudo make install
+    sudo -H dhclient & 
 
 fi
 
