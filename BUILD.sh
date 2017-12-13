@@ -80,7 +80,7 @@ set -x             # Print commands before executing them
 # Set up repo and version
 
 PLATFORM_REPOSITORY=${1:-OSM3}
-PLATFORM_VERSION=${2:-5.2.0.2.72254}
+PLATFORM_VERSION=${2:-5.2.0.3.73627}
 
 ###############################################################################
 # Main block
@@ -92,22 +92,20 @@ cd $(dirname $0)
 curl http://repos.riftio.com/public/xenial-riftware-public-key | sudo apt-key add -
 
 # always use the same file name so that updates will overwrite rather than enable a second repo
-sudo curl -o /etc/apt/sources.list.d/rift.list http://buildtracker.riftio.com/repo_file/ub16/${PLATFORM_REPOSITORY}/ 
 sudo apt-get update
+echo "deb https://artifactory.riftio.com/debian-OSM xenial main" >/etc/apt/source.list.d/rift.list
 
 sudo apt install -y --allow-downgrades rw.tools-container-tools=${PLATFORM_VERSION} rw.tools-scripts=${PLATFORM_VERSION}
 
 if $installFromPackages; then
     
     # Install module and platform from packages
-    sudo -H /usr/rift/container_tools/mkcontainer --modes $MODULE --repo ${PLATFORM_REPOSITORY} --rw-version ${PLATFORM_VERSION}
+    sudo -H /usr/rift/container_tools/mkcontainer --modes $MODULE --rw-version ${PLATFORM_VERSION}
     
 else
 
     # Install environment to build module
-    sudo -H /usr/rift/container_tools/mkcontainer --modes $MODULE-dev --repo ${PLATFORM_REPOSITORY} --rw-version ${PLATFORM_VERSION}
-    sudo -H apt install -y nodejs
-    sudo -H npm install -g forever 
+    sudo -H /usr/rift/container_tools/mkcontainer --modes $MODULE-dev --rw-version ${PLATFORM_VERSION}
 
     # Build  and install module
     make -j16 
